@@ -1,0 +1,119 @@
+{% extends 'bookings/base.html' %}
+
+{% block title %}Booking Confirmed — Rosette Wellness{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-6 text-center">
+
+            <div style="width:80px; height:80px;
+                        background-color:var(--primary-light);
+                        border:1px solid var(--border-orange);
+                        border-radius:50%; display:flex; align-items:center;
+                        justify-content:center; margin: 0 auto 24px;">
+                <i class="fas fa-heart" style="font-size:32px; color:var(--primary);"></i>
+            </div>
+
+            <h1 class="rw-section-title mb-2">Booking Confirmed!</h1>
+            <div class="rw-divider mx-auto"></div>
+
+            <p style="color:var(--foreground-muted); font-size:15px;
+                      line-height:1.8; margin: 20px 0 32px;">
+                Thank you, <strong style="color:white;">{{ appointment.client_name }}</strong>.
+                Your session is officially booked. We look forward to welcoming you!
+            </p>
+
+            <!-- Booking Details -->
+            <div class="rw-card text-start mb-4">
+                <p style="font-size:12px; letter-spacing:2px; text-transform:uppercase;
+                           color:var(--primary); margin-bottom:16px;">
+                    Booking Details
+                </p>
+
+                <div style="display:flex; justify-content:space-between;
+                            padding:10px 0; border-bottom:1px solid var(--border);
+                            font-size:14px; color:var(--foreground-muted);">
+                    <span>Service</span>
+                    <strong style="color:white;">{{ appointment.get_service_display }}</strong>
+                </div>
+
+                <div style="display:flex; justify-content:space-between;
+                            padding:10px 0; border-bottom:1px solid var(--border);
+                            font-size:14px; color:var(--foreground-muted);">
+                    <span>Duration</span>
+                    <strong style="color:white;">{{ appointment.duration }} minutes</strong>
+                </div>
+
+                {% if appointment.addon != 'none' %}
+                <div style="display:flex; justify-content:space-between;
+                            padding:10px 0; border-bottom:1px solid var(--border);
+                            font-size:14px; color:var(--foreground-muted);">
+                    <span>Add-On</span>
+                    <strong style="color:white;">{{ appointment.get_addon_display }}</strong>
+                </div>
+                {% endif %}
+
+                <div style="display:flex; justify-content:space-between;
+                            padding:10px 0; border-bottom:1px solid var(--border);
+                            font-size:14px; color:var(--foreground-muted);">
+                    <span>Date</span>
+                    <strong style="color:white;">
+                        {{ appointment.appointment_date|date:"l, F j, Y" }}
+                    </strong>
+                </div>
+
+                <div style="display:flex; justify-content:space-between;
+                            padding:10px 0; border-bottom:1px solid var(--border);
+                            font-size:14px; color:var(--foreground-muted);">
+                    <span>Session Starts</span>
+                    <strong style="color:white;">
+                        {{ appointment.appointment_time|time:"g:i A" }}
+                    </strong>
+                </div>
+
+                <div style="display:flex; justify-content:space-between;
+                            padding:10px 0; border-bottom:1px solid var(--border);
+                            font-size:14px; color:var(--foreground-muted);">
+                    <span>Zone</span>
+                    <strong style="color:white;">{{ appointment.get_zone_display }}</strong>
+                </div>
+
+                <div style="display:flex; justify-content:space-between;
+                            padding:10px 0; border-bottom:1px solid var(--border);
+                            font-size:14px; color:var(--foreground-muted);">
+                    <span>Address</span>
+                    <strong style="color:white; text-align:right; max-width:60%;">
+                        {{ appointment.client_address }}
+                    </strong>
+                </div>
+
+                <div style="display:flex; justify-content:space-between;
+                            padding:10px 0; border-bottom:1px solid var(--border);
+                            font-size:14px; color:var(--foreground-muted);">
+                    <span>Total</span>
+                    <strong style="color:var(--primary); font-size:20px;">
+                        {{ appointment.total_price }} AED
+                    </strong>
+                </div>
+
+                <!-- Departure notice -->
+                <div class="rw-notice mt-3">
+                    <i class="fas fa-car me-2"></i>
+                    Your therapist will depart at
+                    <strong>{{ appointment.masseuse_departure_time|time:"g:i A" }}</strong>
+                    to reach your location in time for your session.
+                </div>
+            </div>
+
+            <div class="d-flex gap-3 justify-content-center flex-wrap">
+                <a href="/book/" class="btn-outline-rw">Book Another Session</a>
+                <a href="https://v0-rosette-wellness.vercel.app/" class="btn-primary-rw">
+                    Back to Main Site
+                </a>
+            </div>
+
+        </div>
+    </div>
+</div>
+{% endblock %}

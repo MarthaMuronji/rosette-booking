@@ -1,0 +1,481 @@
+{% extends 'bookings/base.html' %}
+
+{% block title %}Book a Session — Rosette Wellness{% endblock %}
+
+{% block extra_css %}
+<style>
+    .booking-hero {
+        background-color: var(--rose-light);
+        padding: 60px 0 40px;
+        text-align: center;
+        border-bottom: 1px solid #f0e8e8;
+    }
+
+    .booking-hero p {
+        color: var(--rose-dark);
+        letter-spacing: 2px;
+        font-size: 13px;
+        text-transform: uppercase;
+    }
+
+    .form-section {
+        background: white;
+        border: 1px solid #f0e8e8;
+        border-radius: 4px;
+        padding: 32px;
+        margin-bottom: 24px;
+    }
+
+    .form-section-title {
+        font-family: 'Cormorant Garamond', serif;
+        font-size: 22px;
+        color: var(--rose-dark);
+        margin-bottom: 24px;
+        padding-bottom: 12px;
+        border-bottom: 1px solid #f0e8e8;
+    }
+
+    .form-label {
+        font-size: 13px;
+        letter-spacing: 1px;
+        text-transform: uppercase;
+        color: var(--rose-dark);
+        margin-bottom: 6px;
+    }
+
+    .form-control, .form-select {
+        border: 1px solid #e8dada;
+        border-radius: 2px;
+        padding: 10px 14px;
+        font-family: 'Jost', sans-serif;
+        font-size: 14px;
+        background-color: #fdfafa;
+    }
+
+    .form-control:focus, .form-select:focus {
+        border-color: var(--rose);
+        box-shadow: 0 0 0 3px rgba(200, 168, 168, 0.15);
+    }
+
+    .service-card {
+        border: 1.5px solid #f0e8e8;
+        border-radius: 4px;
+        padding: 16px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        margin-bottom: 12px;
+    }
+
+    .service-card:hover {
+        border-color: var(--rose);
+        background-color: var(--rose-light);
+    }
+
+    .service-card.selected {
+        border-color: var(--rose-dark);
+        background-color: var(--rose-light);
+    }
+
+    .service-card input[type="radio"] {
+        accent-color: var(--rose-dark);
+    }
+
+    .service-name {
+        font-family: 'Cormorant Garamond', serif;
+        font-size: 18px;
+        color: var(--charcoal);
+        margin-bottom: 4px;
+    }
+
+    .service-price {
+        font-size: 13px;
+        color: var(--rose-dark);
+    }
+
+    .time-slot {
+        display: inline-block;
+        padding: 8px 14px;
+        border: 1px solid #e8dada;
+        border-radius: 2px;
+        margin: 4px;
+        cursor: pointer;
+        font-size: 13px;
+        transition: all 0.2s ease;
+        background: white;
+    }
+
+    .time-slot:hover {
+        border-color: var(--rose-dark);
+        background-color: var(--rose-light);
+    }
+
+    .time-slot.selected {
+        background-color: var(--rose-dark);
+        color: white;
+        border-color: var(--rose-dark);
+    }
+
+    .time-slot.booked {
+        background-color: #f5f5f5;
+        color: #ccc;
+        cursor: not-allowed;
+        border-color: #eee;
+        text-decoration: line-through;
+    }
+
+    .departure-notice {
+        background-color: var(--rose-light);
+        border-left: 3px solid var(--rose-dark);
+        padding: 14px 18px;
+        border-radius: 2px;
+        font-size: 14px;
+        color: var(--rose-dark);
+        margin-top: 16px;
+        display: none;
+    }
+
+    .zone-card {
+        border: 1.5px solid #f0e8e8;
+        border-radius: 4px;
+        padding: 14px 16px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        margin-bottom: 10px;
+    }
+
+    .zone-card:hover {
+        border-color: var(--rose);
+        background-color: var(--rose-light);
+    }
+
+    .zone-card.selected {
+        border-color: var(--rose-dark);
+        background-color: var(--rose-light);
+    }
+
+    .total-box {
+        background-color: var(--charcoal);
+        color: white;
+        padding: 20px 28px;
+        border-radius: 4px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+    }
+
+    .total-label {
+        font-size: 13px;
+        letter-spacing: 2px;
+        text-transform: uppercase;
+        color: var(--rose);
+    }
+
+    .total-amount {
+        font-family: 'Cormorant Garamond', serif;
+        font-size: 32px;
+        color: white;
+    }
+
+    .whatsapp-note {
+        background-color: #f0faf5;
+        border: 1px solid #c3e6cb;
+        border-radius: 4px;
+        padding: 16px 20px;
+        font-size: 14px;
+        color: #2d6a4f;
+        margin-bottom: 24px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="booking-hero">
+    <div class="container">
+        <p>Luxury Mobile Massage — Dubai</p>
+        <h1 class="section-title">Request an Appointment</h1>
+        <p style="text-transform:none; letter-spacing:0; color: #888; font-size:15px; margin-top:12px;">
+            Fill in your details below. Your request will be reviewed and confirmed via WhatsApp.
+        </p>
+    </div>
+</div>
+
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+
+            <div class="whatsapp-note">
+                <i class="fab fa-whatsapp me-2"></i>
+                <strong>How it works:</strong> Submit your request below. The therapist will review your preferred date and time and confirm your appointment via WhatsApp before it is finalised.
+            </div>
+
+            <form method="POST" id="bookingForm">
+                {% csrf_token %}
+
+                <!-- Step 1: Choose Service -->
+                <div class="form-section">
+                    <div class="form-section-title">1. Choose Your Treatment</div>
+
+                    {% for value, label in services %}
+                    <div class="service-card" onclick="selectService('{{ value }}', this)">
+                        <div class="d-flex align-items-center">
+                            <input type="radio" name="service" value="{{ value }}" id="service_{{ value }}" class="me-3" required>
+                            <div>
+                                <div class="service-name">{{ label }}</div>
+                                <div class="service-price" id="price_{{ value }}"></div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+
+                    <!-- Duration -->
+                    <div class="mt-3" id="durationSection" style="display:none;">
+                        <label class="form-label">Session Duration</label>
+                        <select name="duration" id="durationSelect" class="form-select" required>
+                            <option value="">Select duration</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Step 2: Add-On -->
+                <div class="form-section">
+                    <div class="form-section-title">2. Add-On (Optional)</div>
+                    <select name="addon" class="form-select">
+                        <option value="none">No Add-On</option>
+                        <option value="foot_30">Foot Massage — 30 min (+120 AED)</option>
+                        <option value="hns_30">Head, Neck & Shoulders — 30 min (+100 AED)</option>
+                        <option value="hns_60">Head, Neck & Shoulders — 60 min (+180 AED)</option>
+                    </select>
+                </div>
+
+                <!-- Step 3: Zone -->
+                <div class="form-section">
+                    <div class="form-section-title">3. Your Location Zone</div>
+
+                    <div class="zone-card" onclick="selectZone('zone1', this)">
+                        <div class="d-flex align-items-center">
+                            <input type="radio" name="zone" value="zone1" class="me-3" required>
+                            <div>
+                                <strong>Zone 1</strong> — No extra fee<br>
+                                <small class="text-muted">Business Bay, Downtown, DIFC, City Walk, Al Safa</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="zone-card" onclick="selectZone('zone2', this)">
+                        <div class="d-flex align-items-center">
+                            <input type="radio" name="zone" value="zone2" class="me-3" required>
+                            <div>
+                                <strong>Zone 2</strong> — +25 AED<br>
+                                <small class="text-muted">JVC, Arjan, Motor City, Dubai Hills Estate</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="zone-card" onclick="selectZone('zone3', this)">
+                        <div class="d-flex align-items-center">
+                            <input type="radio" name="zone" value="zone3" class="me-3" required>
+                            <div>
+                                <strong>Zone 3</strong> — +50 AED<br>
+                                <small class="text-muted">Marina, JBR, Palm Jumeirah, Jumeirah Golf Estates</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Step 4: Date & Time -->
+                <div class="form-section">
+                    <div class="form-section-title">4. Preferred Date & Time</div>
+
+                    <div class="mb-4">
+                        <label class="form-label">Preferred Date</label>
+                        <input type="date" name="appointment_date" id="dateInput" class="form-control" min="{{ today }}" required>
+                    </div>
+
+                    <label class="form-label">Preferred Time</label>
+                    <div id="timeSlots">
+                        <p class="text-muted" style="font-size:14px;">Please select a date first.</p>
+                    </div>
+                    <input type="hidden" name="appointment_time" id="selectedTime" required>
+
+                    <div class="departure-notice" id="departureNotice">
+                        <i class="fas fa-car me-2"></i>
+                        <span id="departureText"></span>
+                    </div>
+                </div>
+
+                <!-- Step 5: Your Details -->
+                <div class="form-section">
+                    <div class="form-section-title">5. Your Details</div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Full Name</label>
+                        <input type="text" name="client_name" class="form-control" placeholder="Your full name" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Phone Number (WhatsApp)</label>
+                        <input type="tel" name="client_phone" class="form-control" placeholder="+971 50 000 0000" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Email Address (Optional)</label>
+                        <input type="email" name="client_email" class="form-control" placeholder="your@email.com">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Full Address</label>
+                        <textarea name="client_address" class="form-control" rows="3" placeholder="Building name, apartment number, street, area" required></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Additional Notes (Optional)</label>
+                        <textarea name="notes" class="form-control" rows="2" placeholder="Any preferences, health conditions or special requests"></textarea>
+                    </div>
+                </div>
+
+                <!-- Total -->
+                <div class="total-box">
+                    <div>
+                        <div class="total-label">Estimated Total</div>
+                        <div style="font-size:12px; color:#c8a8a8; margin-top:4px;">Final price confirmed on approval</div>
+                    </div>
+                    <div class="total-amount" id="totalPrice">0 AED</div>
+                </div>
+
+                <button type="submit" class="btn btn-rose w-100 py-3" style="font-size:16px; letter-spacing:2px;">
+                    SUBMIT APPOINTMENT REQUEST
+                </button>
+            </form>
+
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    const bookedSlots = {{ booked_slots|safe }};
+    const allSlots = {{ slots|safe }};
+
+    const prices = {
+        signature:   {90: 320, 120: 400},
+        swedish:     {60: 250, 90: 320, 120: 400},
+        deep_tissue: {90: 370, 120: 450},
+        sports:      {90: 380, 120: 470},
+        hot_stone:   {90: 380, 120: 470},
+        thai:        {90: 320, 120: 400},
+    };
+
+    const durations = {
+        signature:   [90, 120],
+        swedish:     [60, 90, 120],
+        deep_tissue: [90, 120],
+        sports:      [90, 120],
+        hot_stone:   [90, 120],
+        thai:        [90, 120],
+    };
+
+    const addonPrices = {none: 0, foot_30: 120, hns_30: 100, hns_60: 180};
+    const zoneFees = {zone1: 0, zone2: 25, zone3: 50};
+
+    let selectedService = null;
+    let selectedDuration = null;
+    let selectedZone = null;
+    let selectedAddon = 'none';
+
+    function selectService(value, card) {
+        document.querySelectorAll('.service-card').forEach(c => c.classList.remove('selected'));
+        card.classList.add('selected');
+        document.getElementById('service_' + value).checked = true;
+        selectedService = value;
+        selectedDuration = null;
+
+        // Show duration options
+        const durationSection = document.getElementById('durationSection');
+        const durationSelect = document.getElementById('durationSelect');
+        durationSection.style.display = 'block';
+        durationSelect.innerHTML = '<option value="">Select duration</option>';
+        durations[value].forEach(d => {
+            const price = prices[value][d];
+            durationSelect.innerHTML += `<option value="${d}">${d} minutes — ${price} AED</option>`;
+        });
+
+        durationSelect.onchange = function() {
+            selectedDuration = parseInt(this.value);
+            updateTotal();
+            renderTimeSlots();
+        };
+
+        updateTotal();
+    }
+
+    function selectZone(value, card) {
+        document.querySelectorAll('.zone-card').forEach(c => c.classList.remove('selected'));
+        card.classList.add('selected');
+        document.querySelector(`input[value="${value}"]`).checked = true;
+        selectedZone = value;
+        updateTotal();
+    }
+
+    document.querySelector('select[name="addon"]').addEventListener('change', function() {
+        selectedAddon = this.value;
+        updateTotal();
+    });
+
+    function updateTotal() {
+        if (!selectedService || !selectedDuration) return;
+        const base = prices[selectedService][selectedDuration] || 0;
+        const addon = addonPrices[selectedAddon] || 0;
+        const zone = zoneFees[selectedZone] || 0;
+        document.getElementById('totalPrice').textContent = (base + addon + zone) + ' AED';
+    }
+
+    document.getElementById('dateInput').addEventListener('change', function() {
+        renderTimeSlots();
+    });
+
+    function renderTimeSlots() {
+        const date = document.getElementById('dateInput').value;
+        const container = document.getElementById('timeSlots');
+        if (!date) {
+            container.innerHTML = '<p class="text-muted" style="font-size:14px;">Please select a date first.</p>';
+            return;
+        }
+        const booked = bookedSlots[date] || [];
+        container.innerHTML = '';
+
+        allSlots.forEach(slot => {
+            const isBooked = booked.includes(slot);
+            const div = document.createElement('span');
+            div.className = 'time-slot' + (isBooked ? ' booked' : '');
+            div.textContent = formatTime(slot);
+            if (!isBooked) {
+                div.onclick = () => selectTime(slot, div);
+            }
+            container.appendChild(div);
+        });
+    }
+
+    function selectTime(slot, el) {
+        document.querySelectorAll('.time-slot').forEach(s => s.classList.remove('selected'));
+        el.classList.add('selected');
+        document.getElementById('selectedTime').value = slot;
+
+        // Show departure notice
+        const [h, m] = slot.split(':').map(Number);
+        const totalMins = h * 60 + m - 60;
+        const depH = Math.floor(totalMins / 60);
+        const depM = totalMins % 60;
+        const depStr = formatTime(`${String(depH).padStart(2,'0')}:${String(depM).padStart(2,'0')}`);
+
+        const notice = document.getElementById('departureNotice');
+        notice.style.display = 'block';
+        document.getElementById('departureText').textContent =
+            `Your therapist will depart at ${depStr} to reach your location in time for your session.`;
+    }
+
+    function formatTime(slot) {
+        const [h, m] = slot.split(':').map(Number);
+        const ampm = h >= 12 ? 'PM' : 'AM';
+        const hour = h % 12 || 12;
+        return `${hour}:${String(m).padStart(2,'0')} ${ampm}`;
+    }
+</script>
+{% endblock %}

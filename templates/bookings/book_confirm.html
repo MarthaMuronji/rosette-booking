@@ -1,0 +1,315 @@
+{% extends 'bookings/base.html' %}
+
+{% block title %}Complete Your Booking — Rosette Wellness{% endblock %}
+
+{% block extra_css %}
+<style>
+    .booking-hero {
+        background-color: var(--secondary);
+        padding: 60px 0 40px;
+        text-align: center;
+        border-bottom: 1px solid var(--border);
+    }
+
+    .form-section {
+        background: var(--card-bg);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 32px;
+        margin-bottom: 24px;
+    }
+
+    .form-section:hover {
+        border-color: var(--border-orange);
+    }
+
+    .form-section-title {
+        font-family: 'Playfair Display', serif;
+        font-size: 20px;
+        color: var(--foreground);
+        margin-bottom: 20px;
+        padding-bottom: 12px;
+        border-bottom: 1px solid var(--border);
+    }
+
+    .summary-row {
+        display: flex;
+        justify-content: space-between;
+        font-size: 14px;
+        padding: 10px 0;
+        border-bottom: 1px solid var(--border);
+        color: var(--foreground-muted);
+    }
+
+    .summary-row:last-child {
+        border-bottom: none;
+    }
+
+    .summary-row strong {
+        color: var(--foreground);
+    }
+
+    .zone-card {
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        padding: 14px 16px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        margin-bottom: 10px;
+        background: #1a1a1a;
+    }
+
+    .zone-card:hover {
+        border-color: var(--primary);
+        background-color: var(--primary-light);
+    }
+
+    .zone-card.selected {
+        border-color: var(--primary);
+        background-color: var(--primary-light);
+    }
+
+    .zone-card input[type="radio"] {
+        accent-color: var(--primary);
+    }
+
+    .zone-card strong {
+        color: var(--foreground);
+    }
+
+    .zone-card small {
+        color: var(--foreground-muted);
+    }
+
+    .total-box {
+        background: linear-gradient(135deg, #1a1a1a, #111);
+        border: 1px solid var(--border-orange);
+        border-radius: 12px;
+        padding: 20px 28px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+    }
+
+    .total-label {
+        font-size: 12px;
+        letter-spacing: 2px;
+        text-transform: uppercase;
+        color: var(--primary);
+    }
+
+    .total-amount {
+        font-family: 'Playfair Display', serif;
+        font-size: 32px;
+        color: var(--primary);
+    }
+
+    .approved-badge {
+        background-color: rgba(34, 197, 94, 0.1);
+        color: #22c55e;
+        border: 1px solid rgba(34, 197, 94, 0.3);
+        padding: 8px 20px;
+        border-radius: 20px;
+        font-size: 13px;
+        display: inline-block;
+        margin-bottom: 24px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="booking-hero">
+    <div class="container">
+        <p style="color:var(--primary); letter-spacing:3px; font-size:12px;
+                  text-transform:uppercase; margin-bottom:12px;">
+            Luxury Mobile Massage — Dubai
+        </p>
+        <h1 class="rw-section-title">Complete Your Booking</h1>
+        <div class="rw-divider mx-auto"></div>
+        <p class="rw-section-subtitle mt-3">
+            Your request has been approved. Fill in the remaining details to confirm.
+        </p>
+    </div>
+</div>
+
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+
+            <div class="text-center mb-4">
+                <span class="approved-badge">
+                    <i class="fas fa-check-circle me-2"></i>
+                    Request Approved by Therapist
+                </span>
+            </div>
+
+            <!-- Booking Summary -->
+            <div class="rw-card mb-4">
+                <p style="font-size:12px; letter-spacing:2px; text-transform:uppercase;
+                           color:var(--primary); margin-bottom:16px;">
+                    Your Appointment Summary
+                </p>
+                <div class="summary-row">
+                    <span>Client</span>
+                    <strong>{{ appointment.client_name }}</strong>
+                </div>
+                <div class="summary-row">
+                    <span>Service</span>
+                    <strong>{{ appointment.get_service_display }}</strong>
+                </div>
+                <div class="summary-row">
+                    <span>Duration</span>
+                    <strong>{{ appointment.duration }} minutes</strong>
+                </div>
+                <div class="summary-row">
+                    <span>Date</span>
+                    <strong>{{ appointment.appointment_date|date:"l, F j, Y" }}</strong>
+                </div>
+                <div class="summary-row">
+                    <span>Session Starts</span>
+                    <strong>{{ appointment.appointment_time|time:"g:i A" }}</strong>
+                </div>
+                <div class="summary-row">
+                    <span>Therapist Departs At</span>
+                    <strong style="color:var(--primary);">
+                        {{ appointment.masseuse_departure_time|time:"g:i A" }}
+                    </strong>
+                </div>
+            </div>
+
+            <form method="POST" id="confirmForm">
+                {% csrf_token %}
+
+                <!-- Add-On -->
+                <div class="form-section">
+                    <div class="form-section-title">1. Add-On (Optional)</div>
+                    <select name="addon" id="addonSelect" class="rw-form-control">
+                        <option value="none">No Add-On</option>
+                        <option value="foot_30">Foot Massage — 30 min (+120 AED)</option>
+                        <option value="hns_30">Head, Neck & Shoulders — 30 min (+100 AED)</option>
+                        <option value="hns_60">Head, Neck & Shoulders — 60 min (+180 AED)</option>
+                    </select>
+                </div>
+
+                <!-- Zone -->
+                <div class="form-section">
+                    <div class="form-section-title">2. Your Location Zone</div>
+
+                    <div class="zone-card" onclick="selectZone('zone1', this)">
+                        <div class="d-flex align-items-center">
+                            <input type="radio" name="zone" value="zone1" class="me-3" required>
+                            <div>
+                                <strong>Zone 1</strong> — No extra fee<br>
+                                <small>Business Bay, Downtown, DIFC, City Walk, Al Safa</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="zone-card" onclick="selectZone('zone2', this)">
+                        <div class="d-flex align-items-center">
+                            <input type="radio" name="zone" value="zone2" class="me-3" required>
+                            <div>
+                                <strong>Zone 2</strong> — +25 AED<br>
+                                <small>JVC, Arjan, Motor City, Dubai Hills Estate</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="zone-card" onclick="selectZone('zone3', this)">
+                        <div class="d-flex align-items-center">
+                            <input type="radio" name="zone" value="zone3" class="me-3" required>
+                            <div>
+                                <strong>Zone 3</strong> — +50 AED<br>
+                                <small>Marina, JBR, Palm Jumeirah, Jumeirah Golf Estates</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Details -->
+                <div class="form-section">
+                    <div class="form-section-title">3. Your Details</div>
+
+                    <div class="mb-3">
+                        <label class="rw-form-label">Email Address (Optional)</label>
+                        <input type="email" name="client_email" class="rw-form-control"
+                               placeholder="your@email.com">
+                    </div>
+                    <div class="mb-3">
+                        <label class="rw-form-label">Full Address</label>
+                        <textarea name="client_address" class="rw-form-control" rows="3"
+                                  placeholder="Building name, apartment number, street, area"
+                                  required></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label class="rw-form-label">Additional Notes (Optional)</label>
+                        <textarea name="notes" class="rw-form-control" rows="2"
+                                  placeholder="Any preferences, health conditions or special requests">
+                        </textarea>
+                    </div>
+                </div>
+
+                <!-- Total -->
+                <div class="total-box">
+                    <div>
+                        <div class="total-label">Total Price</div>
+                        <div style="font-size:12px; color:var(--foreground-muted); margin-top:4px;">
+                            Including zone fee and add-ons
+                        </div>
+                    </div>
+                    <div class="total-amount" id="totalPrice">— AED</div>
+                </div>
+
+                <button type="submit" class="btn-primary-rw w-100 py-3"
+                        style="font-size:15px; letter-spacing:1px; border-radius:8px;">
+                    CONFIRM MY BOOKING
+                </button>
+            </form>
+
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    const basePrices = {
+        'signature':   { 90: 320, 120: 400 },
+        'swedish':     { 60: 250, 90: 320, 120: 400 },
+        'deep_tissue': { 90: 370, 120: 450 },
+        'sports':      { 90: 380, 120: 470 },
+        'hot_stone':   { 90: 380, 120: 470 },
+        'thai':        { 90: 320, 120: 400 },
+    };
+
+    const addonPrices = { none: 0, foot_30: 120, hns_30: 100, hns_60: 180 };
+    const zoneFees = { zone1: 0, zone2: 25, zone3: 50 };
+
+    const service = '{{ appointment.service }}';
+    const duration = {{ appointment.duration }};
+    let selectedZone = null;
+    let selectedAddon = 'none';
+
+    function selectZone(value, card) {
+        document.querySelectorAll('.zone-card').forEach(c => c.classList.remove('selected'));
+        card.classList.add('selected');
+        document.querySelector(`input[value="${value}"]`).checked = true;
+        selectedZone = value;
+        updateTotal();
+    }
+
+    document.getElementById('addonSelect').addEventListener('change', function() {
+        selectedAddon = this.value;
+        updateTotal();
+    });
+
+    function updateTotal() {
+        if (!selectedZone) return;
+        const base = basePrices[service][duration] || 0;
+        const addon = addonPrices[selectedAddon] || 0;
+        const zone = zoneFees[selectedZone] || 0;
+        document.getElementById('totalPrice').textContent = (base + addon + zone) + ' AED';
+    }
+</script>
+{% endblock %}
