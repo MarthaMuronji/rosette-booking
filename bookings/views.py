@@ -128,6 +128,27 @@ def book_request(request):
         client_name = request.POST.get('client_name')
         client_phone = request.POST.get('client_phone')
 
+        # Check for duplicate request — same phone and same date
+        existing = Appointment.objects.filter(
+            client_phone=client_phone,
+            appointment_date=preferred_date,
+            status__in=['pending', 'approved', 'confirmed']
+        ).exists()
+
+        if existing:
+            slots = get_time_slots()
+            booked_slots, pending_slots = get_booked_slots()
+            today = timezone.now().date()
+            context = {
+                'slots': slots,
+                'booked_slots': json.dumps(booked_slots),
+                'pending_slots': json.dumps(pending_slots),
+                'today': today.isoformat(),
+                'services': Appointment.SERVICE_CHOICES,
+                'duplicate_error': 'You already have a booking request for this date. Please choose a different date or contact us on WhatsApp.',
+            }
+            return render(request, 'bookings/book_request.html', context)
+
         time_obj = datetime.datetime.strptime(preferred_time, '%H:%M').time()
         departure_dt = datetime.datetime.combine(
             datetime.date.today(), time_obj
@@ -178,6 +199,8 @@ def book_request(request):
         'services': Appointment.SERVICE_CHOICES,
     }
     return render(request, 'bookings/book_request.html', context)
+
+
 
 
 # Step 2 — Client completes full booking after owner approves
@@ -269,6 +292,9 @@ def masseuse_dashboard(request):
         status='declined'
     ).order_by('-appointment_date', '-appointment_time')
 
+    # Calculate total earnings from completed sessions
+    total_earnings = sum(apt.total_price for apt in completed)
+
     context = {
         'pending': pending,
         'approved': approved,
@@ -276,6 +302,7 @@ def masseuse_dashboard(request):
         'completed': completed,
         'expired': expired,
         'today': today,
+        'total_earnings': total_earnings,
     }
     return render(request, 'bookings/masseuse.html', context)
 

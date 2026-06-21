@@ -8,286 +8,298 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+
     <style>
-        :root {
-            --primary: #e8890e;
-            --primary-dark: #c47208;
-            --primary-light: rgba(232, 137, 14, 0.15);
-            --background: #0d0d0d;
-            --secondary: #1a1a1a;
-            --card-bg: #141414;
-            --foreground: #ffffff;
-            --foreground-muted: rgba(255, 255, 255, 0.65);
-            --border: rgba(255, 255, 255, 0.1);
-            --border-orange: rgba(232, 137, 14, 0.3);
+    :root {
+        --primary: #e8890e;
+        --primary-dark: #c47208;
+        --primary-light: rgba(232, 137, 14, 0.15);
+        --background: #0d0d0d;
+        --secondary: #1a1a1a;
+        --card-bg: #141414;
+        --foreground: #ffffff;
+        --foreground-muted: rgba(255, 255, 255, 0.65);
+        --border: rgba(255, 255, 255, 0.1);
+        --border-orange: rgba(232, 137, 14, 0.3);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+        font-family: 'Inter', sans-serif;
+        background-color: var(--background);
+        color: var(--foreground);
+        margin: 0;
+    }
+
+    h1, h2, h3, h4 {
+        font-family: 'Playfair Display', serif;
+    }
+
+    .rw-navbar {
+        background-color: #000000;
+        border-bottom: 1px solid var(--border);
+        padding: 14px 0;
+        position: sticky;
+        top: 0;
+        z-index: 100;
+    }
+
+    .rw-navbar-brand {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        text-decoration: none;
+    }
+
+    .rw-navbar-brand img {
+        width: 48px;
+        height: 48px;
+        object-fit: contain;
+    }
+
+    .rw-navbar-brand span {
+        font-family: 'Playfair Display', serif;
+        font-size: 20px;
+        font-weight: 600;
+        color: var(--primary);
+        letter-spacing: 0.5px;
+    }
+
+    .rw-nav-link {
+        color: rgba(255,255,255,0.8) !important;
+        font-size: 14px;
+        text-decoration: none;
+        transition: color 0.2s ease;
+    }
+
+    .rw-nav-link:hover {
+        color: var(--primary) !important;
+    }
+
+    .btn-primary-rw {
+        background-color: var(--primary);
+        color: #000000;
+        border: none;
+        padding: 12px 32px;
+        border-radius: 8px;
+        font-family: 'Inter', sans-serif;
+        font-weight: 600;
+        font-size: 14px;
+        letter-spacing: 0.5px;
+        transition: all 0.3s ease;
+        cursor: pointer;
+        display: inline-block;
+        text-decoration: none;
+    }
+
+    .btn-primary-rw:hover {
+        background-color: var(--primary-dark);
+        color: #000000;
+        transform: translateY(-1px);
+    }
+
+    .btn-outline-rw {
+        background-color: transparent;
+        color: var(--primary);
+        border: 1px solid var(--primary);
+        padding: 10px 28px;
+        border-radius: 8px;
+        font-family: 'Inter', sans-serif;
+        font-weight: 500;
+        font-size: 14px;
+        transition: all 0.3s ease;
+        cursor: pointer;
+        display: inline-block;
+        text-decoration: none;
+    }
+
+    .btn-outline-rw:hover {
+        background-color: var(--primary);
+        color: #000000;
+    }
+
+    .rw-card {
+        background-color: var(--card-bg);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 28px;
+        margin-bottom: 20px;
+    }
+
+    .rw-card:hover {
+        border-color: var(--border-orange);
+    }
+
+    .rw-form-label {
+        font-size: 12px;
+        letter-spacing: 1.5px;
+        text-transform: uppercase;
+        color: var(--primary);
+        margin-bottom: 8px;
+        display: block;
+    }
+
+    .rw-form-control {
+        background-color: #1e1e1e;
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        padding: 12px 16px;
+        font-family: 'Inter', sans-serif;
+        font-size: 14px;
+        color: var(--foreground);
+        width: 100%;
+        transition: border-color 0.2s ease;
+    }
+
+    .rw-form-control:focus {
+        outline: none;
+        border-color: var(--primary);
+        background-color: #1e1e1e;
+    }
+
+    .rw-form-control::placeholder {
+        color: rgba(255,255,255,0.3);
+    }
+
+    .rw-section-title {
+        font-family: 'Playfair Display', serif;
+        font-size: 36px;
+        font-weight: 700;
+        color: var(--foreground);
+        margin-bottom: 8px;
+    }
+
+    .rw-section-subtitle {
+        color: var(--foreground-muted);
+        font-size: 15px;
+    }
+
+    .rw-divider {
+        width: 48px;
+        height: 3px;
+        background-color: var(--primary);
+        border-radius: 2px;
+        margin: 16px 0;
+    }
+
+    .badge-pending-rw {
+        background-color: rgba(232, 137, 14, 0.15);
+        color: var(--primary);
+        border: 1px solid var(--border-orange);
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 500;
+    }
+
+    .badge-approved-rw {
+        background-color: rgba(34, 197, 94, 0.15);
+        color: #22c55e;
+        border: 1px solid rgba(34, 197, 94, 0.3);
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 500;
+    }
+
+    .badge-completed-rw {
+        background-color: rgba(255,255,255,0.1);
+        color: rgba(255,255,255,0.6);
+        border: 1px solid var(--border);
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 500;
+    }
+
+    .badge-declined-rw {
+        background-color: rgba(239, 68, 68, 0.15);
+        color: #ef4444;
+        border: 1px solid rgba(239, 68, 68, 0.3);
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 500;
+    }
+
+    .rw-notice {
+        background-color: var(--primary-light);
+        border-left: 3px solid var(--primary);
+        padding: 14px 18px;
+        border-radius: 4px;
+        font-size: 14px;
+        color: var(--primary);
+        margin-top: 16px;
+    }
+
+    .rw-footer {
+        background-color: #000000;
+        border-top: 1px solid var(--border);
+        padding: 48px 0 32px;
+        margin-top: 80px;
+        color: var(--foreground-muted);
+    }
+
+    .rw-footer h5 {
+        color: var(--primary);
+        font-size: 14px;
+        letter-spacing: 1px;
+        text-transform: uppercase;
+        margin-bottom: 16px;
+    }
+
+    .rw-footer a {
+        color: var(--foreground-muted);
+        text-decoration: none;
+        font-size: 14px;
+        transition: color 0.2s;
+    }
+
+    .rw-footer a:hover {
+        color: var(--primary);
+    }
+
+    .rw-footer-bottom {
+        border-top: 1px solid var(--border);
+        padding-top: 24px;
+        margin-top: 40px;
+        text-align: center;
+        font-size: 13px;
+        color: rgba(255,255,255,0.3);
+    }
+
+    select.rw-form-control option {
+        background-color: #1e1e1e;
+        color: var(--foreground);
+    }
+
+    textarea.rw-form-control {
+        resize: vertical;
+    }
+
+    /* Mobile */
+    @media (max-width: 768px) {
+        .rw-navbar .container {
+            padding-left: 16px;
+            padding-right: 16px;
         }
 
-        * {
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: 'Inter', sans-serif;
-            background-color: var(--background);
-            color: var(--foreground);
-            margin: 0;
-        }
-
-        h1, h2, h3, h4 {
-            font-family: 'Playfair Display', serif;
-        }
-
-        /* Navbar */
-        .rw-navbar {
-            background-color: #000000;
-            border-bottom: 1px solid var(--border);
-            padding: 14px 0;
-            position: sticky;
-            top: 0;
-            z-index: 100;
-        }
-
-        .rw-navbar-brand {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            text-decoration: none;
+        .btn-primary-rw {
+            padding: 8px 14px !important;
+            font-size: 12px !important;
         }
 
         .rw-navbar-brand img {
-            width: 48px;
-            height: 48px;
-            object-fit: contain;
+            width: 36px;
+            height: 36px;
         }
 
-        .rw-navbar-brand span {
-            font-family: 'Playfair Display', serif;
-            font-size: 20px;
-            font-weight: 600;
-            color: var(--primary);
-            letter-spacing: 0.5px;
-        }
-
-        .rw-nav-link {
-            color: rgba(255,255,255,0.8) !important;
-            font-size: 14px;
-            text-decoration: none;
-            transition: color 0.2s ease;
-        }
-
-        .rw-nav-link:hover {
-            color: var(--primary) !important;
-        }
-
-        /* Buttons */
-        .btn-primary-rw {
-            background-color: var(--primary);
-            color: #000000;
-            border: none;
-            padding: 12px 32px;
-            border-radius: 8px;
-            font-family: 'Inter', sans-serif;
-            font-weight: 600;
-            font-size: 14px;
-            letter-spacing: 0.5px;
-            transition: all 0.3s ease;
-            cursor: pointer;
-            display: inline-block;
-            text-decoration: none;
-        }
-
-        .btn-primary-rw:hover {
-            background-color: var(--primary-dark);
-            color: #000000;
-            transform: translateY(-1px);
-        }
-
-        .btn-outline-rw {
-            background-color: transparent;
-            color: var(--primary);
-            border: 1px solid var(--primary);
-            padding: 10px 28px;
-            border-radius: 8px;
-            font-family: 'Inter', sans-serif;
-            font-weight: 500;
-            font-size: 14px;
-            transition: all 0.3s ease;
-            cursor: pointer;
-            display: inline-block;
-            text-decoration: none;
-        }
-
-        .btn-outline-rw:hover {
-            background-color: var(--primary);
-            color: #000000;
-        }
-
-        /* Cards */
-        .rw-card {
-            background-color: var(--card-bg);
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            padding: 28px;
-            margin-bottom: 20px;
-        }
-
-        .rw-card:hover {
-            border-color: var(--border-orange);
-        }
-
-        /* Form elements */
-        .rw-form-label {
-            font-size: 12px;
-            letter-spacing: 1.5px;
-            text-transform: uppercase;
-            color: var(--primary);
-            margin-bottom: 8px;
-            display: block;
-        }
-
-        .rw-form-control {
-            background-color: #1e1e1e;
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            padding: 12px 16px;
-            font-family: 'Inter', sans-serif;
-            font-size: 14px;
-            color: var(--foreground);
-            width: 100%;
-            transition: border-color 0.2s ease;
-        }
-
-        .rw-form-control:focus {
-            outline: none;
-            border-color: var(--primary);
-            background-color: #1e1e1e;
-        }
-
-        .rw-form-control::placeholder {
-            color: rgba(255,255,255,0.3);
-        }
-
-        /* Section titles */
         .rw-section-title {
-            font-family: 'Playfair Display', serif;
-            font-size: 36px;
-            font-weight: 700;
-            color: var(--foreground);
-            margin-bottom: 8px;
+            font-size: 28px;
         }
-
-        .rw-section-subtitle {
-            color: var(--foreground-muted);
-            font-size: 15px;
-        }
-
-        .rw-divider {
-            width: 48px;
-            height: 3px;
-            background-color: var(--primary);
-            border-radius: 2px;
-            margin: 16px 0;
-        }
-
-        /* Badges */
-        .badge-pending-rw {
-            background-color: rgba(232, 137, 14, 0.15);
-            color: var(--primary);
-            border: 1px solid var(--border-orange);
-            padding: 4px 12px;
-            border-radius: 20px;
-            font-size: 12px;
-            font-weight: 500;
-        }
-
-        .badge-approved-rw {
-            background-color: rgba(34, 197, 94, 0.15);
-            color: #22c55e;
-            border: 1px solid rgba(34, 197, 94, 0.3);
-            padding: 4px 12px;
-            border-radius: 20px;
-            font-size: 12px;
-            font-weight: 500;
-        }
-
-        .badge-completed-rw {
-            background-color: rgba(255,255,255,0.1);
-            color: rgba(255,255,255,0.6);
-            border: 1px solid var(--border);
-            padding: 4px 12px;
-            border-radius: 20px;
-            font-size: 12px;
-            font-weight: 500;
-        }
-
-        .badge-declined-rw {
-            background-color: rgba(239, 68, 68, 0.15);
-            color: #ef4444;
-            border: 1px solid rgba(239, 68, 68, 0.3);
-            padding: 4px 12px;
-            border-radius: 20px;
-            font-size: 12px;
-            font-weight: 500;
-        }
-
-        /* Info notice */
-        .rw-notice {
-            background-color: var(--primary-light);
-            border-left: 3px solid var(--primary);
-            padding: 14px 18px;
-            border-radius: 4px;
-            font-size: 14px;
-            color: var(--primary);
-            margin-top: 16px;
-        }
-
-        /* Footer */
-        .rw-footer {
-            background-color: #000000;
-            border-top: 1px solid var(--border);
-            padding: 48px 0 32px;
-            margin-top: 80px;
-            color: var(--foreground-muted);
-        }
-
-        .rw-footer h5 {
-            color: var(--primary);
-            font-size: 14px;
-            letter-spacing: 1px;
-            text-transform: uppercase;
-            margin-bottom: 16px;
-        }
-
-        .rw-footer a {
-            color: var(--foreground-muted);
-            text-decoration: none;
-            font-size: 14px;
-            transition: color 0.2s;
-        }
-
-        .rw-footer a:hover {
-            color: var(--primary);
-        }
-
-        .rw-footer-bottom {
-            border-top: 1px solid var(--border);
-            padding-top: 24px;
-            margin-top: 40px;
-            text-align: center;
-            font-size: 13px;
-            color: rgba(255,255,255,0.3);
-        }
-
-        /* select fix for dark theme */
-        select.rw-form-control option {
-            background-color: #1e1e1e;
-            color: var(--foreground);
-        }
-
-        textarea.rw-form-control {
-            resize: vertical;
-        }
-    </style>
+    }
+</style>
     {% block extra_css %}{% endblock %}
 </head>
 <body>
@@ -298,17 +310,18 @@
         <div class="d-flex align-items-center justify-content-between">
             <a class="rw-navbar-brand" href="https://v0-rosette-wellness.vercel.app/">
                 <img src="https://v0-rosette-wellness.vercel.app/logo.png" alt="Rosette Wellness">
-                <span>Rosette Wellness</span>
+                <span class="d-none d-md-inline">Rosette Wellness</span>
             </a>
-            <div class="d-flex align-items-center gap-4">
-                <a href="https://v0-rosette-wellness.vercel.app/" class="rw-nav-link">Home</a>
-                <a href="https://v0-rosette-wellness.vercel.app/services" class="rw-nav-link">Services</a>
-                <a href="https://v0-rosette-wellness.vercel.app/pricing" class="rw-nav-link">Pricing</a>
-                <a href="/book/" class="btn-primary-rw ms-2" style="padding: 8px 20px; font-size:13px;">Book Now</a>
+            <div class="d-flex align-items-center gap-3">
+                <a href="https://v0-rosette-wellness.vercel.app/" class="rw-nav-link d-none d-md-inline">Home</a>
+                <a href="https://v0-rosette-wellness.vercel.app/services" class="rw-nav-link d-none d-md-inline">Services</a>
+                <a href="https://v0-rosette-wellness.vercel.app/pricing" class="rw-nav-link d-none d-md-inline">Pricing</a>
+                <a href="/book/" class="btn-primary-rw" style="padding: 8px 16px; font-size:13px;">Book Now</a>
             </div>
         </div>
     </div>
 </nav>
+
 
 <main>
     {% block content %}{% endblock %}

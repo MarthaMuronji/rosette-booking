@@ -235,33 +235,99 @@
 
 <div class="container py-5">
 
-    <!-- Stats -->
-    <div class="row g-3 mb-5">
-        <div class="col-md-4">
-            <div class="stat-box">
-                <div class="stat-number">{{ pending.count }}</div>
-                <div class="stat-label">Pending Requests</div>
+    <!-- Today's Sessions -->
+{% with today_sessions=confirmed %}
+{% if today_sessions %}
+<div class="rw-card mb-5" style="border-color: var(--border-orange);">
+    <p style="font-size:12px; letter-spacing:2px; text-transform:uppercase;
+               color:var(--primary); margin-bottom:16px;">
+        <i class="fas fa-sun me-2"></i> Today's Schedule — {{ today|date:"l, F j" }}
+    </p>
+    {% for apt in confirmed %}
+        {% if apt.appointment_date == today %}
+        <div style="display:flex; justify-content:space-between; align-items:center;
+                    padding:12px 0; border-bottom:1px solid var(--border);">
+            <div>
+                <div style="font-family:'Playfair Display',serif; font-size:16px;
+                            color:white; margin-bottom:4px;">
+                    {{ apt.client_name }}
+                </div>
+                <div style="font-size:13px; color:var(--foreground-muted);">
+                    {{ apt.get_service_display }} — {{ apt.duration }} min
+                </div>
+                <div style="font-size:13px; color:var(--foreground-muted);">
+                    <i class="fas fa-map-marker-alt me-1" style="color:var(--primary);"></i>
+                    {{ apt.client_address }}
+                </div>
+            </div>
+            <div class="text-end">
+                <div style="font-family:'Playfair Display',serif; font-size:20px;
+                            color:var(--primary); margin-bottom:4px;">
+                    {{ apt.appointment_time|time:"g:i A" }}
+                </div>
+                <div style="font-size:12px; color:var(--foreground-muted);">
+                    <i class="fas fa-car me-1"></i>
+                    Depart {{ apt.masseuse_departure_time|time:"g:i A" }}
+                </div>
+                <div style="font-size:13px; color:var(--primary); margin-top:4px;">
+                    {{ apt.total_price }} AED
+                </div>
             </div>
         </div>
-        <div class="col-md-4">
-            <div class="stat-box">
-                <div class="stat-number">{{ confirmed.count }}</div>
-                <div class="stat-label">Upcoming Sessions</div>
+        {% endif %}
+    {% endfor %}
+</div>
+{% endif %}
+{% endwith %}
+
+<!-- Earnings Summary -->
+<div class="rw-card mb-4" style="background: linear-gradient(135deg, #1a1100, #1a1a1a); border-color: var(--border-orange);">
+    <div class="row align-items-center">
+        <div class="col-md-8">
+            <p style="font-size:12px; letter-spacing:2px; text-transform:uppercase;
+                       color:var(--primary); margin-bottom:8px;">
+                <i class="fas fa-coins me-2"></i> Total Earnings
+            </p>
+            <div style="font-family:'Playfair Display',serif; font-size:48px;
+                        color:var(--primary); line-height:1;">
+                {{ total_earnings }} <span style="font-size:20px;">AED</span>
             </div>
+            <p style="color:var(--foreground-muted); font-size:13px; margin-top:8px;">
+                From {{ completed.count }} completed session{{ completed.count|pluralize }}
+            </p>
         </div>
-        <div class="col-md-3">
-            <div class="stat-box">
-                <div class="stat-number" style="color:#ef4444;">{{ expired.count }}</div>
-                <div class="stat-label">Expired Requests</div>
-            </div>
-        </div>
-        <div class="col-md-4">
-            <div class="stat-box">
-                <div class="stat-number">{{ completed.count }}</div>
-                <div class="stat-label">Completed Sessions</div>
-            </div>
+        <div class="col-md-4 text-md-end mt-3 mt-md-0">
+            <i class="fas fa-spa" style="font-size:64px; color:rgba(232,137,14,0.1);"></i>
         </div>
     </div>
+</div>
+    <!-- Stats -->
+<div class="row g-3 mb-5">
+    <div class="col-6 col-md-3">
+        <div class="stat-box">
+            <div class="stat-number">{{ pending.count }}</div>
+            <div class="stat-label">Pending</div>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="stat-box">
+            <div class="stat-number">{{ confirmed.count }}</div>
+            <div class="stat-label">Upcoming</div>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="stat-box">
+            <div class="stat-number" style="color:#ef4444;">{{ expired.count }}</div>
+            <div class="stat-label">Expired</div>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="stat-box">
+            <div class="stat-number">{{ completed.count }}</div>
+            <div class="stat-label">Completed</div>
+        </div>
+    </div>
+</div>
 
     <!-- Pending Requests -->
     <div class="mb-5">
