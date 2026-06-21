@@ -117,6 +117,13 @@ def auto_complete_past_sessions():
             apt.status = 'declined'
             apt.save()
 
+        # Auto delete expired requests older than 7 days
+    seven_days_ago = timezone.now().date() - datetime.timedelta(days=7)
+    Appointment.objects.filter(
+        status='declined',
+        appointment_date__lt=seven_days_ago
+    ).delete()    
+
 
 # Step 1 — Client submits initial request
 def book_request(request):
