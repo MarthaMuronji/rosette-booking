@@ -1,0 +1,124 @@
+{% extends 'bookings/base.html' %}
+
+{% block title %}Therapist Access — Rosette Wellness{% endblock %}
+
+{% block extra_css %}
+<style>
+    .login-wrapper {
+        min-height: 80vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .login-card {
+        background: var(--card-bg);
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        padding: 48px 40px;
+        width: 100%;
+        max-width: 400px;
+        text-align: center;
+    }
+
+    .login-card:hover {
+        border-color: var(--border-orange);
+    }
+
+    .pin-icon {
+        width: 72px;
+        height: 72px;
+        background: var(--primary-light);
+        border: 1px solid var(--border-orange);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 24px;
+    }
+
+    .pin-input {
+        background: #1a1a1a;
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        padding: 16px;
+        font-size: 28px;
+        letter-spacing: 12px;
+        color: var(--primary);
+        text-align: center;
+        width: 100%;
+        font-family: 'Playfair Display', serif;
+        transition: border-color 0.2s;
+        margin-bottom: 20px;
+    }
+
+    .pin-input:focus {
+        outline: none;
+        border-color: var(--primary);
+    }
+
+    .pin-input::placeholder {
+        letter-spacing: 4px;
+        font-size: 16px;
+        color: rgba(255,255,255,0.2);
+    }
+
+    .error-msg {
+        background: rgba(239,68,68,0.1);
+        border: 1px solid rgba(239,68,68,0.3);
+        border-radius: 8px;
+        padding: 12px;
+        color: #ef4444;
+        font-size: 14px;
+        margin-bottom: 16px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="login-wrapper">
+    <div class="login-card">
+
+        <div class="pin-icon">
+            <i class="fas fa-lock" style="font-size:28px; color:var(--primary);"></i>
+        </div>
+
+        <h2 class="rw-section-title mb-1" style="font-size:28px;">Therapist Access</h2>
+        <div class="rw-divider mx-auto"></div>
+        <p style="color:var(--foreground-muted); font-size:14px; margin: 16px 0 28px;">
+            Enter your PIN to access the dashboard
+        </p>
+
+        {% if error %}
+        <div class="error-msg">
+            <i class="fas fa-exclamation-circle me-2"></i>{{ error }}
+        </div>
+        {% endif %}
+
+        <form method="POST">
+            {% csrf_token %}
+            <input
+                type="password"
+                name="pin"
+                class="pin-input"
+                placeholder="• • • •"
+                maxlength="4"
+                autofocus
+                required
+            >
+            <button type="submit" class="btn-primary-rw w-100 py-3"
+                    style="font-size:15px; letter-spacing:1px; border-radius:8px;">
+                <i class="fas fa-unlock me-2"></i> ACCESS DASHBOARD
+            </button>
+        </form>
+
+        <div class="mt-4">
+            <a href="/book/" style="color:var(--foreground-muted); font-size:13px;
+                                    text-decoration:none;">
+                ← Back to Booking Page
+            </a>
+        </div>
+
+    </div>
+</div>
+{% endblock %}

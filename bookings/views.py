@@ -1,9 +1,10 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.utils import timezone
-from django.http import JsonResponse
+from django.conf import settings
 from .models import Appointment
 import datetime
 import json
+
 
 # Price calculation helper
 def calculate_price(service, duration, addon, zone):
@@ -47,13 +48,11 @@ def get_time_slots():
 def get_booked_slots():
     today = timezone.now().date()
 
-    # Get approved/confirmed slots — fully blocked
     approved = Appointment.objects.filter(
         status__in=['approved', 'confirmed'],
         appointment_date__gte=today
     ).values('appointment_date', 'appointment_time', 'duration')
 
-    # Get pending slots — temporarily held
     pending = Appointment.objects.filter(
         status='pending',
         appointment_date__gte=today
@@ -87,6 +86,38 @@ def get_booked_slots():
     return booked_slots, pending_slots
 
 
+# Auto complete and decline past sessions
+def auto_complete_past_sessions():
+    now = timezone.now()
+
+    past_appointments = Appointment.objects.filter(
+        status__in=['approved', 'confirmed'],
+    )
+    for apt in past_appointments:
+        apt_datetime = datetime.datetime.combine(
+            apt.appointment_date,
+            apt.appointment_time
+        )
+        apt_datetime = timezone.make_aware(apt_datetime)
+        apt_end = apt_datetime + datetime.timedelta(minutes=apt.duration)
+        if now > apt_end:
+            apt.status = 'completed'
+            apt.save()
+
+    pending_appointments = Appointment.objects.filter(
+        status='pending',
+    )
+    for apt in pending_appointments:
+        apt_datetime = datetime.datetime.combine(
+            apt.appointment_date,
+            apt.appointment_time
+        )
+        apt_datetime = timezone.make_aware(apt_datetime)
+        if now > apt_datetime:
+            apt.status = 'declined'
+            apt.save()
+
+
 # Step 1 — Client submits initial request
 def book_request(request):
     if request.method == 'POST':
@@ -97,7 +128,6 @@ def book_request(request):
         client_name = request.POST.get('client_name')
         client_phone = request.POST.get('client_phone')
 
-        # Save as pending appointment
         time_obj = datetime.datetime.strptime(preferred_time, '%H:%M').time()
         departure_dt = datetime.datetime.combine(
             datetime.date.today(), time_obj
@@ -114,10 +144,8 @@ def book_request(request):
             status='pending',
         )
 
-        # Store appointment id in session so client can complete it later
         request.session['pending_appointment_id'] = appointment.id
 
-        # Build WhatsApp alert message for owner
         service_display = dict(Appointment.SERVICE_CHOICES).get(service, service)
         time_formatted = datetime.datetime.strptime(preferred_time, '%H:%M').strftime('%I:%M %p')
         whatsapp_message = (
@@ -133,11 +161,11 @@ def book_request(request):
         context = {
             'appointment': appointment,
             'whatsapp_message': whatsapp_message,
-            'owner_phone': '971505389174',
+            'owner_phone': settings.OWNER_PHONE,
+            'owner_name': settings.OWNER_NAME,
         }
         return render(request, 'bookings/request_sent.html', context)
 
-    # GET — show the request form
     slots = get_time_slots()
     booked_slots, pending_slots = get_booked_slots()
     today = timezone.now().date()
@@ -191,9 +219,30 @@ def book_success(request, pk):
     return render(request, 'bookings/success.html', {'appointment': appointment})
 
 
+# Masseuse PIN login
+def masseuse_login(request):
+    error = None
+    if request.method == 'POST':
+        pin = request.POST.get('pin', '')
+        if pin == settings.MASSEUSE_PIN:
+            request.session['masseuse_authenticated'] = True
+            return redirect('masseuse_dashboard')
+        else:
+            error = 'Incorrect PIN. Please try again.'
+    return render(request, 'bookings/masseuse_login.html', {'error': error})
+
+
+# Masseuse logout
+def masseuse_logout(request):
+    request.session.pop('masseuse_authenticated', None)
+    return redirect('home')
+
+
 # Masseuse dashboard
 def masseuse_dashboard(request):
-    # Auto complete and decline first
+    if not request.session.get('masseuse_authenticated'):
+        return redirect('masseuse_login')
+
     auto_complete_past_sessions()
 
     today = timezone.now().date()
@@ -230,16 +279,19 @@ def masseuse_dashboard(request):
     }
     return render(request, 'bookings/masseuse.html', context)
 
+
 # Approve appointment
 def approve_appointment(request, pk):
+    if not request.session.get('masseuse_authenticated'):
+        return redirect('masseuse_login')
+
     appointment = get_object_or_404(Appointment, pk=pk)
     appointment.status = 'approved'
     appointment.save()
 
-    # Build WhatsApp message to client with confirm link
     service_display = appointment.get_service_display()
     time_formatted = appointment.appointment_time.strftime('%I:%M %p')
-    confirm_url = f"http://127.0.0.1:8000/book/confirm/{appointment.pk}/"
+    confirm_url = f"{settings.BASE_URL}/book/confirm/{appointment.pk}/"
 
     whatsapp_message = (
         f"🌿 Hi {appointment.client_name}! Your Rosette Wellness request has been approved!%0A%0A"
@@ -252,66 +304,36 @@ def approve_appointment(request, pk):
 
     phone = appointment.client_phone.replace('+', '').replace(' ', '')
     whatsapp_url = f"https://wa.me/{phone}?text={whatsapp_message}"
-
     return redirect(whatsapp_url)
 
 
 # Decline appointment
 def decline_appointment(request, pk):
+    if not request.session.get('masseuse_authenticated'):
+        return redirect('masseuse_login')
+
     appointment = get_object_or_404(Appointment, pk=pk)
     appointment.status = 'declined'
     appointment.save()
 
-    # Build WhatsApp message to client
     whatsapp_message = (
         f"Hi {appointment.client_name}, unfortunately we are unable to accommodate "
         f"your request for {appointment.appointment_date} at the requested time. "
         f"Please visit our booking page to choose another time: "
-        f"http://127.0.0.1:8000/book/"
+        f"{settings.BASE_URL}/book/"
     )
 
     phone = appointment.client_phone.replace('+', '').replace(' ', '')
     whatsapp_url = f"https://wa.me/{phone}?text={whatsapp_message}"
-
     return redirect(whatsapp_url)
+
 
 # Mark appointment as completed manually
 def complete_appointment(request, pk):
+    if not request.session.get('masseuse_authenticated'):
+        return redirect('masseuse_login')
+
     appointment = get_object_or_404(Appointment, pk=pk)
     appointment.status = 'completed'
     appointment.save()
     return redirect('masseuse_dashboard')
-
-
-# Auto complete past sessions
-def auto_complete_past_sessions():
-    now = timezone.now()
-
-    # Auto complete approved/confirmed sessions that have ended
-    past_appointments = Appointment.objects.filter(
-        status__in=['approved', 'confirmed'],
-    )
-    for apt in past_appointments:
-        apt_datetime = datetime.datetime.combine(
-            apt.appointment_date,
-            apt.appointment_time
-        )
-        apt_datetime = timezone.make_aware(apt_datetime)
-        apt_end = apt_datetime + datetime.timedelta(minutes=apt.duration)
-        if now > apt_end:
-            apt.status = 'completed'
-            apt.save()
-
-    # Auto decline pending requests whose time has passed
-    pending_appointments = Appointment.objects.filter(
-        status='pending',
-    )
-    for apt in pending_appointments:
-        apt_datetime = datetime.datetime.combine(
-            apt.appointment_date,
-            apt.appointment_time
-        )
-        apt_datetime = timezone.make_aware(apt_datetime)
-        if now > apt_datetime:
-            apt.status = 'declined'
-            apt.save()
