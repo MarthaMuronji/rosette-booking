@@ -1,6 +1,5 @@
 from django.db import models
 
-# Create your models here.
 
 class Appointment(models.Model):
     STATUS_CHOICES = [
@@ -30,6 +29,7 @@ class Appointment(models.Model):
         ('zone1', 'Zone 1 — Business Bay, Downtown, DIFC, City Walk, Al Safa'),
         ('zone2', 'Zone 2 — JVC, Arjan, Motor City, Dubai Hills Estate'),
         ('zone3', 'Zone 3 — Marina, JBR, Palm Jumeirah, Jumeirah Golf Estates'),
+        ('other', 'My area is not listed'),
     ]
 
     ADDON_CHOICES = [
@@ -39,17 +39,28 @@ class Appointment(models.Model):
         ('hns_60', 'Head, Neck & Shoulders — 60 min (180 AED)'),
     ]
 
+    PRESSURE_CHOICES = [
+        ('light', 'Light'),
+        ('medium', 'Medium'),
+        ('firm', 'Firm'),
+    ]
+
+    PAYMENT_CHOICES = [
+        ('cash', 'Cash'),
+        ('card', 'Card'),
+    ]
+
     # Client details
     client_name = models.CharField(max_length=100)
     client_phone = models.CharField(max_length=20)
     client_email = models.EmailField(blank=True)
-    client_address = models.TextField()
+    client_address = models.TextField(blank=True)
 
     # Booking details
     service = models.CharField(max_length=20, choices=SERVICE_CHOICES)
     duration = models.IntegerField(choices=DURATION_CHOICES)
     addon = models.CharField(max_length=20, choices=ADDON_CHOICES, default='none')
-    zone = models.CharField(max_length=10, choices=ZONE_CHOICES)
+    zone = models.CharField(max_length=10, choices=ZONE_CHOICES, blank=True)
     appointment_date = models.DateField()
     appointment_time = models.TimeField()
 
@@ -58,6 +69,18 @@ class Appointment(models.Model):
     masseuse_departure_time = models.TimeField(blank=True, null=True)
     total_price = models.IntegerField(default=0)
     notes = models.TextField(blank=True)
+    preferred_pressure = models.CharField(
+        max_length=10,
+        choices=PRESSURE_CHOICES,
+        blank=True,
+        null=True
+    )
+    payment_method = models.CharField(
+        max_length=10,
+        choices=PAYMENT_CHOICES,
+        blank=True,
+        null=True
+    )
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):

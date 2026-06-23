@@ -7,10 +7,11 @@
     <div class="row justify-content-center">
         <div class="col-lg-6 text-center">
 
-            <div style="width:80px; height:80px; background-color:var(--primary-light);
-                        border:1px solid var(--border-orange); border-radius:50%;
-                        display:flex; align-items:center; justify-content:center;
-                        margin: 0 auto 24px;">
+            <div style="width:80px; height:80px;
+                        background-color:var(--primary-light);
+                        border:1px solid var(--border-orange);
+                        border-radius:50%; display:flex; align-items:center;
+                        justify-content:center; margin: 0 auto 24px;">
                 <i class="fas fa-check" style="font-size:32px; color:var(--primary);"></i>
             </div>
 
@@ -35,26 +36,22 @@
                 </p>
                 <ol style="color:var(--foreground-muted); font-size:14px;
                            line-height:2.4; margin:0; padding-left:20px;">
-                    <li>The therapist reviews your request</li>
-                    <li>You receive a WhatsApp confirmation with a booking link</li>
-                    <li>You complete your full booking via the link</li>
+                    <li>Our therapist reviews your request</li>
+                    <li>You will receive a WhatsApp message within 1 hour to confirm</li>
+                    <li>Once confirmed you complete your full booking via the link sent</li>
                     <li>Your slot is officially reserved</li>
-                    <li>Therapist departs 1 hour before your session</li>
+                    <li>Therapist departs 1 hour before your session to reach you</li>
                 </ol>
             </div>
 
-            <!-- Notify owner -->
-            <div class="rw-card mb-4">
-                <p style="font-size:14px; color:var(--foreground-muted); margin-bottom:16px;">
-                    To speed things up, notify the therapist directly on WhatsApp right now:
+            <!-- Info box -->
+            <div class="rw-card mb-4" style="border-color:var(--border-orange);">
+                <p style="font-size:14px; color:var(--foreground-muted); margin:0;">
+                    <i class="fab fa-whatsapp me-2" style="color:#25d366;"></i>
+                    Please ensure your WhatsApp is active on
+                    <strong style="color:white;">{{ appointment.client_phone }}</strong>
+                    so we can reach you promptly.
                 </p>
-                <a href="https://wa.me/{{ owner_phone }}?text={{ whatsapp_message }}"
-                   target="_blank"
-                   class="btn-primary-rw w-100"
-                   style="display:block; text-align:center; padding:14px; font-size:14px;">
-                    <i class="fab fa-whatsapp me-2"></i>
-                    NOTIFY THERAPIST ON WHATSAPP
-                </a>
             </div>
 
             <a href="/book/" class="btn-outline-rw">Back to Booking</a>

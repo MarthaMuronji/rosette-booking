@@ -127,7 +127,6 @@
         margin-bottom: 12px;
     }
 
-    /* Action buttons */
     .btn-approve-rw {
         background-color: rgba(34,197,94,0.15);
         color: #22c55e;
@@ -155,6 +154,7 @@
         font-size: 12px;
         font-weight: 500;
     }
+
     .btn-decline-rw {
         background-color: rgba(239,68,68,0.1);
         color: #ef4444;
@@ -214,8 +214,7 @@
             <a href="{% url 'masseuse_logout' %}"
                style="color:rgba(255,255,255,0.5); font-size:13px;
                       text-decoration:none; border:1px solid rgba(255,255,255,0.15);
-                      padding:6px 16px; border-radius:6px;
-                      transition: all 0.2s;"
+                      padding:6px 16px; border-radius:6px; transition: all 0.2s;"
                onmouseover="this.style.color='var(--primary)'; this.style.borderColor='var(--primary)'"
                onmouseout="this.style.color='rgba(255,255,255,0.5)'; this.style.borderColor='rgba(255,255,255,0.15)'">
                 <i class="fas fa-sign-out-alt me-1"></i> Logout
@@ -236,98 +235,99 @@
 <div class="container py-5">
 
     <!-- Today's Sessions -->
-{% with today_sessions=confirmed %}
-{% if today_sessions %}
-<div class="rw-card mb-5" style="border-color: var(--border-orange);">
-    <p style="font-size:12px; letter-spacing:2px; text-transform:uppercase;
-               color:var(--primary); margin-bottom:16px;">
-        <i class="fas fa-sun me-2"></i> Today's Schedule — {{ today|date:"l, F j" }}
-    </p>
-    {% for apt in confirmed %}
-        {% if apt.appointment_date == today %}
-        <div style="display:flex; justify-content:space-between; align-items:center;
-                    padding:12px 0; border-bottom:1px solid var(--border);">
-            <div>
-                <div style="font-family:'Playfair Display',serif; font-size:16px;
-                            color:white; margin-bottom:4px;">
-                    {{ apt.client_name }}
+    {% with today_sessions=confirmed %}
+    {% if today_sessions %}
+    <div class="rw-card mb-5" style="border-color: var(--border-orange);">
+        <p style="font-size:12px; letter-spacing:2px; text-transform:uppercase;
+                   color:var(--primary); margin-bottom:16px;">
+            <i class="fas fa-sun me-2"></i> Today's Schedule — {{ today|date:"l, F j" }}
+        </p>
+        {% for apt in confirmed %}
+            {% if apt.appointment_date == today %}
+            <div style="display:flex; justify-content:space-between; align-items:center;
+                        padding:12px 0; border-bottom:1px solid var(--border);">
+                <div>
+                    <div style="font-family:'Playfair Display',serif; font-size:16px;
+                                color:white; margin-bottom:4px;">
+                        {{ apt.client_name }}
+                    </div>
+                    <div style="font-size:13px; color:var(--foreground-muted);">
+                        {{ apt.get_service_display }} — {{ apt.duration }} min
+                    </div>
+                    <div style="font-size:13px; color:var(--foreground-muted);">
+                        <i class="fas fa-map-marker-alt me-1" style="color:var(--primary);"></i>
+                        {{ apt.client_address }}
+                    </div>
                 </div>
-                <div style="font-size:13px; color:var(--foreground-muted);">
-                    {{ apt.get_service_display }} — {{ apt.duration }} min
-                </div>
-                <div style="font-size:13px; color:var(--foreground-muted);">
-                    <i class="fas fa-map-marker-alt me-1" style="color:var(--primary);"></i>
-                    {{ apt.client_address }}
+                <div class="text-end">
+                    <div style="font-family:'Playfair Display',serif; font-size:20px;
+                                color:var(--primary); margin-bottom:4px;">
+                        {{ apt.appointment_time|time:"g:i A" }}
+                    </div>
+                    <div style="font-size:12px; color:var(--foreground-muted);">
+                        <i class="fas fa-car me-1"></i>
+                        Depart {{ apt.masseuse_departure_time|time:"g:i A" }}
+                    </div>
+                    <div style="font-size:13px; color:var(--primary); margin-top:4px;">
+                        {{ apt.total_price }} AED
+                    </div>
                 </div>
             </div>
-            <div class="text-end">
-                <div style="font-family:'Playfair Display',serif; font-size:20px;
-                            color:var(--primary); margin-bottom:4px;">
-                    {{ apt.appointment_time|time:"g:i A" }}
-                </div>
-                <div style="font-size:12px; color:var(--foreground-muted);">
-                    <i class="fas fa-car me-1"></i>
-                    Depart {{ apt.masseuse_departure_time|time:"g:i A" }}
-                </div>
-                <div style="font-size:13px; color:var(--primary); margin-top:4px;">
-                    {{ apt.total_price }} AED
-                </div>
-            </div>
-        </div>
-        {% endif %}
-    {% endfor %}
-</div>
-{% endif %}
-{% endwith %}
+            {% endif %}
+        {% endfor %}
+    </div>
+    {% endif %}
+    {% endwith %}
 
-<!-- Earnings Summary -->
-<div class="rw-card mb-4" style="background: linear-gradient(135deg, #1a1100, #1a1a1a); border-color: var(--border-orange);">
-    <div class="row align-items-center">
-        <div class="col-md-8">
-           <p style="font-size:12px; letter-spacing:2px; text-transform:uppercase;
-           color:var(--primary); margin-bottom:8px;">
-    <i class="fas fa-coins me-2"></i> All Time Earnings
-</p>
-            <div style="font-family:'Playfair Display',serif; font-size:48px;
-                        color:var(--primary); line-height:1;">
-                {{ total_earnings }} <span style="font-size:20px;">AED</span>
+    <!-- Earnings Summary -->
+    <div class="rw-card mb-4" style="background: linear-gradient(135deg, #1a1100, #1a1a1a); border-color: var(--border-orange);">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <p style="font-size:12px; letter-spacing:2px; text-transform:uppercase;
+                           color:var(--primary); margin-bottom:8px;">
+                    <i class="fas fa-coins me-2"></i> All Time Earnings
+                </p>
+                <div style="font-family:'Playfair Display',serif; font-size:48px;
+                            color:var(--primary); line-height:1;">
+                    {{ total_earnings }} <span style="font-size:20px;">AED</span>
+                </div>
+                <p style="color:var(--foreground-muted); font-size:13px; margin-top:8px;">
+                    From {{ completed.count }} completed session{{ completed.count|pluralize }}
+                </p>
             </div>
-            <p style="color:var(--foreground-muted); font-size:13px; margin-top:8px;">
-                From {{ completed.count }} completed session{{ completed.count|pluralize }}
-            </p>
-        </div>
-        <div class="col-md-4 text-md-end mt-3 mt-md-0">
-            <i class="fas fa-spa" style="font-size:64px; color:rgba(232,137,14,0.1);"></i>
+            <div class="col-md-4 text-md-end mt-3 mt-md-0">
+                <i class="fas fa-spa" style="font-size:64px; color:rgba(232,137,14,0.1);"></i>
+            </div>
         </div>
     </div>
-</div>
+
     <!-- Stats -->
-<div class="row g-3 mb-5">
-    <div class="col-6 col-md-3">
-        <div class="stat-box">
-            <div class="stat-number">{{ pending.count }}</div>
-            <div class="stat-label">Pending</div>
+    <div class="row g-3 mb-5">
+        <div class="col-6 col-md-3">
+            <div class="stat-box">
+                <div class="stat-number">{{ pending.count }}</div>
+                <div class="stat-label">Pending</div>
+            </div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="stat-box">
+                <div class="stat-number">{{ confirmed.count }}</div>
+                <div class="stat-label">Upcoming</div>
+            </div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="stat-box">
+                <div class="stat-number" style="color:#ef4444;">{{ expired.count }}</div>
+                <div class="stat-label">Expired</div>
+            </div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="stat-box">
+                <div class="stat-number">{{ completed.count }}</div>
+                <div class="stat-label">Completed</div>
+            </div>
         </div>
     </div>
-    <div class="col-6 col-md-3">
-        <div class="stat-box">
-            <div class="stat-number">{{ confirmed.count }}</div>
-            <div class="stat-label">Upcoming</div>
-        </div>
-    </div>
-    <div class="col-6 col-md-3">
-        <div class="stat-box">
-            <div class="stat-number" style="color:#ef4444;">{{ expired.count }}</div>
-            <div class="stat-label">Expired</div>
-        </div>
-    </div>
-    <div class="col-6 col-md-3">
-        <div class="stat-box">
-            <div class="stat-number">{{ completed.count }}</div>
-            <div class="stat-label">Completed</div>
-        </div>
-    </div>
-</div>
 
     <!-- Pending Requests -->
     <div class="mb-5">
@@ -370,20 +370,15 @@
                     </div>
                     <div class="col-md-5 mt-3 mt-md-0">
                         <div class="d-flex flex-column gap-2 align-items-md-end">
-                            <form method="POST" action="{% url 'approve_appointment' apt.pk %}">
-                                {% csrf_token %}
-                                <button type="submit" class="btn-approve-rw">
-                                    <i class="fas fa-check me-1"></i> Approve
-                                </button>
-                            </form>
                             <form method="POST" action="{% url 'decline_appointment' apt.pk %}">
                                 {% csrf_token %}
                                 <button type="submit" class="btn-decline-rw">
                                     <i class="fas fa-times me-1"></i> Decline
                                 </button>
                             </form>
-                            <a href="https://wa.me/{{ apt.client_phone }}?text=Hi%20{{ apt.client_name }}%2C%20your%20Rosette%20Wellness%20appointment%20for%20{{ apt.get_service_display }}%20on%20{{ apt.appointment_date }}%20at%20{{ apt.appointment_time|time:'g:i A' }}%20has%20been%20approved!%20Please%20complete%20your%20booking%20here%3A%20http%3A%2F%2F127.0.0.1%3A8000%2Fbook%2Fconfirm%2F{{ apt.pk }}%2F"
-                               class="btn-whatsapp-rw" target="_blank">
+                            <a href="https://wa.me/{{ apt.client_phone }}?text=🌿%20Hi%20{{ apt.client_name }}!%20Your%20Rosette%20Wellness%20request%20has%20been%20approved!%0A%0AService%3A%20{{ apt.get_service_display }}%0ADate%3A%20{{ apt.appointment_date }}%0ATime%3A%20{{ apt.appointment_time|time:'g:i A' }}%0A%0APlease%20complete%20your%20booking%20here%3A%20{{ base_url }}/book/confirm/{{ apt.pk }}/%0A%0AWe%20look%20forward%20to%20seeing%20you!%20🌸"
+                               class="btn-whatsapp-rw" target="_blank"
+                               onclick="approveAppointment({{ apt.pk }})">
                                 <i class="fab fa-whatsapp me-1"></i> Approve via WhatsApp
                             </a>
                         </div>
@@ -442,6 +437,18 @@
                         <div class="appointment-meta">
                             <i class="fas fa-plus-circle"></i>
                             {{ apt.get_addon_display }}
+                        </div>
+                        {% endif %}
+                        {% if apt.preferred_pressure %}
+                        <div class="appointment-meta">
+                            <i class="fas fa-hand-paper"></i>
+                            Pressure: {{ apt.get_preferred_pressure_display }}
+                        </div>
+                        {% endif %}
+                        {% if apt.payment_method %}
+                        <div class="appointment-meta">
+                            <i class="fas fa-credit-card"></i>
+                            Payment: {{ apt.get_payment_method_display }}
                         </div>
                         {% endif %}
                         <div class="departure-tag">
@@ -510,6 +517,18 @@
                             {{ apt.get_addon_display }}
                         </div>
                         {% endif %}
+                        {% if apt.preferred_pressure %}
+                        <div class="appointment-meta">
+                            <i class="fas fa-hand-paper"></i>
+                            Pressure: {{ apt.get_preferred_pressure_display }}
+                        </div>
+                        {% endif %}
+                        {% if apt.payment_method %}
+                        <div class="appointment-meta">
+                            <i class="fas fa-credit-card"></i>
+                            Payment: {{ apt.get_payment_method_display }}
+                        </div>
+                        {% endif %}
                     </div>
                     <div class="col-md-4 mt-3 mt-md-0 text-md-end">
                         <div class="price-tag mb-2">{{ apt.total_price }} AED</div>
@@ -569,7 +588,7 @@
                         </div>
                     </div>
                     <div class="col-md-4 mt-3 mt-md-0 text-md-end">
-                        <a href="https://wa.me/{{ apt.client_phone }}?text=Hi%20{{ apt.client_name }}%2C%20we%20noticed%20your%20Rosette%20Wellness%20request%20for%20{{ apt.get_service_display }}%20on%20{{ apt.appointment_date }}%20was%20not%20confirmed%20in%20time.%20We%20apologise%20for%20the%20delay!%20Please%20visit%20our%20booking%20page%20to%20choose%20a%20new%20time%3A%20http%3A%2F%2F127.0.0.1%3A8000%2Fbook%2F%20We%20look%20forward%20to%20welcoming%20you!%20%F0%9F%8C%BF"
+                        <a href="https://wa.me/{{ apt.client_phone }}?text=Hi%20{{ apt.client_name }}%2C%20we%20noticed%20your%20Rosette%20Wellness%20request%20for%20{{ apt.get_service_display }}%20on%20{{ apt.appointment_date }}%20was%20not%20confirmed%20in%20time.%20We%20apologise%20for%20the%20delay!%20Please%20visit%20our%20booking%20page%20to%20choose%20a%20new%20time%3A%20{{ base_url }}/book/%20We%20look%20forward%20to%20welcoming%20you!%20🌿"
                            class="btn-whatsapp-rw" target="_blank">
                             <i class="fab fa-whatsapp me-1"></i> Notify Client
                         </a>
@@ -584,5 +603,21 @@
             </div>
         {% endif %}
     </div>
+
 </div>
+
+{% block extra_js %}
+<script>
+function approveAppointment(pk) {
+    fetch(`/masseuse/approve/${pk}/`, {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': '{{ csrf_token }}',
+            'Content-Type': 'application/json'
+        }
+    });
+}
+</script>
+{% endblock %}
+
 {% endblock %}

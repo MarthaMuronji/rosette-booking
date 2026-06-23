@@ -26,6 +26,7 @@ def calculate_price(service, duration, addon, zone):
         'zone1': 0,
         'zone2': 25,
         'zone3': 50,
+        'other': 0,
     }
     base = base_prices.get(service, {}).get(int(duration), 0)
     addon_fee = addon_prices.get(addon, 0)
@@ -51,12 +52,19 @@ def get_booked_slots():
     approved = Appointment.objects.filter(
         status__in=['approved', 'confirmed'],
         appointment_date__gte=today
-    ).values('appointment_date', 'appointment_time', 'duration')
+    ).values('appointment_date', 'appointment_time', 'duration', 'addon')
 
     pending = Appointment.objects.filter(
         status='pending',
         appointment_date__gte=today
-    ).values('appointment_date', 'appointment_time', 'duration')
+    ).values('appointment_date', 'appointment_time', 'duration', 'addon')
+
+    addon_durations = {
+        'none': 0,
+        'foot_30': 30,
+        'hns_30': 30,
+        'hns_60': 60,
+    }
 
     booked_slots = {}
     pending_slots = {}
@@ -65,10 +73,11 @@ def get_booked_slots():
         date_str = str(b['appointment_date'])
         if date_str not in booked_slots:
             booked_slots[date_str] = []
+        total_duration = b['duration'] + addon_durations.get(b['addon'], 0)
         start_time = datetime.datetime.combine(
             datetime.date.today(), b['appointment_time']
         )
-        for i in range(0, b['duration'], 30):
+        for i in range(0, total_duration, 30):
             slot_time = (start_time + datetime.timedelta(minutes=i)).strftime('%H:%M')
             booked_slots[date_str].append(slot_time)
 
@@ -76,10 +85,11 @@ def get_booked_slots():
         date_str = str(p['appointment_date'])
         if date_str not in pending_slots:
             pending_slots[date_str] = []
+        total_duration = p['duration'] + addon_durations.get(p['addon'], 0)
         start_time = datetime.datetime.combine(
             datetime.date.today(), p['appointment_time']
         )
-        for i in range(0, p['duration'], 30):
+        for i in range(0, total_duration, 30):
             slot_time = (start_time + datetime.timedelta(minutes=i)).strftime('%H:%M')
             pending_slots[date_str].append(slot_time)
 
@@ -117,12 +127,12 @@ def auto_complete_past_sessions():
             apt.status = 'declined'
             apt.save()
 
-        # Auto delete expired requests older than 7 days
+    # Auto delete expired requests older than 7 days
     seven_days_ago = timezone.now().date() - datetime.timedelta(days=7)
     Appointment.objects.filter(
         status='declined',
         appointment_date__lt=seven_days_ago
-    ).delete()    
+    ).delete()
 
 
 # Step 1 — Client submits initial request
@@ -176,6 +186,10 @@ def book_request(request):
 
         service_display = dict(Appointment.SERVICE_CHOICES).get(service, service)
         time_formatted = datetime.datetime.strptime(preferred_time, '%H:%M').strftime('%I:%M %p')
+
+        approve_url = f"{settings.BASE_URL}/masseuse/approve/{appointment.pk}/"
+        decline_url = f"{settings.BASE_URL}/masseuse/decline/{appointment.pk}/"
+
         whatsapp_message = (
             f"🌿 New Booking Request!%0A"
             f"Name: {client_name}%0A"
@@ -183,7 +197,9 @@ def book_request(request):
             f"Duration: {duration} min%0A"
             f"Date: {preferred_date}%0A"
             f"Time: {time_formatted}%0A"
-            f"Phone: {client_phone}"
+            f"Phone: {client_phone}%0A%0A"
+            f"✅ Approve: {approve_url}%0A"
+            f"❌ Decline: {decline_url}"
         )
 
         context = {
@@ -208,8 +224,6 @@ def book_request(request):
     return render(request, 'bookings/book_request.html', context)
 
 
-
-
 # Step 2 — Client completes full booking after owner approves
 def book_confirm(request, pk):
     appointment = get_object_or_404(Appointment, pk=pk, status='approved')
@@ -220,6 +234,8 @@ def book_confirm(request, pk):
         client_email = request.POST.get('client_email', '')
         client_address = request.POST.get('client_address')
         notes = request.POST.get('notes', '')
+        preferred_pressure = request.POST.get('preferred_pressure')
+        payment_method = request.POST.get('payment_method')
 
         total_price = calculate_price(
             appointment.service,
@@ -233,6 +249,8 @@ def book_confirm(request, pk):
         appointment.client_email = client_email
         appointment.client_address = client_address
         appointment.notes = notes
+        appointment.preferred_pressure = preferred_pressure
+        appointment.payment_method = payment_method
         appointment.total_price = total_price
         appointment.status = 'confirmed'
         appointment.save()
@@ -299,7 +317,6 @@ def masseuse_dashboard(request):
         status='declined'
     ).order_by('-appointment_date', '-appointment_time')
 
-    # Calculate total earnings from completed sessions
     total_earnings = sum(apt.total_price for apt in completed)
 
     context = {
@@ -310,6 +327,7 @@ def masseuse_dashboard(request):
         'expired': expired,
         'today': today,
         'total_earnings': total_earnings,
+        'base_url': settings.BASE_URL,
     }
     return render(request, 'bookings/masseuse.html', context)
 

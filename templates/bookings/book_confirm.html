@@ -181,7 +181,7 @@
             <form method="POST" id="confirmForm">
                 {% csrf_token %}
 
-                <!-- Add-On -->
+                <!-- 1. Add-On -->
                 <div class="form-section">
                     <div class="form-section-title">1. Add-On (Optional)</div>
                     <select name="addon" id="addonSelect" class="rw-form-control">
@@ -192,7 +192,7 @@
                     </select>
                 </div>
 
-                <!-- Zone -->
+                <!-- 2. Zone -->
                 <div class="form-section">
                     <div class="form-section-title">2. Your Location Zone</div>
 
@@ -225,9 +225,19 @@
                             </div>
                         </div>
                     </div>
+
+                    <div class="zone-card" onclick="selectZone('other', this)">
+                        <div class="d-flex align-items-center">
+                            <input type="radio" name="zone" value="other" class="me-3" required>
+                            <div>
+                                <strong>My area is not listed</strong><br>
+                                <small>We will contact you on WhatsApp to confirm travel fee</small>
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
-                <!-- Details -->
+                <!-- 3. Your Details -->
                 <div class="form-section">
                     <div class="form-section-title">3. Your Details</div>
 
@@ -243,10 +253,59 @@
                                   required></textarea>
                     </div>
                     <div class="mb-3">
-                        <label class="rw-form-label">Additional Notes (Optional)</label>
+                        <label class="rw-form-label">Any injuries, medical conditions or areas of concern (Optional)</label>
                         <textarea name="notes" class="rw-form-control" rows="2"
-                                  placeholder="Any preferences, health conditions or special requests">
+                                  placeholder="e.g. lower back pain, knee injury, sensitive shoulders">
                         </textarea>
+                    </div>
+
+                    <!-- Preferred Pressure -->
+                    <div class="mb-3">
+                        <label class="rw-form-label">Preferred Pressure</label>
+                        <div class="d-flex gap-3 mt-2">
+                            <div class="zone-card flex-fill text-center py-3"
+                                 onclick="selectOption('preferred_pressure', 'light', this)">
+                                <input type="radio" name="preferred_pressure"
+                                       value="light" class="d-none" required>
+                                <i class="fas fa-feather mb-2" style="color:var(--primary); font-size:20px; display:block;"></i>
+                                <strong>Light</strong>
+                            </div>
+                            <div class="zone-card flex-fill text-center py-3"
+                                 onclick="selectOption('preferred_pressure', 'medium', this)">
+                                <input type="radio" name="preferred_pressure"
+                                       value="medium" class="d-none" required>
+                                <i class="fas fa-hand-paper mb-2" style="color:var(--primary); font-size:20px; display:block;"></i>
+                                <strong>Medium</strong>
+                            </div>
+                            <div class="zone-card flex-fill text-center py-3"
+                                 onclick="selectOption('preferred_pressure', 'firm', this)">
+                                <input type="radio" name="preferred_pressure"
+                                       value="firm" class="d-none" required>
+                                <i class="fas fa-fist-raised mb-2" style="color:var(--primary); font-size:20px; display:block;"></i>
+                                <strong>Firm</strong>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Payment Method -->
+                    <div class="mb-3">
+                        <label class="rw-form-label">Payment Method</label>
+                        <div class="d-flex gap-3 mt-2">
+                            <div class="zone-card flex-fill text-center py-3"
+                                 onclick="selectOption('payment_method', 'cash', this)">
+                                <input type="radio" name="payment_method"
+                                       value="cash" class="d-none" required>
+                                <i class="fas fa-money-bill-wave mb-2" style="color:var(--primary); font-size:20px; display:block;"></i>
+                                <strong>Cash</strong>
+                            </div>
+                            <div class="zone-card flex-fill text-center py-3"
+                                 onclick="selectOption('payment_method', 'card', this)">
+                                <input type="radio" name="payment_method"
+                                       value="card" class="d-none" required>
+                                <i class="fas fa-credit-card mb-2" style="color:var(--primary); font-size:20px; display:block;"></i>
+                                <strong>Card</strong>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
@@ -311,5 +370,11 @@
         const zone = zoneFees[selectedZone] || 0;
         document.getElementById('totalPrice').textContent = (base + addon + zone) + ' AED';
     }
+    function selectOption(name, value, card) {
+    document.querySelectorAll(`[onclick*="${name}"]`).forEach(c => c.classList.remove('selected'));
+    card.classList.add('selected');
+    document.querySelector(`input[name="${name}"][value="${value}"]`).checked = true;
+    updateTotal();
+}
 </script>
 {% endblock %}
