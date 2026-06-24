@@ -17,6 +17,8 @@ class Appointment(models.Model):
         ('sports', 'Sports Massage'),
         ('hot_stone', 'Hot Stone Massage'),
         ('thai', 'Thai Massage'),
+        ('monthly_wellness', 'Monthly Wellness Package — 5 × 90 min'),
+        ('vip_wellness', 'VIP Wellness Package — 8 × 90 min'),
     ]
 
     DURATION_CHOICES = [
@@ -29,7 +31,7 @@ class Appointment(models.Model):
         ('zone1', 'Zone 1 — Business Bay, Downtown, DIFC, City Walk, Al Safa'),
         ('zone2', 'Zone 2 — JVC, Arjan, Motor City, Dubai Hills Estate'),
         ('zone3', 'Zone 3 — Marina, JBR, Palm Jumeirah, Jumeirah Golf Estates'),
-        ('other', 'My area is not listed'),
+        ('other', 'Other — Contact via WhatsApp'),
     ]
 
     ADDON_CHOICES = [
@@ -45,7 +47,7 @@ class Appointment(models.Model):
         ('firm', 'Firm'),
     ]
 
-    PAYMENT_CHOICES = [
+    PAYMENT_METHOD_CHOICES = [
         ('cash', 'Cash'),
         ('card', 'Card'),
     ]
@@ -73,13 +75,13 @@ class Appointment(models.Model):
         max_length=10,
         choices=PRESSURE_CHOICES,
         blank=True,
-        null=True
+        null=True,
     )
     payment_method = models.CharField(
         max_length=10,
-        choices=PAYMENT_CHOICES,
+        choices=PAYMENT_METHOD_CHOICES,
         blank=True,
-        null=True
+        null=True,
     )
     created_at = models.DateTimeField(auto_now_add=True)
 

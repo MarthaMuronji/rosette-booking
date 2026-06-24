@@ -1,0 +1,313 @@
+{% extends 'bookings/base.html' %}
+
+{% block title %}Reschedule Appointment — Rosette Wellness{% endblock %}
+
+{% block extra_css %}
+<style>
+    .booking-hero {
+        background-color: var(--secondary);
+        padding: 60px 0 40px;
+        text-align: center;
+        border-bottom: 1px solid var(--border);
+    }
+
+    .booking-hero p.tag {
+        color: var(--primary);
+        letter-spacing: 3px;
+        font-size: 12px;
+        text-transform: uppercase;
+        margin-bottom: 12px;
+    }
+
+    .form-section {
+        background: var(--card-bg);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 32px;
+        margin-bottom: 24px;
+    }
+
+    .form-section:hover {
+        border-color: var(--border-orange);
+    }
+
+    .form-section-title {
+        font-family: 'Playfair Display', serif;
+        font-size: 20px;
+        color: var(--foreground);
+        margin-bottom: 20px;
+        padding-bottom: 12px;
+        border-bottom: 1px solid var(--border);
+    }
+
+    .booking-summary {
+        background: #1a1a1a;
+        border-radius: 8px;
+        padding: 16px 20px;
+        margin-bottom: 24px;
+        font-size: 14px;
+        color: var(--foreground-muted);
+        line-height: 1.8;
+    }
+
+    .booking-summary strong {
+        color: var(--foreground);
+    }
+
+    .time-slot {
+        display: inline-block;
+        padding: 8px 14px;
+        border: 1px solid var(--border);
+        border-radius: 6px;
+        margin: 4px;
+        cursor: pointer;
+        font-size: 13px;
+        transition: all 0.2s ease;
+        background: #1a1a1a;
+        color: var(--foreground);
+    }
+
+    .time-slot:hover {
+        border-color: var(--primary);
+        background-color: var(--primary-light);
+        color: var(--primary);
+    }
+
+    .time-slot.selected {
+        background-color: var(--primary);
+        color: #000000;
+        border-color: var(--primary);
+        font-weight: 600;
+    }
+
+    .time-slot.pending {
+        background-color: rgba(232, 137, 14, 0.08);
+        color: var(--primary);
+        cursor: not-allowed;
+        border-color: var(--border-orange);
+        pointer-events: none;
+        opacity: 0.7;
+    }
+
+    .time-slot.booked {
+        background-color: #111;
+        color: rgba(255,255,255,0.2);
+        cursor: not-allowed;
+        border-color: var(--border);
+        text-decoration: line-through;
+        pointer-events: none;
+    }
+
+    .slots-legend {
+        display: flex;
+        gap: 20px;
+        margin-bottom: 16px;
+        font-size: 13px;
+        flex-wrap: wrap;
+    }
+
+    .legend-item {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        color: var(--foreground-muted);
+    }
+
+    .legend-dot {
+        width: 14px;
+        height: 14px;
+        border-radius: 4px;
+        display: inline-block;
+    }
+
+    .field-error {
+        color: #e85d5d;
+        font-size: 12px;
+        margin-top: 6px;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .whatsapp-confirm-notice {
+        background-color: var(--primary-light);
+        border-left: 3px solid var(--primary);
+        padding: 12px 16px;
+        border-radius: 4px;
+        font-size: 13px;
+        color: var(--primary);
+        margin-top: 16px;
+        display: none;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="booking-hero">
+    <div class="container">
+        <p class="tag">Rosette Wellness</p>
+        <h1 class="rw-section-title">Reschedule Appointment</h1>
+        <div class="rw-divider mx-auto"></div>
+        <p class="rw-section-subtitle mt-3">
+            Pick a new date and time. The therapist will review and confirm via WhatsApp.
+        </p>
+    </div>
+</div>
+
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+
+            <!-- Current booking summary -->
+            <div class="form-section">
+                <div class="form-section-title">Current Booking</div>
+                <div class="booking-summary">
+                    <div><strong>Name:</strong> {{ appointment.client_name }}</div>
+                    <div><strong>Service:</strong> {{ appointment.get_service_display }}</div>
+                    <div><strong>Duration:</strong> {{ appointment.duration }} minutes</div>
+                    <div><strong>Current Date:</strong> {{ appointment.appointment_date }}</div>
+                    <div><strong>Current Time:</strong> {{ appointment.appointment_time|time:"g:i A" }}</div>
+                </div>
+            </div>
+
+            <form method="POST" id="rescheduleForm">
+                {% csrf_token %}
+
+                <div class="form-section">
+                    <div class="form-section-title">Choose a New Date & Time</div>
+
+                    <div class="mb-4">
+                        <label class="rw-form-label">New Date</label>
+                        <input type="date" name="preferred_date" id="dateInput"
+                               class="rw-form-control" min="{{ today }}">
+                        {% if errors.preferred_date %}
+                        <div class="field-error mt-2">
+                            <i class="fas fa-exclamation-circle"></i> {{ errors.preferred_date }}
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <label class="rw-form-label">New Time</label>
+
+                    <div class="slots-legend mt-2 mb-3">
+                        <div class="legend-item">
+                            <div class="legend-dot" style="background:#1a1a1a; border:1px solid rgba(255,255,255,0.15);"></div>
+                            <span>Available</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-dot" style="background:rgba(232,137,14,0.15); border:1px solid rgba(232,137,14,0.4);"></div>
+                            <span>Pending</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-dot" style="background:var(--primary);"></div>
+                            <span>Selected</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-dot" style="background:#111; border:1px solid rgba(255,255,255,0.05);"></div>
+                            <span>Not Available</span>
+                        </div>
+                    </div>
+
+                    <div id="timeSlots">
+                        <p style="color:var(--foreground-muted); font-size:14px;">
+                            Please select a date first.
+                        </p>
+                    </div>
+                    <input type="hidden" name="preferred_time" id="selectedTime">
+
+                    {% if errors.preferred_time %}
+                    <div class="field-error mt-2">
+                        <i class="fas fa-exclamation-circle"></i> {{ errors.preferred_time }}
+                    </div>
+                    {% endif %}
+
+                    <div class="whatsapp-confirm-notice" id="timeSelectedNotice">
+                        <i class="fab fa-whatsapp me-2"></i>
+                        After submitting, WhatsApp will open so you can notify the therapist of the change. She will re-confirm the new time with you.
+                    </div>
+                </div>
+
+                <button type="submit" class="btn-primary-rw w-100 py-3"
+                        style="font-size:15px; letter-spacing:1px; border-radius:8px;">
+                    REQUEST RESCHEDULE
+                </button>
+            </form>
+
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    const bookedSlots = {{ booked_slots|safe }};
+    const pendingSlots = {{ pending_slots|safe }};
+    const allSlots = {{ slots|safe }};
+
+    document.getElementById('dateInput').addEventListener('change', function() {
+        renderTimeSlots();
+    });
+
+    function renderTimeSlots() {
+        const date = document.getElementById('dateInput').value;
+        const container = document.getElementById('timeSlots');
+
+        if (!date) {
+            container.innerHTML = '<p style="color:var(--foreground-muted); font-size:14px;">Please select a date first.</p>';
+            return;
+        }
+
+        const booked = bookedSlots[date] || [];
+        const pending = pendingSlots[date] || [];
+        const now = new Date();
+        const isToday = date === now.toISOString().split('T')[0];
+        const currentHour = now.getHours();
+        const currentMin = now.getMinutes();
+
+        container.innerHTML = '';
+
+        allSlots.forEach(slot => {
+            const [slotH, slotM] = slot.split(':').map(Number);
+
+            const isPast = isToday && (
+                slotH < currentHour ||
+                (slotH === currentHour && slotM <= currentMin)
+            );
+
+            const isBooked = booked.includes(slot);
+            const isPending = pending.includes(slot);
+            const isUnavailable = isPast || isBooked;
+
+            const div = document.createElement('span');
+
+            if (isUnavailable) {
+                div.className = 'time-slot booked';
+                div.textContent = formatTime(slot) + ' — Not Available';
+            } else if (isPending) {
+                div.className = 'time-slot pending';
+                div.textContent = formatTime(slot) + ' — Pending';
+            } else {
+                div.className = 'time-slot';
+                div.textContent = formatTime(slot);
+                div.onclick = () => selectTime(slot, div);
+            }
+
+            container.appendChild(div);
+        });
+    }
+
+    function selectTime(slot, el) {
+        document.querySelectorAll('.time-slot').forEach(s => s.classList.remove('selected'));
+        el.classList.add('selected');
+        document.getElementById('selectedTime').value = slot;
+        document.getElementById('timeSelectedNotice').style.display = 'block';
+    }
+
+    function formatTime(slot) {
+        const [h, m] = slot.split(':').map(Number);
+        const ampm = h >= 12 ? 'PM' : 'AM';
+        const hour = h % 12 || 12;
+        return `${hour}:${String(m).padStart(2,'0')} ${ampm}`;
+    }
+</script>
+{% endblock %}

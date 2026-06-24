@@ -70,6 +70,19 @@
         accent-color: var(--primary);
     }
 
+    .package-badge {
+        display: inline-block;
+        background: rgba(232, 137, 14, 0.15);
+        color: var(--primary);
+        border: 1px solid rgba(232, 137, 14, 0.3);
+        border-radius: 4px;
+        font-size: 11px;
+        letter-spacing: 1px;
+        text-transform: uppercase;
+        padding: 2px 8px;
+        margin-top: 4px;
+    }
+
     .time-slot {
         display: inline-block;
         padding: 8px 14px;
@@ -114,12 +127,12 @@
         pointer-events: none;
     }
 
-    .departure-notice {
+    .whatsapp-confirm-notice {
         background-color: var(--primary-light);
         border-left: 3px solid var(--primary);
-        padding: 14px 18px;
+        padding: 12px 16px;
         border-radius: 4px;
-        font-size: 14px;
+        font-size: 13px;
         color: var(--primary);
         margin-top: 16px;
         display: none;
@@ -157,21 +170,45 @@
         margin-bottom: 24px;
     }
 
-    .total-box {
-        background: linear-gradient(135deg, #1a1a1a, #111);
-        border: 1px solid var(--border-orange);
+    .space-notice {
+        background: var(--card-bg);
+        border: 1px solid rgba(232, 137, 14, 0.25);
         border-radius: 12px;
-        padding: 20px 28px;
+        padding: 20px 24px;
+        margin-bottom: 24px;
         display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 20px;
+        gap: 16px;
+        align-items: flex-start;
     }
 
-    .total-amount {
-        font-family: 'Playfair Display', serif;
-        font-size: 32px;
+    .space-notice-icon {
         color: var(--primary);
+        font-size: 18px;
+        margin-top: 2px;
+        flex-shrink: 0;
+    }
+
+    .space-notice-title {
+        color: var(--foreground);
+        font-size: 14px;
+        font-weight: 600;
+        margin-bottom: 4px;
+    }
+
+    .space-notice-text {
+        color: var(--foreground-muted);
+        font-size: 13px;
+        line-height: 1.6;
+        margin: 0;
+    }
+
+    .field-error {
+        color: #e85d5d;
+        font-size: 12px;
+        margin-top: 6px;
+        display: flex;
+        align-items: center;
+        gap: 6px;
     }
 </style>
 {% endblock %}
@@ -207,15 +244,31 @@
                     <div class="service-card" onclick="selectService('{{ value }}', this)">
                         <div class="d-flex align-items-center">
                             <input type="radio" name="service" value="{{ value }}"
-                                   id="service_{{ value }}" class="me-3" required>
-                            <div class="service-name">{{ label }}</div>
+                                   id="service_{{ value }}" class="me-3">
+                            <div>
+                                <div class="service-name">{{ label }}</div>
+                                {% if value == 'monthly_wellness' or value == 'vip_wellness' %}
+                                <div class="package-badge">Wellness Package</div>
+                                {% endif %}
+                            </div>
                         </div>
                     </div>
                     {% endfor %}
 
+                    {% if errors.service %}
+                    <div class="field-error mt-2">
+                        <i class="fas fa-exclamation-circle"></i> {{ errors.service }}
+                    </div>
+                    {% endif %}
+                    {% if errors.duration %}
+                    <div class="field-error mt-2">
+                        <i class="fas fa-exclamation-circle"></i> {{ errors.duration }}
+                    </div>
+                    {% endif %}
+
                     <div class="mt-3" id="durationSection" style="display:none;">
                         <label class="rw-form-label">Session Duration</label>
-                        <select name="duration" id="durationSelect" class="rw-form-control" required>
+                        <select name="duration" id="durationSelect" class="rw-form-control">
                             <option value="">Select duration</option>
                         </select>
                     </div>
@@ -228,7 +281,13 @@
                     <div class="mb-4">
                         <label class="rw-form-label">Preferred Date</label>
                         <input type="date" name="preferred_date" id="dateInput"
-                               class="rw-form-control" min="{{ today }}" required>
+                               class="rw-form-control" min="{{ today }}"
+                               value="{{ form_data.preferred_date|default:'' }}">
+                        {% if errors.preferred_date %}
+                        <div class="field-error mt-2">
+                            <i class="fas fa-exclamation-circle"></i> {{ errors.preferred_date }}
+                        </div>
+                        {% endif %}
                     </div>
 
                     <label class="rw-form-label">Preferred Time</label>
@@ -257,11 +316,17 @@
                             Please select a date first.
                         </p>
                     </div>
-                    <input type="hidden" name="preferred_time" id="selectedTime" required>
+                    <input type="hidden" name="preferred_time" id="selectedTime">
 
-                    <div class="departure-notice" id="departureNotice">
-                        <i class="fas fa-car me-2"></i>
-                        <span id="departureText"></span>
+                    {% if errors.preferred_time %}
+                    <div class="field-error mt-2">
+                        <i class="fas fa-exclamation-circle"></i> {{ errors.preferred_time }}
+                    </div>
+                    {% endif %}
+
+                    <div class="whatsapp-confirm-notice" id="timeSelectedNotice">
+                        <i class="fab fa-whatsapp me-2"></i>
+                        Once your request is approved, your therapist will confirm the exact arrival time via WhatsApp.
                     </div>
                 </div>
 
@@ -269,15 +334,53 @@
                 <div class="form-section">
                     <div class="form-section-title">3. Your Details</div>
 
+                    {% if errors.duplicate %}
+                    <div class="field-error mb-3" style="font-size:14px;">
+                        <i class="fas fa-exclamation-circle"></i> {{ errors.duplicate }}
+                    </div>
+                    {% endif %}
+
                     <div class="mb-3">
                         <label class="rw-form-label">Full Name</label>
-                        <input type="text" name="client_name" class="rw-form-control"
-                               placeholder="Your full name" required>
+                        <input type="text" name="client_name" id="clientName" class="rw-form-control"
+                               placeholder="Your full name"
+                               value="{{ form_data.client_name|default:'' }}">
+                        <div class="field-error" id="nameError" style="display:none;">
+                            <i class="fas fa-exclamation-circle"></i> <span></span>
+                        </div>
+                        {% if errors.client_name %}
+                        <div class="field-error">
+                            <i class="fas fa-exclamation-circle"></i> {{ errors.client_name }}
+                        </div>
+                        {% endif %}
                     </div>
+
                     <div class="mb-3">
                         <label class="rw-form-label">WhatsApp Number</label>
-                        <input type="tel" name="client_phone" class="rw-form-control"
-                               placeholder="+971 50 000 0000" required>
+                        <input type="tel" name="client_phone" id="clientPhone" class="rw-form-control"
+                               placeholder="+971 50 000 0000"
+                               value="{{ form_data.client_phone|default:'' }}">
+                        <div class="field-error" id="phoneError" style="display:none;">
+                            <i class="fas fa-exclamation-circle"></i> <span></span>
+                        </div>
+                        {% if errors.client_phone %}
+                        <div class="field-error">
+                            <i class="fas fa-exclamation-circle"></i> {{ errors.client_phone }}
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Spacious Room Notice -->
+                <div class="space-notice">
+                    <div class="space-notice-icon">
+                        <i class="fas fa-expand-arrows-alt"></i>
+                    </div>
+                    <div>
+                        <div class="space-notice-title">Prepare Your Space</div>
+                        <p class="space-notice-text">
+                            Please ensure your room is spacious enough for the therapist to set up the massage table comfortably. A clear area of at least 2.5 × 2 metres is ideal. Remove any fragile items and ensure good ventilation.
+                        </p>
                     </div>
                 </div>
 
@@ -312,21 +415,31 @@
     const allSlots = {{ slots|safe }};
 
     const durations = {
-        signature:   [90, 120],
-        swedish:     [60, 90, 120],
-        deep_tissue: [90, 120],
-        sports:      [90, 120],
-        hot_stone:   [90, 120],
-        thai:        [90, 120],
+        signature:         [90, 120],
+        swedish:           [60, 90, 120],
+        deep_tissue:       [90, 120],
+        sports:            [90, 120],
+        hot_stone:         [90, 120],
+        thai:              [90, 120],
+        monthly_wellness:  [90],
+        vip_wellness:      [90],
     };
 
     const prices = {
-        signature:   {90: 320, 120: 400},
-        swedish:     {60: 250, 90: 320, 120: 400},
-        deep_tissue: {90: 370, 120: 450},
-        sports:      {90: 380, 120: 470},
-        hot_stone:   {90: 380, 120: 470},
-        thai:        {90: 320, 120: 400},
+        signature:         {90: 320, 120: 400},
+        swedish:           {60: 250, 90: 320, 120: 400},
+        deep_tissue:       {90: 370, 120: 450},
+        sports:            {90: 380, 120: 470},
+        hot_stone:         {90: 380, 120: 470},
+        thai:              {90: 320, 120: 400},
+        monthly_wellness:  {90: 1500},
+        vip_wellness:      {90: 2400},
+    };
+
+    // Custom labels for packages (shown in duration dropdown)
+    const packageLabels = {
+        monthly_wellness: {90: '5 sessions × 90 min — 1,500 AED'},
+        vip_wellness:     {90: '8 sessions × 90 min — 2,400 AED'},
     };
 
     let selectedService = null;
@@ -343,9 +456,13 @@
         durationSelect.innerHTML = '<option value="">Select duration</option>';
 
         durations[value].forEach(d => {
-            const price = prices[value][d];
-            durationSelect.innerHTML +=
-                `<option value="${d}">${d} minutes — ${price} AED</option>`;
+            let label;
+            if (packageLabels[value] && packageLabels[value][d]) {
+                label = packageLabels[value][d];
+            } else {
+                label = `${d} minutes — ${prices[value][d]} AED`;
+            }
+            durationSelect.innerHTML += `<option value="${d}">${label}</option>`;
         });
     }
 
@@ -358,7 +475,7 @@
         const container = document.getElementById('timeSlots');
 
         if (!date) {
-            container.innerHTML = '<p class="text-muted" style="font-size:14px;">Please select a date first.</p>';
+            container.innerHTML = '<p style="color:var(--foreground-muted); font-size:14px;">Please select a date first.</p>';
             return;
         }
 
@@ -405,19 +522,7 @@
         document.querySelectorAll('.time-slot').forEach(s => s.classList.remove('selected'));
         el.classList.add('selected');
         document.getElementById('selectedTime').value = slot;
-
-        const [h, m] = slot.split(':').map(Number);
-        const totalMins = h * 60 + m - 60;
-        const depH = Math.floor(totalMins / 60);
-        const depM = totalMins % 60;
-        const depStr = formatTime(
-            `${String(depH).padStart(2,'0')}:${String(depM).padStart(2,'0')}`
-        );
-
-        const notice = document.getElementById('departureNotice');
-        notice.style.display = 'block';
-        document.getElementById('departureText').textContent =
-            `Your therapist will depart at ${depStr} to reach your location in time Once the request is confirmed.`;
+        document.getElementById('timeSelectedNotice').style.display = 'block';
     }
 
     function formatTime(slot) {
@@ -425,6 +530,78 @@
         const ampm = h >= 12 ? 'PM' : 'AM';
         const hour = h % 12 || 12;
         return `${hour}:${String(m).padStart(2,'0')} ${ampm}`;
+    }
+
+    // Block letters from phone field live
+    const phoneInput = document.getElementById('clientPhone');
+    phoneInput.addEventListener('input', function () {
+        this.value = this.value.replace(/[^0-9\+\s\-\(\)]/g, '');
+    });
+
+    phoneInput.addEventListener('blur', function () {
+        const val = this.value.trim();
+        const errEl = document.getElementById('phoneError');
+        const errSpan = errEl.querySelector('span');
+        if (!val) {
+            errSpan.textContent = 'WhatsApp number is required.';
+            errEl.style.display = 'flex';
+            return;
+        }
+        const cleaned = val.replace(/[\s\-\(\)\.]/g, '');
+        const valid = /^(\+971|00971|0)[0-9]{9}$/.test(cleaned);
+        if (!valid) {
+            errSpan.textContent = 'Please enter a valid UAE number (e.g. +971 50 000 0000).';
+            errEl.style.display = 'flex';
+        } else {
+            errEl.style.display = 'none';
+        }
+    });
+
+    // Name validation on blur
+    const nameInput = document.getElementById('clientName');
+    nameInput.addEventListener('blur', function () {
+        const val = this.value.trim();
+        const errEl = document.getElementById('nameError');
+        const errSpan = errEl.querySelector('span');
+        if (!val || val.length < 2) {
+            errSpan.textContent = 'Please enter your full name.';
+            errEl.style.display = 'flex';
+        } else {
+            errEl.style.display = 'none';
+        }
+    });
+
+    // Restore selected service after a validation error (form re-render)
+    const savedService = '{{ form_data.service|default:"" }}';
+    if (savedService) {
+        const card = document.querySelector(`[onclick="selectService('${savedService}', this)"]`);
+        if (card) {
+            selectService(savedService, card);
+            const savedDuration = '{{ form_data.duration|default:"" }}';
+            if (savedDuration) {
+                document.getElementById('durationSelect').value = savedDuration;
+            }
+        }
+    }
+
+    // Restore date and re-render time slots after a validation error
+    const savedDate = '{{ form_data.preferred_date|default:"" }}';
+    if (savedDate) {
+        document.getElementById('dateInput').value = savedDate;
+        renderTimeSlots();
+        const savedTime = '{{ form_data.preferred_time|default:"" }}';
+        if (savedTime) {
+            setTimeout(() => {
+                const slots = document.querySelectorAll('.time-slot:not(.booked):not(.pending)');
+                slots.forEach(s => {
+                    if (s.textContent.trim() === formatTime(savedTime)) {
+                        s.classList.add('selected');
+                        document.getElementById('selectedTime').value = savedTime;
+                        document.getElementById('timeSelectedNotice').style.display = 'block';
+                    }
+                });
+            }, 50);
+        }
     }
 </script>
 {% endblock %}
