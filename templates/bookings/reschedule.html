@@ -1,0 +1,365 @@
+{% extends 'bookings/base.html' %}
+
+{% block title %}Reschedule — Rosette Wellness{% endblock %}
+
+{% block extra_css %}
+<style>
+    .reschedule-hero {
+        background-color: var(--secondary);
+        padding: 60px 0 40px;
+        text-align: center;
+        border-bottom: 1px solid var(--border);
+    }
+
+    .form-section {
+        background: var(--card-bg);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 28px 32px;
+        margin-bottom: 24px;
+    }
+
+    .form-section:hover { border-color: var(--border-orange); }
+
+    .form-section-title {
+        font-family: 'Playfair Display', serif;
+        font-size: 20px;
+        color: var(--foreground);
+        margin-bottom: 20px;
+        padding-bottom: 12px;
+        border-bottom: 1px solid var(--border);
+    }
+
+    .current-booking {
+        background: #1a1a1a;
+        border-radius: 8px;
+        padding: 16px 20px;
+        font-size: 14px;
+        color: var(--foreground-muted);
+        line-height: 1.9;
+    }
+
+    .current-booking strong { color: var(--foreground); }
+
+    .time-slot {
+        display: inline-block;
+        padding: 8px 14px;
+        border: 1px solid var(--border);
+        border-radius: 6px;
+        margin: 4px;
+        cursor: pointer;
+        font-size: 13px;
+        transition: all 0.2s ease;
+        background: #1a1a1a;
+        color: var(--foreground);
+    }
+
+    .time-slot:hover    { border-color: var(--primary); background-color: var(--primary-light); color: var(--primary); }
+    .time-slot.selected { background-color: var(--primary); color: #000; border-color: var(--primary); font-weight: 600; }
+    .time-slot.pending  { background: rgba(232,137,14,0.08); color: var(--primary); cursor: not-allowed; border-color: var(--border-orange); pointer-events: none; opacity: 0.7; }
+    .time-slot.booked   { background: #111; color: rgba(255,255,255,0.2); cursor: not-allowed; border-color: var(--border); text-decoration: line-through; pointer-events: none; }
+
+    /* Read-only slot — for available times display in blocked state */
+    .time-slot-info {
+        display: inline-block;
+        padding: 7px 13px;
+        border: 1px solid rgba(37,211,102,0.3);
+        border-radius: 6px;
+        margin: 4px;
+        font-size: 13px;
+        background: rgba(37,211,102,0.06);
+        color: rgba(37,211,102,0.8);
+    }
+
+    .slots-legend { display: flex; gap: 20px; margin-bottom: 16px; font-size: 13px; flex-wrap: wrap; }
+    .legend-item  { display: flex; align-items: center; gap: 8px; color: var(--foreground-muted); }
+    .legend-dot   { width: 14px; height: 14px; border-radius: 4px; display: inline-block; }
+
+    .field-error {
+        color: #e85d5d;
+        font-size: 12px;
+        margin-top: 6px;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .blocked-notice {
+        background: rgba(232,137,14,0.06);
+        border: 1px solid rgba(232,137,14,0.25);
+        border-radius: 12px;
+        padding: 28px 32px;
+        margin-bottom: 24px;
+    }
+
+    .blocked-title {
+        font-family: 'Playfair Display', serif;
+        font-size: 20px;
+        color: var(--foreground);
+        margin-bottom: 10px;
+    }
+
+    .blocked-sub {
+        font-size: 14px;
+        color: var(--foreground-muted);
+        line-height: 1.7;
+        margin-bottom: 20px;
+    }
+
+    .wa-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        background: #25d366;
+        color: #000;
+        border-radius: 8px;
+        padding: 12px 22px;
+        font-size: 14px;
+        font-weight: 600;
+        text-decoration: none;
+        letter-spacing: 0.5px;
+        transition: opacity 0.2s ease;
+    }
+
+    .wa-btn:hover { opacity: 0.88; color: #000; }
+
+    .available-slots-label {
+        font-size: 12px;
+        letter-spacing: 2px;
+        text-transform: uppercase;
+        color: var(--foreground-muted);
+        margin: 24px 0 12px;
+    }
+
+    .wa-confirm-notice {
+        background: var(--primary-light);
+        border-left: 3px solid var(--primary);
+        padding: 12px 16px;
+        border-radius: 4px;
+        font-size: 13px;
+        color: var(--primary);
+        margin-top: 16px;
+        display: none;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="reschedule-hero">
+    <div class="container">
+        <p style="color:var(--primary); font-size:12px; letter-spacing:3px; text-transform:uppercase; margin-bottom:12px;">
+            Rosette Wellness
+        </p>
+        <h1 class="rw-section-title">Reschedule Appointment</h1>
+        <div class="rw-divider mx-auto"></div>
+    </div>
+</div>
+
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+
+            <!-- Current booking summary (always shown) -->
+            <div class="form-section">
+                <div class="form-section-title">Current Booking</div>
+                <div class="current-booking">
+                    <div><strong>Name:</strong> {{ appointment.client_name }}</div>
+                    <div><strong>Service:</strong> {{ appointment.get_service_display }}</div>
+                    <div><strong>Duration:</strong> {{ appointment.duration }} minutes</div>
+                    <div><strong>Date:</strong> {{ appointment.appointment_date }}</div>
+                    <div><strong>Time:</strong> {{ appointment.appointment_time|time:"g:i A" }}</div>
+                </div>
+            </div>
+
+            {% if blocked %}
+            <!-- ── Blocked state ── -->
+            <div class="blocked-notice">
+                <div class="blocked-title">
+                    <i class="fas fa-lock me-2" style="font-size:18px; color:var(--primary);"></i>
+                    Same-day rescheduling is not available
+                </div>
+                <p class="blocked-sub">
+                    Appointments can only be rescheduled before the day of the booking.
+                    Since your appointment is today, please reach out to the therapist directly on WhatsApp
+                    and she will do her best to accommodate a time change.
+                </p>
+                <a href="{{ owner_wa_url }}" target="_blank" class="wa-btn">
+                    <i class="fab fa-whatsapp" style="font-size:18px;"></i>
+                    Message Therapist on WhatsApp
+                </a>
+
+                {% if available_today %}
+                <p class="available-slots-label">Available times today for reference</p>
+                <div>
+                    {% for slot in available_today %}
+                    <span class="time-slot-info">{{ slot|time:"g:i A" }}</span>
+                    {% endfor %}
+                </div>
+                <p style="font-size:12px; color:var(--foreground-muted); margin-top:12px;">
+                    These are slots currently open. Share your preferred time in your WhatsApp message.
+                </p>
+                {% else %}
+                <p style="font-size:13px; color:var(--foreground-muted); margin-top:20px;">
+                    No available slots remain for today.
+                </p>
+                {% endif %}
+            </div>
+
+            <div class="text-center">
+                <a href="/client/dashboard/"
+                   style="color:var(--foreground-muted); font-size:13px; text-decoration:none;">
+                    ← Back to my bookings
+                </a>
+            </div>
+
+            {% else %}
+            <!-- ── Reschedule form ── -->
+            <form method="POST" id="rescheduleForm">
+                {% csrf_token %}
+
+                <div class="form-section">
+                    <div class="form-section-title">Choose a New Date & Time</div>
+
+                    <div class="mb-4">
+                        <label class="rw-form-label">New Date</label>
+                        <input type="date" name="preferred_date" id="dateInput"
+                               class="rw-form-control" min="{{ today }}">
+                        {% if errors.preferred_date %}
+                        <div class="field-error mt-2">
+                            <i class="fas fa-exclamation-circle"></i> {{ errors.preferred_date }}
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <label class="rw-form-label">New Time</label>
+
+                    <div class="slots-legend mt-2 mb-3">
+                        <div class="legend-item">
+                            <div class="legend-dot" style="background:#1a1a1a; border:1px solid rgba(255,255,255,0.15);"></div>
+                            <span>Available</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-dot" style="background:rgba(232,137,14,0.15); border:1px solid rgba(232,137,14,0.4);"></div>
+                            <span>Pending</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-dot" style="background:var(--primary);"></div>
+                            <span>Selected</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-dot" style="background:#111; border:1px solid rgba(255,255,255,0.05);"></div>
+                            <span>Not Available</span>
+                        </div>
+                    </div>
+
+                    <div id="timeSlots">
+                        <p style="color:var(--foreground-muted); font-size:14px;">
+                            Please select a date first.
+                        </p>
+                    </div>
+                    <input type="hidden" name="preferred_time" id="selectedTime">
+
+                    {% if errors.preferred_time %}
+                    <div class="field-error mt-2">
+                        <i class="fas fa-exclamation-circle"></i> {{ errors.preferred_time }}
+                    </div>
+                    {% endif %}
+
+                    <div class="wa-confirm-notice" id="timeSelectedNotice">
+                        <i class="fab fa-whatsapp me-2"></i>
+                        After submitting, WhatsApp will open so the therapist can re-approve your new time.
+                    </div>
+                </div>
+
+                <button type="submit" class="btn-primary-rw w-100 py-3"
+                        style="font-size:14px; letter-spacing:1px; border-radius:8px;">
+                    REQUEST RESCHEDULE
+                </button>
+            </form>
+
+            <div class="text-center mt-4">
+                <a href="/client/dashboard/"
+                   style="color:var(--foreground-muted); font-size:13px; text-decoration:none;">
+                    ← Back to my bookings
+                </a>
+            </div>
+            {% endif %}
+
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+{% if not blocked %}
+<script>
+    const bookedSlots  = {{ booked_slots|safe }};
+    const pendingSlots = {{ pending_slots|safe }};
+    const allSlots     = {{ slots|safe }};
+
+    document.getElementById('dateInput').addEventListener('change', function () {
+        renderTimeSlots();
+    });
+
+    function renderTimeSlots() {
+        const date      = document.getElementById('dateInput').value;
+        const container = document.getElementById('timeSlots');
+
+        if (!date) {
+            container.innerHTML = '<p style="color:var(--foreground-muted); font-size:14px;">Please select a date first.</p>';
+            return;
+        }
+
+        const booked  = bookedSlots[date]  || [];
+        const pending = pendingSlots[date] || [];
+        const now     = new Date();
+        const isToday = date === now.toISOString().split('T')[0];
+
+        container.innerHTML = '';
+
+        allSlots.forEach(slot => {
+            const [slotH, slotM] = slot.split(':').map(Number);
+
+            const isPast = isToday && (
+                slotH < now.getHours() ||
+                (slotH === now.getHours() && slotM <= now.getMinutes())
+            );
+
+            const isBooked    = booked.includes(slot);
+            const isPending   = pending.includes(slot);
+            const isUnavailable = isPast || isBooked;
+
+            const div = document.createElement('span');
+
+            if (isUnavailable) {
+                div.className   = 'time-slot booked';
+                div.textContent = formatTime(slot) + ' — Not Available';
+            } else if (isPending) {
+                div.className   = 'time-slot pending';
+                div.textContent = formatTime(slot) + ' — Pending';
+            } else {
+                div.className   = 'time-slot';
+                div.textContent = formatTime(slot);
+                div.onclick = () => selectTime(slot, div);
+            }
+
+            container.appendChild(div);
+        });
+    }
+
+    function selectTime(slot, el) {
+        document.querySelectorAll('.time-slot').forEach(s => s.classList.remove('selected'));
+        el.classList.add('selected');
+        document.getElementById('selectedTime').value = slot;
+        document.getElementById('timeSelectedNotice').style.display = 'block';
+    }
+
+    function formatTime(slot) {
+        const [h, m] = slot.split(':').map(Number);
+        const ampm = h >= 12 ? 'PM' : 'AM';
+        const hour = h % 12 || 12;
+        return `${hour}:${String(m).padStart(2, '0')} ${ampm}`;
+    }
+</script>
+{% endif %}
+{% endblock %}
