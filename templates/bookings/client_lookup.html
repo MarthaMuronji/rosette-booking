@@ -1,0 +1,62 @@
+{% extends 'bookings/base.html' %}
+
+{% block title %}My Bookings — Rosette Wellness{% endblock %}
+
+{% block extra_css %}
+<style>
+    .lookup-hero {
+        background-color: var(--secondary);
+        padding: 80px 0 50px;
+        text-align: center;
+        border-bottom: 1px solid var(--border);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="lookup-hero">
+    <div class="container">
+        <p style="color:var(--primary); font-size:12px; letter-spacing:3px; text-transform:uppercase; margin-bottom:12px;">
+            Client Portal
+        </p>
+        <h1 class="rw-section-title">My Bookings</h1>
+        <div class="rw-divider mx-auto"></div>
+        <p class="rw-section-subtitle mt-3">
+            Enter the WhatsApp number you used to book and we'll pull up your appointments.
+        </p>
+    </div>
+</div>
+
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6 col-lg-5">
+            <div style="background:var(--card-bg); border:1px solid var(--border); border-radius:12px; padding:32px;">
+                <form method="POST">
+                    {% csrf_token %}
+                    <div class="mb-4">
+                        <label class="rw-form-label">Your WhatsApp Number</label>
+                        <input type="tel" name="phone" class="rw-form-control"
+                               placeholder="+971 50 000 0000" autofocus>
+                        {% if error %}
+                        <div style="color:#e85d5d; font-size:12px; margin-top:8px; display:flex; align-items:center; gap:6px;">
+                            <i class="fas fa-exclamation-circle"></i> {{ error }}
+                        </div>
+                        {% endif %}
+                    </div>
+                    <button type="submit" class="btn-primary-rw w-100 py-3"
+                            style="font-size:14px; letter-spacing:1px; border-radius:8px;">
+                        VIEW MY BOOKINGS
+                    </button>
+                </form>
+            </div>
+
+            <div class="text-center mt-4">
+                <a href="/book/"
+                   style="color:rgba(255,255,255,0.4); font-size:13px; text-decoration:none;">
+                    Make a new booking →
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
