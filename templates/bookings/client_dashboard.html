@@ -352,45 +352,48 @@
                     <!-- Service -->
                     <div class="mb-4">
                         <label class="rw-form-label mb-2">Choose Your Treatment</label>
-                        {% for value, label in services %}
-                        <div class="service-card" data-service="{{ value }}" onclick="selectService('{{ value }}', this)">
-                            <div class="d-flex align-items-start">
-                                <input type="radio" name="service" value="{{ value }}"
-                                       id="ds_{{ value }}" class="me-3 mt-1">
-                                <div style="flex:1;">
-                                    <div class="service-name">{{ label }}</div>
-                                    {% if value == 'monthly_wellness' %}
-<div class="package-badge mt-1">Wellness Package</div>
-<button type="button" class="package-toggle" onclick="togglePackageDetails(event, 'details_monthly_wellness')">
-    <span>See what's included</span>
-    <i class="fas fa-chevron-down chevron"></i>
-</button>
-<div class="package-details" id="details_monthly_wellness">
-    <div>5 sessions × 90 minutes each</div>
-    <div><span class="highlight">1,500 AED total</span> — 300 AED per session</div>
-    <div>Any service type of your choice</div>
-    <div>Valid for 30 days from first session</div>
-    <div style="color:rgba(232,137,14,0.6);">Save 100 AED vs individual bookings</div>
-</div>
-{% elif value == 'vip_wellness' %}
-<div class="package-badge mt-1">Wellness Package</div>
-<button type="button" class="package-toggle" onclick="togglePackageDetails(event, 'details_vip_wellness')">
-    <span>See what's included</span>
-    <i class="fas fa-chevron-down chevron"></i>
-</button>
-<div class="package-details" id="details_vip_wellness">
-    <div>8 sessions × 90 minutes each</div>
-    <div><span class="highlight">2,400 AED total</span> — 300 AED per session</div>
-    <div>Any service type of your choice</div>
-    <div>No expiry — use at your own pace</div>
-    <div>Priority booking access</div>
-    <div style="color:rgba(232,137,14,0.6);">Save 160 AED vs individual bookings</div>
+                       {% for value, label in services %}
+{% if has_active_package and value in 'monthly_wellness,vip_wellness' %}
+{% comment %}Skip package options — client already has an active package{% endcomment %}
+{% else %}
+<div class="service-card" data-service="{{ value }}" onclick="selectService('{{ value }}', this)">
+    <div class="d-flex align-items-start">
+        <input type="radio" name="service" value="{{ value }}"
+               id="ds_{{ value }}" class="me-3 mt-1">
+        <div style="flex:1;">
+            <div class="service-name">{{ label }}</div>
+            {% if value == 'monthly_wellness' %}
+            <div class="package-badge mt-1">Wellness Package</div>
+            <button type="button" class="package-toggle" onclick="togglePackageDetails(event, 'details_monthly_wellness')">
+                <span>See what's included</span>
+                <i class="fas fa-chevron-down chevron"></i>
+            </button>
+            <div class="package-details" id="details_monthly_wellness">
+                <div>5 sessions × 90 minutes each</div>
+                <div><span class="highlight">1,500 AED total</span> — 300 AED per session</div>
+                <div>Any service type of your choice</div>
+                <div>Valid for 30 days from first session</div>
+                <div style="color:rgba(232,137,14,0.6);">Save 100 AED vs individual bookings</div>
+            </div>
+            {% elif value == 'vip_wellness' %}
+            <div class="package-badge mt-1">Wellness Package</div>
+            <button type="button" class="package-toggle" onclick="togglePackageDetails(event, 'details_vip_wellness')">
+                <span>See what's included</span>
+                <i class="fas fa-chevron-down chevron"></i>
+            </button>
+            <div class="package-details" id="details_vip_wellness">
+                <div>8 sessions × 90 minutes each</div>
+                <div><span class="highlight">2,400 AED total</span> — 300 AED per session</div>
+                <div>Any service type of your choice</div>
+                <div>No expiry — use at your own pace</div>
+                <div style="color:rgba(232,137,14,0.6);">Save 160 AED vs individual bookings</div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
 </div>
 {% endif %}
-                                </div>
-                            </div>
-                        </div>
-                        {% endfor %}
+{% endfor %}
 
                         <div id="durationSection" style="display:none;" class="mt-3">
                             <label class="rw-form-label">Session Duration</label>
@@ -535,24 +538,32 @@
 
     let selectedService = null;
 
-    function selectService(value, card) {
-        document.querySelectorAll('.service-card').forEach(c => c.classList.remove('selected'));
-        card.classList.add('selected');
-        document.getElementById('ds_' + value).checked = true;
-        selectedService = value;
+   const hasActivePackage = {{ has_active_package|yesno:"true,false" }};
 
-        const durationSection = document.getElementById('durationSection');
-        const durationSelect  = document.getElementById('durationSelect');
-        durationSection.style.display = 'block';
-        durationSelect.innerHTML = '<option value="">Select duration</option>';
+function selectService(value, card) {
+    document.querySelectorAll('.service-card').forEach(c => c.classList.remove('selected'));
+    card.classList.add('selected');
+    document.getElementById('ds_' + value).checked = true;
+    selectedService = value;
 
-        durations[value].forEach(d => {
-            const label = (packageLabels[value] && packageLabels[value][d])
-                ? packageLabels[value][d]
-                : `${d} minutes — ${prices[value][d]} AED`;
-            durationSelect.innerHTML += `<option value="${d}">${label}</option>`;
-        });
-    }
+    const durationSection = document.getElementById('durationSection');
+    const durationSelect  = document.getElementById('durationSelect');
+    durationSection.style.display = 'block';
+    durationSelect.innerHTML = '<option value="">Select duration</option>';
+
+    durations[value].forEach(d => {
+        let label;
+        if (hasActivePackage) {
+            // Client is on a package — no prices shown
+            label = `${d} minutes`;
+        } else if (packageLabels[value] && packageLabels[value][d]) {
+            label = packageLabels[value][d];
+        } else {
+            label = `${d} minutes — ${prices[value][d]} AED`;
+        }
+        durationSelect.innerHTML += `<option value="${d}">${label}</option>`;
+    });
+}
 
     // Called by package card "Book Next Session" button
     function scrollToBookService(serviceValue) {

@@ -578,6 +578,8 @@ def client_dashboard(request):
         client_phone=phone, is_active=True
     ).order_by('-purchase_date')
 
+    has_active_package = packages.exists()
+    
     upcoming = list(Appointment.objects.filter(
         client_phone=phone,
         status__in=['pending', 'approved', 'confirmed'],
@@ -609,6 +611,7 @@ def client_dashboard(request):
         'booked_slots':  json.dumps(booked_slots),
         'pending_slots': json.dumps(pending_slots),
         'services':      Appointment.SERVICE_CHOICES,
+        'has_active_package': has_active_package
     })
 
 def start_package_session(request, pkg_id):
