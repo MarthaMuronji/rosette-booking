@@ -1,6 +1,36 @@
 from django.db import models
 
 
+class ClientPackage(models.Model):
+    PACKAGE_TYPE_CHOICES = [
+        ('monthly_wellness', 'Monthly Wellness'),
+        ('vip_wellness', 'VIP Wellness'),
+    ]
+
+    client_name = models.CharField(max_length=100)
+    client_phone = models.CharField(max_length=20)
+    package_type = models.CharField(max_length=20, choices=PACKAGE_TYPE_CHOICES)
+    total_sessions = models.IntegerField()
+    sessions_completed = models.IntegerField(default=0)
+    purchase_date = models.DateField(auto_now_add=True)
+    expiry_date = models.DateField(null=True, blank=True)
+    is_active = models.BooleanField(default=True)
+
+    def sessions_remaining(self):
+        return self.total_sessions - self.sessions_completed
+
+    def progress_percent(self):
+        if self.total_sessions == 0:
+            return 0
+        return int((self.sessions_completed / self.total_sessions) * 100)
+
+    def __str__(self):
+        return f"{self.client_name} — {self.get_package_type_display()} ({self.sessions_completed}/{self.total_sessions})"
+
+    class Meta:
+        ordering = ['-purchase_date']
+
+
 class Appointment(models.Model):
     STATUS_CHOICES = [
         ('pending', 'Pending'),
@@ -17,8 +47,8 @@ class Appointment(models.Model):
         ('sports', 'Sports Massage'),
         ('hot_stone', 'Hot Stone Massage'),
         ('thai', 'Thai Massage'),
-        ('monthly_wellness', 'Monthly Wellness Package — 5 × 90 min'),
-        ('vip_wellness', 'VIP Wellness Package — 8 × 90 min'),
+        ('monthly_wellness', 'Monthly Wellness Package'),
+        ('vip_wellness', 'VIP Wellness Package'),
     ]
 
     DURATION_CHOICES = [
@@ -65,6 +95,15 @@ class Appointment(models.Model):
     zone = models.CharField(max_length=10, choices=ZONE_CHOICES, blank=True)
     appointment_date = models.DateField()
     appointment_time = models.TimeField()
+
+    # Package link
+    client_package = models.ForeignKey(
+        ClientPackage,
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name='appointments',
+    )
 
     # System fields
     status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='pending')
