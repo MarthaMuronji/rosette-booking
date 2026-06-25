@@ -6,7 +6,6 @@ __pycache__/
 *.pyd
 db.sqlite3
 *.sqlite3
-staticfiles/
 .DS_Store
 Thumbs.db
 .vscode/
