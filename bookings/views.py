@@ -610,3 +610,18 @@ def client_dashboard(request):
         'pending_slots': json.dumps(pending_slots),
         'services':      Appointment.SERVICE_CHOICES,
     })
+
+def start_package_session(request, pkg_id):
+    phone = request.session.get('client_phone')
+    if not phone:
+        return redirect('client_lookup')
+
+    pkg = get_object_or_404(ClientPackage, pk=pkg_id, client_phone=phone)
+
+    if not pkg.is_active or pkg.sessions_remaining() <= 0:
+        return redirect('client_dashboard')
+
+    request.session['prefill_name']  = pkg.client_name
+    request.session['prefill_phone'] = pkg.client_phone
+
+    return redirect('home')
