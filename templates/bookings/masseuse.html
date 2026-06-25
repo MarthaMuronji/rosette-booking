@@ -345,6 +345,12 @@
                             <i class="fas fa-spa"></i>
                             {{ apt.get_service_display }} — {{ apt.duration }} min
                         </div>
+                        {% if apt.client_package %}
+<div class="appointment-meta" style="color:var(--primary);">
+    <i class="fas fa-layer-group"></i>
+    {{ apt.client_package.get_package_type_display }} — Session {{ apt.client_package.sessions_completed|add:1 }} of {{ apt.client_package.total_sessions }} ({{ apt.client_package.sessions_remaining }} remaining)
+</div>
+{% endif %}
                         <div class="appointment-meta">
                             <i class="fas fa-calendar"></i>
                             {{ apt.appointment_date|date:"l, F j, Y" }}
@@ -376,11 +382,10 @@
                                     <i class="fas fa-times me-1"></i> Decline
                                 </button>
                             </form>
-                            <a href="https://wa.me/{{ apt.client_phone }}?text=🌿%20Hi%20{{ apt.client_name }}!%20Your%20Rosette%20Wellness%20request%20has%20been%20approved!%0A%0AService%3A%20{{ apt.get_service_display }}%0ADate%3A%20{{ apt.appointment_date }}%0ATime%3A%20{{ apt.appointment_time|time:'g:i A' }}%0A%0APlease%20complete%20your%20booking%20here%3A%20{{ base_url }}/book/confirm/{{ apt.pk }}/%0A%0AWe%20look%20forward%20to%20seeing%20you!%20🌸"
-                               class="btn-whatsapp-rw" target="_blank"
-                               onclick="approveAppointment({{ apt.pk }})">
-                                <i class="fab fa-whatsapp me-1"></i> Approve via WhatsApp
-                            </a>
+                            <a href="{% url 'approve_appointment' apt.pk %}"
+   class="btn-whatsapp-rw">
+    <i class="fab fa-whatsapp me-1"></i> Approve via WhatsApp
+</a>
                         </div>
                     </div>
                 </div>
@@ -413,6 +418,13 @@
                             <i class="fas fa-spa"></i>
                             {{ apt.get_service_display }} — {{ apt.duration }} min
                         </div>
+                        {% if apt.client_package %}
+<div class="appointment-meta" style="color:var(--primary);">
+    <i class="fas fa-layer-group"></i>
+    {{ apt.client_package.get_package_type_display }} — Session {{ apt.client_package.sessions_completed|add:1 }} of {{ apt.client_package.total_sessions }} ({{ apt.client_package.sessions_remaining }} remaining)
+</div>
+{% endif %}
+
                         <div class="appointment-meta">
                             <i class="fas fa-calendar"></i>
                             {{ apt.appointment_date|date:"l, F j, Y" }}
@@ -499,6 +511,12 @@
                             <i class="fas fa-spa"></i>
                             {{ apt.get_service_display }} — {{ apt.duration }} min
                         </div>
+                        {% if apt.client_package %}
+<div class="appointment-meta" style="color:var(--primary);">
+    <i class="fas fa-layer-group"></i>
+    {{ apt.client_package.get_package_type_display }} — Session {{ apt.client_package.sessions_completed }} of {{ apt.client_package.total_sessions }}
+</div>
+{% endif %}
                         <div class="appointment-meta">
                             <i class="fas fa-calendar"></i>
                             {{ apt.appointment_date|date:"l, F j, Y" }}
@@ -608,15 +626,7 @@
 
 {% block extra_js %}
 <script>
-function approveAppointment(pk) {
-    fetch(`/masseuse/approve/${pk}/`, {
-        method: 'POST',
-        headers: {
-            'X-CSRFToken': '{{ csrf_token }}',
-            'Content-Type': 'application/json'
-        }
-    });
-}
+
 </script>
 {% endblock %}
 

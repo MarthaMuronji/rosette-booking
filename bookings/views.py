@@ -496,14 +496,27 @@ def approve_appointment(request, pk):
     time_formatted  = appointment.appointment_time.strftime('%I:%M %p')
     confirm_url     = f"{settings.BASE_URL}/book/confirm/{appointment.pk}/"
 
-    whatsapp_message = (
-        f"🌿 Hi {appointment.client_name}! Your Rosette Wellness request has been approved!%0A%0A"
-        f"Service: {service_display}%0A"
-        f"Date: {appointment.appointment_date}%0A"
-        f"Time: {time_formatted}%0A%0A"
-        f"Please complete your booking here: {confirm_url}%0A%0A"
-        f"We look forward to seeing you! 🌸"
-    )
+    if appointment.client_package:
+        pkg         = appointment.client_package
+        session_num = pkg.sessions_completed + 1
+        whatsapp_message = (
+            f"🌿 Hi {appointment.client_name}!%0A%0A"
+            f"Your Session {session_num} of {pkg.total_sessions} has been approved!%0A%0A"
+            f"Service: {service_display}%0A"
+            f"Date: {appointment.appointment_date}%0A"
+            f"Time: {time_formatted}%0A%0A"
+            f"Please confirm your session details here: {confirm_url}%0A%0A"
+            f"See you soon! 🌸"
+        )
+    else:
+        whatsapp_message = (
+            f"🌿 Hi {appointment.client_name}! Your Rosette Wellness request has been approved!%0A%0A"
+            f"Service: {service_display}%0A"
+            f"Date: {appointment.appointment_date}%0A"
+            f"Time: {time_formatted}%0A%0A"
+            f"Please complete your booking here: {confirm_url}%0A%0A"
+            f"We look forward to seeing you! 🌸"
+        )
 
     phone = appointment.client_phone.replace('+', '').replace(' ', '')
     return redirect(f"https://wa.me/{phone}?text={whatsapp_message}")
@@ -517,11 +530,20 @@ def decline_appointment(request, pk):
     appointment.status = 'declined'
     appointment.save()
 
-    whatsapp_message = (
-        f"Hi {appointment.client_name}, unfortunately we are unable to accommodate "
-        f"your request for {appointment.appointment_date} at the requested time. "
-        f"Please visit our booking page to choose another time: {settings.BASE_URL}/book/"
-    )
+    if appointment.client_package:
+        pkg         = appointment.client_package
+        session_num = pkg.sessions_completed + 1
+        whatsapp_message = (
+            f"Hi {appointment.client_name}, unfortunately we are unable to accommodate "
+            f"your request for {appointment.appointment_date} at the requested time. "
+            f"Please visit our booking page to choose another time: {settings.BASE_URL}/book/"
+        )
+    else:
+        whatsapp_message = (
+            f"Hi {appointment.client_name}, unfortunately we are unable to accommodate "
+            f"your request for {appointment.appointment_date} at the requested time. "
+            f"Please visit our booking page to choose another time: {settings.BASE_URL}/book/"
+        )
 
     phone = appointment.client_phone.replace('+', '').replace(' ', '')
     return redirect(f"https://wa.me/{phone}?text={whatsapp_message}")
@@ -574,12 +596,18 @@ def client_dashboard(request):
     latest      = Appointment.objects.filter(client_phone=phone).order_by('-created_at').first()
     client_name = latest.client_name if latest else ''
 
-    packages = ClientPackage.objects.filter(
-        client_phone=phone, is_active=True
-    ).order_by('-purchase_date')
-
+    all_packages       = ClientPackage.objects.filter(client_phone=phone).order_by('-purchase_date')
+    packages           = all_packages.filter(is_active=True)
     has_active_package = packages.exists()
-    
+
+    # Package fully used — show completion page, dashboard no longer accessible
+    if all_packages.exists() and not has_active_package:
+        completed_pkg = all_packages.first()
+        return render(request, 'bookings/package_complete.html', {
+            'client_name': client_name,
+            'package':     completed_pkg,
+        })
+
     upcoming = list(Appointment.objects.filter(
         client_phone=phone,
         status__in=['pending', 'approved', 'confirmed'],
@@ -593,7 +621,6 @@ def client_dashboard(request):
         client_phone=phone, status='completed'
     ).order_by('-appointment_date', '-appointment_time')[:10]
 
-    # Slot data for the embedded booking form
     slots = get_time_slots()
     booked_slots, pending_slots = get_booked_slots()
 
@@ -601,17 +628,17 @@ def client_dashboard(request):
     request.session['prefill_phone'] = phone
 
     return render(request, 'bookings/client_dashboard.html', {
-        'client_name':   client_name,
-        'client_phone':  phone,
-        'packages':      packages,
-        'upcoming':      upcoming,
-        'past':          past,
-        'today':         today.isoformat(),
-        'slots':         slots,
-        'booked_slots':  json.dumps(booked_slots),
-        'pending_slots': json.dumps(pending_slots),
-        'services':      Appointment.SERVICE_CHOICES,
-        'has_active_package': has_active_package
+        'client_name':        client_name,
+        'client_phone':       phone,
+        'packages':           packages,
+        'upcoming':           upcoming,
+        'past':               past,
+        'today':              today.isoformat(),
+        'slots':              slots,
+        'booked_slots':       json.dumps(booked_slots),
+        'pending_slots':      json.dumps(pending_slots),
+        'services':           Appointment.SERVICE_CHOICES,
+        'has_active_package': has_active_package,
     })
 
 def start_package_session(request, pkg_id):

@@ -320,6 +320,35 @@
                     <div class="total-amount" id="totalPrice">— AED</div>
                 </div>
 
+                {% if is_package %}
+    {% if appointment.client_package %}
+    <!-- Subsequent package session — already paid -->
+    <div style="background:rgba(232,137,14,0.06); border:1px solid rgba(232,137,14,0.25); border-radius:10px; padding:18px 22px; margin-bottom:24px; display:flex; align-items:center; gap:14px;">
+        <i class="fas fa-check-circle" style="color:var(--primary); font-size:20px; flex-shrink:0;"></i>
+        <div>
+            <div style="color:var(--foreground); font-weight:600; font-size:14px; margin-bottom:4px;">
+                This session is covered by your package
+            </div>
+            <div style="color:var(--foreground-muted); font-size:13px;">
+                Session {{ appointment.client_package.sessions_completed|add:1 }} of {{ appointment.client_package.total_sessions }} — 
+                {{ appointment.client_package.sessions_remaining }} remaining after this
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <!-- First package session — show package total -->
+    <div style="background:rgba(232,137,14,0.06); border:1px solid rgba(232,137,14,0.25); border-radius:10px; padding:18px 22px; margin-bottom:24px;">
+        <div style="color:var(--foreground-muted); font-size:13px; margin-bottom:4px;">Package Total</div>
+        <div style="font-family:'Playfair Display',serif; font-size:28px; color:var(--primary);">
+            {% if appointment.service == 'monthly_wellness' %}1,500{% else %}2,400{% endif %} AED
+        </div>
+        <div style="color:var(--foreground-muted); font-size:12px; margin-top:4px;">
+            Covers all sessions in this package + zone and add-on fees per session
+        </div>
+    </div>
+    {% endif %}
+{% endif %}
+
                 <button type="submit" class="btn-primary-rw w-100 py-3"
                         style="font-size:15px; letter-spacing:1px; border-radius:8px;">
                     CONFIRM MY BOOKING

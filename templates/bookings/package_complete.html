@@ -1,0 +1,167 @@
+{% extends 'bookings/base.html' %}
+
+{% block title %}Package Complete — Rosette Wellness{% endblock %}
+
+{% block extra_css %}
+<style>
+    .complete-hero {
+        background-color: var(--secondary);
+        padding: 80px 0 60px;
+        text-align: center;
+        border-bottom: 1px solid var(--border);
+    }
+
+    .complete-icon {
+        width: 72px;
+        height: 72px;
+        background: rgba(232,137,14,0.1);
+        border: 1px solid rgba(232,137,14,0.3);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 24px;
+        font-size: 30px;
+        color: var(--primary);
+    }
+
+    .complete-card {
+        background: var(--card-bg);
+        border: 1px solid var(--border-orange);
+        border-radius: 12px;
+        padding: 32px;
+        margin-bottom: 24px;
+        text-align: center;
+    }
+
+    .complete-card .pkg-name {
+        font-family: 'Playfair Display', serif;
+        font-size: 22px;
+        color: var(--foreground);
+        margin-bottom: 8px;
+    }
+
+    .complete-card .pkg-meta {
+        font-size: 14px;
+        color: var(--foreground-muted);
+        margin-bottom: 24px;
+    }
+
+    .sessions-row {
+        display: flex;
+        justify-content: center;
+        gap: 12px;
+        margin-bottom: 24px;
+        flex-wrap: wrap;
+    }
+
+    .session-dot {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, var(--primary), #f5a623);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #000;
+        font-size: 12px;
+        font-weight: 600;
+    }
+
+    .progress-track {
+        background: rgba(255,255,255,0.08);
+        border-radius: 100px;
+        height: 8px;
+        overflow: hidden;
+        margin-bottom: 12px;
+    }
+
+    .progress-fill {
+        background: linear-gradient(90deg, var(--primary), #f5a623);
+        height: 100%;
+        border-radius: 100px;
+        width: 100%;
+    }
+
+    .btn-home {
+        display: inline-block;
+        padding: 14px 32px;
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        color: var(--foreground-muted);
+        font-size: 13px;
+        text-decoration: none;
+        letter-spacing: 1px;
+        transition: all 0.2s ease;
+        margin: 6px;
+    }
+
+    .btn-home:hover {
+        border-color: rgba(232,137,14,0.4);
+        color: var(--foreground);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="complete-hero">
+    <div class="container">
+        <div class="complete-icon">
+            <i class="fas fa-star"></i>
+        </div>
+        <h1 class="rw-section-title">
+            {% if client_name %}Well done, {{ client_name }}!{% else %}Package Complete!{% endif %}
+        </h1>
+        <div class="rw-divider mx-auto"></div>
+        <p class="rw-section-subtitle mt-3">
+            You have completed all your sessions. We hope you enjoyed every moment of your wellness journey with Rosette.
+        </p>
+    </div>
+</div>
+
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-6">
+
+            <div class="complete-card">
+                <div class="pkg-name">{{ package.get_package_type_display }}</div>
+                <div class="pkg-meta">
+                    {{ package.total_sessions }} sessions completed
+                    {% if package.expiry_date %} · Valid until {{ package.expiry_date }}{% endif %}
+                </div>
+
+                <div class="sessions-row">
+    {% for apt in package.appointments.all %}
+    <div class="session-dot">
+        <i class="fas fa-check" style="font-size:11px;"></i>
+    </div>
+    {% endfor %}
+</div>
+
+                <div class="progress-track">
+                    <div class="progress-fill"></div>
+                </div>
+                <div style="font-size:12px; color:var(--primary); font-weight:600;">
+                    All {{ package.total_sessions }} sessions complete
+                </div>
+            </div>
+
+            <div style="text-align:center;">
+                <p style="color:var(--foreground-muted); font-size:14px; margin-bottom:24px; line-height:1.8;">
+                    Ready to continue your wellness journey? Book a new package or individual session whenever you like.
+                </p>
+                <div>
+                    <a href="/" class="btn-home">
+                        <i class="fas fa-home me-2"></i> Back to Homepage
+                    </a>
+                    <a href="/book/" class="btn-primary-rw"
+                       style="display:inline-block; padding:14px 32px; font-size:13px; border-radius:8px; letter-spacing:1px; text-decoration:none; margin:6px;">
+                        Book Again
+                    </a>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+{% endblock %}
