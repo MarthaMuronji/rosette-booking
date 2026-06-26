@@ -204,6 +204,52 @@
         background-color: var(--primary);
         color: #000000;
     }
+
+    /* Cancellation Requests styles */
+    .btn-approve-cancel-rw {
+        background-color: rgba(34,197,94,0.15);
+        color: #22c55e;
+        border: 1px solid rgba(34,197,94,0.3);
+        padding: 8px 20px;
+        border-radius: 6px;
+        font-size: 13px;
+        cursor: pointer;
+        transition: all 0.2s;
+        text-decoration: none;
+        display: inline-block;
+        text-align: center;
+        width: 100%;
+    }
+
+    .btn-approve-cancel-rw:hover {
+        background-color: rgba(34,197,94,0.25);
+        color: #22c55e;
+    }
+
+    .btn-decline-cancel-rw {
+        background-color: rgba(239,68,68,0.1);
+        color: #ef4444;
+        border: 1px solid rgba(239,68,68,0.3);
+        padding: 8px 20px;
+        border-radius: 6px;
+        font-size: 13px;
+        cursor: pointer;
+        transition: all 0.2s;
+        text-decoration: none;
+        display: inline-block;
+        text-align: center;
+        width: 100%;
+    }
+
+    .btn-decline-cancel-rw:hover {
+        background-color: rgba(239,68,68,0.2);
+        color: #ef4444;
+    }
+
+    .card-cancellation {
+        border-color: rgba(239,68,68,0.3) !important;
+        background: rgba(239,68,68,0.03);
+    }
 </style>
 {% endblock %}
 
@@ -329,6 +375,88 @@
         </div>
     </div>
 
+    <!-- Cancellation Requests Section -->
+    <div class="mb-5">
+        <div class="section-header">
+            <i class="fas fa-times-circle"></i> Cancellation Requests
+            {% if cancellation_requests %}
+            <span style="font-size:14px; background:rgba(239,68,68,0.1); color:#ef4444; padding:2px 12px; border-radius:20px; border:1px solid rgba(239,68,68,0.3);">
+                {{ cancellation_requests.count }}
+            </span>
+            {% endif %}
+        </div>
+
+        {% if cancellation_requests %}
+            {% for apt in cancellation_requests %}
+            <div class="appointment-card card-cancellation">
+                <div class="row align-items-center">
+                    <div class="col-md-7">
+                        <div class="d-flex align-items-center gap-2 mb-2">
+                            <div class="client-name">{{ apt.client_name }}</div>
+                            <span class="badge-declined-rw">Cancellation Requested</span>
+                        </div>
+                        <div class="appointment-meta">
+                            <i class="fas fa-spa"></i>
+                            {{ apt.get_service_display }} — {{ apt.duration }} min
+                        </div>
+                        <div class="appointment-meta">
+                            <i class="fas fa-calendar"></i>
+                            {{ apt.appointment_date|date:"l, F j, Y" }}
+                        </div>
+                        <div class="appointment-meta">
+                            <i class="fas fa-clock"></i>
+                            {{ apt.appointment_time|time:"g:i A" }}
+                        </div>
+                        <div class="appointment-meta">
+                            <i class="fas fa-phone"></i>
+                            {{ apt.client_phone }}
+                        </div>
+                        <div class="appointment-meta">
+                            <i class="fas fa-map-marker-alt"></i>
+                            {{ apt.client_address }}
+                        </div>
+                        {% if apt.preferred_service %}
+                        <div class="appointment-meta">
+                            <i class="fas fa-hand-sparkles"></i>
+                            Preferred massage: {{ apt.preferred_service }}
+                        </div>
+                        {% endif %}
+                        <div style="background:rgba(239,68,68,0.08);
+                                    border-left:3px solid rgba(239,68,68,0.4);
+                                    padding:10px 14px; border-radius:4px;
+                                    font-size:13px; color:rgba(239,68,68,0.8);
+                                    margin-top:12px;">
+                            <i class="fas fa-exclamation-circle me-2"></i>
+                            Client has requested to cancel this booking.
+                        </div>
+                    </div>
+                    <div class="col-md-5 mt-3 mt-md-0">
+                        <div class="d-flex flex-column gap-2 align-items-md-end">
+                            <a href="https://wa.me/{{ owner_phone|cut:'+' }}?text=Hi%20{{ apt.client_name }}%2C%20your%20cancellation%20request%20for%20{{ apt.get_service_display }}%20on%20{{ apt.appointment_date }}%20has%20been%20APPROVED.%20Your%20booking%20has%20been%20cancelled.%20We%20hope%20to%20see%20you%20again%20soon!%20🌿"
+                               class="btn-approve-cancel-rw" target="_blank">
+                                <i class="fas fa-check me-1"></i> Approve Cancellation
+                            </a>
+                            <a href="https://wa.me/{{ owner_phone|cut:'+' }}?text=Hi%20{{ apt.client_name }}%2C%20unfortunately%20your%20cancellation%20request%20for%20{{ apt.get_service_display }}%20on%20{{ apt.appointment_date }}%20has%20been%20DECLINED.%20Your%20booking%20remains%20confirmed.%20See%20you%20soon!%20🌿"
+                               class="btn-decline-cancel-rw" target="_blank">
+                                <i class="fas fa-times me-1"></i> Decline Cancellation
+                            </a>
+                            <a href="https://wa.me/{{ apt.client_phone|cut:'+' }}"
+                               class="btn-whatsapp-rw" target="_blank" style="width:100%; text-align:center;">
+                                <i class="fab fa-whatsapp me-1"></i> Contact Client
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
+            <div class="empty-state">
+                <i class="fas fa-check-circle" style="font-size:36px;"></i>
+                No pending cancellation requests.
+            </div>
+        {% endif %}
+    </div>
+
     <!-- Pending Requests -->
     <div class="mb-5">
         <div class="section-header">
@@ -346,11 +474,11 @@
                             {{ apt.get_service_display }} — {{ apt.duration }} min
                         </div>
                         {% if apt.client_package %}
-<div class="appointment-meta" style="color:var(--primary);">
-    <i class="fas fa-layer-group"></i>
-    {{ apt.client_package.get_package_type_display }} — Session {{ apt.client_package.sessions_completed|add:1 }} of {{ apt.client_package.total_sessions }} ({{ apt.client_package.sessions_remaining }} remaining)
-</div>
-{% endif %}
+                        <div class="appointment-meta" style="color:var(--primary);">
+                            <i class="fas fa-layer-group"></i>
+                            {{ apt.client_package.get_package_type_display }} — Session {{ apt.client_package.sessions_completed|add:1 }} of {{ apt.client_package.total_sessions }} ({{ apt.client_package.sessions_remaining }} remaining)
+                        </div>
+                        {% endif %}
                         <div class="appointment-meta">
                             <i class="fas fa-calendar"></i>
                             {{ apt.appointment_date|date:"l, F j, Y" }}
@@ -370,12 +498,12 @@
                         </div>
                         {% endif %}
 
-{% if apt.preferred_service %}
-<div class="appointment-meta">
-    <i class="fas fa-hand-sparkles"></i>
-    Preferred massage: {{ apt.preferred_service }}
-</div>
-{% endif %}
+                        {% if apt.preferred_service %}
+                        <div class="appointment-meta">
+                            <i class="fas fa-hand-sparkles"></i>
+                            Preferred massage: {{ apt.preferred_service }}
+                        </div>
+                        {% endif %}
 
                         <div class="departure-tag">
                             <i class="fas fa-car me-2"></i>
@@ -390,10 +518,10 @@
                                     <i class="fas fa-times me-1"></i> Decline
                                 </button>
                             </form>
-                           <a href="https://wa.me/{{ owner_phone|cut:'+' }}?text={{ whatsapp_message|urlencode }}"
-   class="btn-whatsapp-rw" target="_blank">
-    <i class="fab fa-whatsapp me-1"></i> Approve via WhatsApp
-</a>
+                            <a href="https://wa.me/{{ owner_phone|cut:'+' }}?text=🌿%20*New%20Booking%20Request!*%0A•%20Name:%20{{ apt.client_name }}%0A•%20Service:%20{{ apt.get_service_display }}%0A•%20Date:%20{{ apt.appointment_date }}%0A•%20Time:%20{{ apt.appointment_time|time:'g:i A' }}%0A•%20Phone:%20{{ apt.client_phone }}%0A%0A✅%20*Approve:*%20{{ base_url }}/whatsapp/approve/{{ apt.pk }}/%0A❌%20*Decline:*%20{{ base_url }}/whatsapp/decline/{{ apt.pk }}/"
+                               class="btn-whatsapp-rw" target="_blank">
+                                <i class="fab fa-whatsapp me-1"></i> Approve via WhatsApp
+                            </a>
                         </div>
                     </div>
                 </div>
@@ -427,11 +555,11 @@
                             {{ apt.get_service_display }} — {{ apt.duration }} min
                         </div>
                         {% if apt.client_package %}
-<div class="appointment-meta" style="color:var(--primary);">
-    <i class="fas fa-layer-group"></i>
-    {{ apt.client_package.get_package_type_display }} — Session {{ apt.client_package.sessions_completed|add:1 }} of {{ apt.client_package.total_sessions }} ({{ apt.client_package.sessions_remaining }} remaining)
-</div>
-{% endif %}
+                        <div class="appointment-meta" style="color:var(--primary);">
+                            <i class="fas fa-layer-group"></i>
+                            {{ apt.client_package.get_package_type_display }} — Session {{ apt.client_package.sessions_completed|add:1 }} of {{ apt.client_package.total_sessions }} ({{ apt.client_package.sessions_remaining }} remaining)
+                        </div>
+                        {% endif %}
 
                         <div class="appointment-meta">
                             <i class="fas fa-calendar"></i>
@@ -472,13 +600,12 @@
                         </div>
                         {% endif %}
 
-
-{% if apt.preferred_service %}
-<div class="appointment-meta">
-    <i class="fas fa-hand-sparkles"></i>
-    Preferred massage: {{ apt.preferred_service }}
-</div>
-{% endif %}
+                        {% if apt.preferred_service %}
+                        <div class="appointment-meta">
+                            <i class="fas fa-hand-sparkles"></i>
+                            Preferred massage: {{ apt.preferred_service }}
+                        </div>
+                        {% endif %}
 
                         <div class="departure-tag">
                             <i class="fas fa-car me-2"></i>
@@ -488,7 +615,7 @@
                     <div class="col-md-4 mt-3 mt-md-0 text-md-end">
                         <div class="price-tag mb-3">{{ apt.total_price }} AED</div>
                         <div class="d-flex flex-column gap-2 align-items-md-end">
-                            <a href="https://wa.me/{{ apt.client_phone }}"
+                            <a href="https://wa.me/{{ apt.client_phone|cut:'+' }}"
                                class="btn-whatsapp-rw" target="_blank">
                                 <i class="fab fa-whatsapp me-1"></i> WhatsApp Client
                             </a>
@@ -529,11 +656,11 @@
                             {{ apt.get_service_display }} — {{ apt.duration }} min
                         </div>
                         {% if apt.client_package %}
-<div class="appointment-meta" style="color:var(--primary);">
-    <i class="fas fa-layer-group"></i>
-    {{ apt.client_package.get_package_type_display }} — Session {{ apt.client_package.sessions_completed }} of {{ apt.client_package.total_sessions }}
-</div>
-{% endif %}
+                        <div class="appointment-meta" style="color:var(--primary);">
+                            <i class="fas fa-layer-group"></i>
+                            {{ apt.client_package.get_package_type_display }} — Session {{ apt.client_package.sessions_completed }} of {{ apt.client_package.total_sessions }}
+                        </div>
+                        {% endif %}
                         <div class="appointment-meta">
                             <i class="fas fa-calendar"></i>
                             {{ apt.appointment_date|date:"l, F j, Y" }}
@@ -623,7 +750,7 @@
                         </div>
                     </div>
                     <div class="col-md-4 mt-3 mt-md-0 text-md-end">
-                        <a href="https://wa.me/{{ apt.client_phone }}?text=Hi%20{{ apt.client_name }}%2C%20we%20noticed%20your%20Rosette%20Wellness%20request%20for%20{{ apt.get_service_display }}%20on%20{{ apt.appointment_date }}%20was%20not%20confirmed%20in%20time.%20We%20apologise%20for%20the%20delay!%20Please%20visit%20our%20booking%20page%20to%20choose%20a%20new%20time%3A%20{{ base_url }}/book/%20We%20look%20forward%20to%20welcoming%20you!%20🌿"
+                        <a href="https://wa.me/{{ apt.client_phone|cut:'+' }}?text=Hi%20{{ apt.client_name }}%2C%20we%20noticed%20your%20Rosette%20Wellness%20request%20for%20{{ apt.get_service_display }}%20on%20{{ apt.appointment_date }}%20was%20not%20confirmed%20in%20time.%20We%20apologise%20for%20the%20delay!%20Please%20visit%20our%20booking%20page%20to%20choose%20a%20new%20time%3A%20{{ base_url }}/book/%20We%20look%20forward%20to%20welcoming%20you!%20🌿"
                            class="btn-whatsapp-rw" target="_blank">
                             <i class="fab fa-whatsapp me-1"></i> Notify Client
                         </a>
@@ -640,11 +767,4 @@
     </div>
 
 </div>
-
-{% block extra_js %}
-<script>
-
-</script>
-{% endblock %}
-
 {% endblock %}
