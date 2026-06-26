@@ -84,8 +84,25 @@ STATICFILES_DIRS = [BASE_DIR / 'static']
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
+
+
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 BASE_URL = os.environ.get('BASE_URL', 'https://rosettewellness.up.railway.app')
 OWNER_PHONE = os.environ.get('OWNER_PHONE', '971505389174')
 OWNER_NAME = os.environ.get('OWNER_NAME', 'Rosette Wellness')
 MASSEUSE_PIN = os.environ.get('MASSEUSE_PIN', '1234')
+
+# Logging
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+        },
+    },
+    'root': {
+        'handlers': ['console'],
+        'level': 'INFO',
+    },
+}

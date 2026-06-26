@@ -612,10 +612,19 @@
             const [slotH, slotM] = slot.split(':').map(Number);
 
             // FIXED: Only mark as past if time is COMPLETELY past (not if it's the current half-hour slot)
-            const isPast = isToday && (
-                slotH < currentHour ||
-                (slotH === currentHour && slotM < currentMin)
-            );
+            // Better time comparison that handles timezones properly
+function isTimePast(slotH, slotM, isToday, currentHour, currentMin) {
+    if (!isToday) return false;
+    
+    // Convert to minutes for easier comparison
+    const slotTotalMinutes = slotH * 60 + slotM;
+    const currentTotalMinutes = currentHour * 60 + currentMin;
+    
+    // Add 15-minute grace period so current slot doesn't disappear
+    return slotTotalMinutes < (currentTotalMinutes - 15);
+}
+
+const isPast = isTimePast(slotH, slotM, isToday, currentHour, currentMin);
 
             // FIXED: Also check if this slot falls within an active booking
             const isBooked = booked.includes(slot);

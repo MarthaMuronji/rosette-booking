@@ -7,35 +7,38 @@ import datetime
 import json
 import re
 import urllib.parse
+import logging
+
+logger = logging.getLogger(__name__)
 
 PACKAGE_CONFIGS = {
-    'monthly_wellness': {'total_sessions': 5, 'validity_days': 30,  'base_price': 1500},
-    'vip_wellness':     {'total_sessions': 8, 'validity_days': None, 'base_price': 2400},
+    'monthly_wellness': {'total_sessions': 5, 'validity_days': 30, 'base_price': 1500},
+    'vip_wellness': {'total_sessions': 8, 'validity_days': None, 'base_price': 2400},
 }
 
-ZONE_FEES    = {'zone1': 0, 'zone2': 25, 'zone3': 50, 'other': 0}
+ZONE_FEES = {'zone1': 0, 'zone2': 25, 'zone3': 50, 'other': 0}
 ADDON_PRICES = {'none': 0, 'foot_30': 120, 'hns_30': 100, 'hns_60': 180}
 
 
 def calculate_price(service, duration, addon, zone):
     base_prices = {
-        'signature':   {90: 320, 120: 400},
-        'swedish':     {60: 250, 90: 320, 120: 400},
+        'signature': {90: 320, 120: 400},
+        'swedish': {60: 250, 90: 320, 120: 400},
         'deep_tissue': {90: 370, 120: 450},
-        'sports':      {90: 380, 120: 470},
-        'hot_stone':   {90: 380, 120: 470},
-        'thai':        {90: 320, 120: 400},
+        'sports': {90: 380, 120: 470},
+        'hot_stone': {90: 380, 120: 470},
+        'thai': {90: 320, 120: 400},
     }
-    base     = base_prices.get(service, {}).get(int(duration), 0)
+    base = base_prices.get(service, {}).get(int(duration), 0)
     addon_fee = ADDON_PRICES.get(addon, 0)
-    zone_fee  = ZONE_FEES.get(zone, 0)
+    zone_fee = ZONE_FEES.get(zone, 0)
     return base + addon_fee + zone_fee
 
 
 def get_time_slots():
     slots = []
     start = datetime.datetime(2000, 1, 1, 10, 0)
-    end   = datetime.datetime(2000, 1, 1, 21, 0)
+    end = datetime.datetime(2000, 1, 1, 21, 0)
     while start <= end:
         slots.append(start.strftime('%H:%M'))
         start += datetime.timedelta(minutes=30)
@@ -43,36 +46,51 @@ def get_time_slots():
 
 
 def get_booked_slots(exclude_pk=None):
+    """Get all booked and pending slots with proper timezone handling"""
     today = timezone.now().date()
 
-    approved_qs = Appointment.objects.filter(status__in=['approved', 'confirmed'], appointment_date__gte=today)
-    pending_qs  = Appointment.objects.filter(status='pending', appointment_date__gte=today)
+    approved_qs = Appointment.objects.filter(
+        status__in=['approved', 'confirmed'],
+        appointment_date__gte=today
+    )
+    pending_qs = Appointment.objects.filter(
+        status='pending',
+        appointment_date__gte=today
+    )
 
     if exclude_pk:
         approved_qs = approved_qs.exclude(pk=exclude_pk)
-        pending_qs  = pending_qs.exclude(pk=exclude_pk)
+        pending_qs = pending_qs.exclude(pk=exclude_pk)
 
     addon_durations = {'none': 0, 'foot_30': 30, 'hns_30': 30, 'hns_60': 60}
-    booked_slots  = {}
+    booked_slots = {}
     pending_slots = {}
 
+    # Process approved and confirmed bookings
     for b in approved_qs.values('appointment_date', 'appointment_time', 'duration', 'addon'):
         date_str = str(b['appointment_date'])
         if date_str not in booked_slots:
             booked_slots[date_str] = []
+
         total = b['duration'] + addon_durations.get(b['addon'], 0)
         t = datetime.datetime.combine(b['appointment_date'], b['appointment_time'])
-        for i in range(0, total, 30):
-            booked_slots[date_str].append((t + datetime.timedelta(minutes=i)).strftime('%H:%M'))
 
+        for i in range(0, total, 30):
+            slot_time = (t + datetime.timedelta(minutes=i)).strftime('%H:%M')
+            booked_slots[date_str].append(slot_time)
+
+    # Process pending bookings
     for p in pending_qs.values('appointment_date', 'appointment_time', 'duration', 'addon'):
         date_str = str(p['appointment_date'])
         if date_str not in pending_slots:
             pending_slots[date_str] = []
+
         total = p['duration'] + addon_durations.get(p['addon'], 0)
         t = datetime.datetime.combine(p['appointment_date'], p['appointment_time'])
+
         for i in range(0, total, 30):
-            pending_slots[date_str].append((t + datetime.timedelta(minutes=i)).strftime('%H:%M'))
+            slot_time = (t + datetime.timedelta(minutes=i)).strftime('%H:%M')
+            pending_slots[date_str].append(slot_time)
 
     return booked_slots, pending_slots
 
@@ -81,7 +99,9 @@ def auto_complete_past_sessions():
     now = timezone.now()
 
     for apt in Appointment.objects.filter(status__in=['approved', 'confirmed']):
-        apt_dt = timezone.make_aware(datetime.datetime.combine(apt.appointment_date, apt.appointment_time))
+        apt_dt = timezone.make_aware(
+            datetime.datetime.combine(apt.appointment_date, apt.appointment_time)
+        )
         if now > apt_dt + datetime.timedelta(minutes=apt.duration):
             apt.status = 'completed'
             apt.save()
@@ -92,7 +112,9 @@ def auto_complete_past_sessions():
                 apt.client_package.save()
 
     for apt in Appointment.objects.filter(status='pending'):
-        apt_dt = timezone.make_aware(datetime.datetime.combine(apt.appointment_date, apt.appointment_time))
+        apt_dt = timezone.make_aware(
+            datetime.datetime.combine(apt.appointment_date, apt.appointment_time)
+        )
         if now > apt_dt:
             apt.status = 'declined'
             apt.save()
@@ -113,26 +135,26 @@ def validate_uae_phone(phone):
 
 def book_request(request):
     if request.method == 'POST':
-        service        = request.POST.get('service', '').strip()
-        duration       = request.POST.get('duration', '').strip()
+        service = request.POST.get('service', '').strip()
+        duration = request.POST.get('duration', '').strip()
         preferred_date = request.POST.get('preferred_date', '').strip()
         preferred_time = request.POST.get('preferred_time', '').strip()
-        client_name    = request.POST.get('client_name', '').strip()
-        client_phone   = request.POST.get('client_phone', '').strip()
+        client_name = request.POST.get('client_name', '').strip()
+        client_phone = request.POST.get('client_phone', '').strip()
         preferred_service = request.POST.get('preferred_service', '').strip()
 
         errors = {}
 
         valid_service_keys = [v for v, _ in Appointment.SERVICE_CHOICES]
         valid_durations = {
-            'signature':        [90, 120],
-            'swedish':          [60, 90, 120],
-            'deep_tissue':      [90, 120],
-            'sports':           [90, 120],
-            'hot_stone':        [90, 120],
-            'thai':             [90, 120],
+            'signature': [90, 120],
+            'swedish': [60, 90, 120],
+            'deep_tissue': [90, 120],
+            'sports': [90, 120],
+            'hot_stone': [90, 120],
+            'thai': [90, 120],
             'monthly_wellness': [90],
-            'vip_wellness':     [90],
+            'vip_wellness': [90],
         }
 
         if not client_name:
@@ -211,8 +233,13 @@ def book_request(request):
 
         time_obj = datetime.datetime.strptime(preferred_time, '%H:%M').time()
 
-        # Calculate departure time (1 hour before)
-        departure_time = (datetime.datetime.combine(datetime.date.today(), time_obj) - datetime.timedelta(hours=1)).time()
+        # Calculate departure time (1 hour before session)
+        appointment_datetime = datetime.datetime.combine(
+            datetime.datetime.strptime(preferred_date, '%Y-%m-%d').date(),
+            time_obj
+        )
+        departure_datetime = appointment_datetime - datetime.timedelta(hours=1)
+        departure_time = departure_datetime.time()
 
         appointment = Appointment.objects.create(
             client_name=client_name,
@@ -249,15 +276,15 @@ def book_request(request):
                 appointment.client_package = existing_pkg
                 appointment.save()
 
-        request.session['prefill_name']  = client_name
+        request.session['prefill_name'] = client_name
         request.session['prefill_phone'] = client_phone
 
         service_display = dict(Appointment.SERVICE_CHOICES).get(service, service)
-        time_formatted  = datetime.datetime.strptime(preferred_time, '%H:%M').strftime('%I:%M %p')
-        
-        # NEW: WhatsApp auto-approval links
-        approve_url     = f"{settings.BASE_URL}/whatsapp/approve/{appointment.pk}/"
-        decline_url     = f"{settings.BASE_URL}/whatsapp/decline/{appointment.pk}/"
+        time_formatted = datetime.datetime.strptime(preferred_time, '%H:%M').strftime('%I:%M %p')
+
+        # WhatsApp auto-approval links
+        approve_url = f"{settings.BASE_URL}/whatsapp/approve/{appointment.pk}/"
+        decline_url = f"{settings.BASE_URL}/whatsapp/decline/{appointment.pk}/"
 
         whatsapp_message = (
             f"🌿 *New Booking Request!*%0A"
@@ -274,6 +301,7 @@ def book_request(request):
 
         # Redirect to WhatsApp to send message to owner
         owner_phone = settings.OWNER_PHONE.replace('+', '').replace(' ', '')
+        logger.info(f"New booking created: {appointment.pk} - {client_name}")
         return redirect(f"https://wa.me/{owner_phone}?text={whatsapp_message}")
 
     slots = get_time_slots()
@@ -294,7 +322,7 @@ def book_request(request):
 def whatsapp_approve(request, pk):
     """Auto-approve from WhatsApp link click (no login required)"""
     appointment = get_object_or_404(Appointment, pk=pk)
-    
+
     # Only allow if status is pending
     if appointment.status != 'pending':
         return render(request, 'bookings/whatsapp_response.html', {
@@ -302,16 +330,17 @@ def whatsapp_approve(request, pk):
             'message': 'This request has already been processed.',
             'status': 'info'
         })
-    
+
     # Auto-approve
     appointment.status = 'approved'
     appointment.save()
-    
+    logger.info(f"Appointment {appointment.pk} auto-approved via WhatsApp")
+
     # Send WhatsApp to client with confirmation link
     service_display = appointment.get_service_display()
     time_formatted = appointment.appointment_time.strftime('%I:%M %p')
     confirm_url = f"{settings.BASE_URL}/book/confirm/{appointment.pk}/"
-    
+
     if appointment.client_package:
         pkg = appointment.client_package
         session_num = pkg.sessions_completed + 1
@@ -347,7 +376,7 @@ def whatsapp_approve(request, pk):
             f"{confirm_url}%0A%0A"
             f"We look forward to seeing you! 🌸"
         )
-    
+
     # Also send confirmation to owner that it was approved
     owner_message = (
         f"✅ *Appointment Approved!*%0A"
@@ -357,10 +386,10 @@ def whatsapp_approve(request, pk):
         f"• Time: {time_formatted}%0A%0A"
         f"Confirmation sent to client. 👍"
     )
-    
+
     client_phone = appointment.client_phone.replace('+', '').replace(' ', '')
     owner_phone = settings.OWNER_PHONE.replace('+', '').replace(' ', '')
-    
+
     return render(request, 'bookings/whatsapp_response.html', {
         'appointment': appointment,
         'message': '✅ Appointment approved successfully!',
@@ -376,7 +405,7 @@ def whatsapp_approve(request, pk):
 def whatsapp_decline(request, pk):
     """Auto-decline from WhatsApp link click (no login required)"""
     appointment = get_object_or_404(Appointment, pk=pk)
-    
+
     # Only allow if status is pending
     if appointment.status != 'pending':
         return render(request, 'bookings/whatsapp_response.html', {
@@ -384,19 +413,20 @@ def whatsapp_decline(request, pk):
             'message': 'This request has already been processed.',
             'status': 'info'
         })
-    
+
     appointment.status = 'declined'
     appointment.save()
-    
+    logger.info(f"Appointment {appointment.pk} auto-declined via WhatsApp")
+
     # Send sorry message to client
     client_message = (
         f"Hi {appointment.client_name}, unfortunately we are unable to accommodate "
         f"your request for {appointment.appointment_date} at the requested time. "
         f"Please visit our booking page to choose another time: {settings.BASE_URL}/book/"
     )
-    
+
     client_phone = appointment.client_phone.replace('+', '').replace(' ', '')
-    
+
     return render(request, 'bookings/whatsapp_response.html', {
         'appointment': appointment,
         'message': '❌ Appointment declined.',
@@ -422,12 +452,12 @@ def reschedule_appointment(request, pk):
 
     # Blocked — appointment is today or already past
     if appointment.appointment_date <= today:
-        all_slots    = get_time_slots()
+        all_slots = get_time_slots()
         booked_today, pending_today = get_booked_slots()
-        today_str    = today.isoformat()
-        booked_list  = booked_today.get(today_str, [])
+        today_str = today.isoformat()
+        booked_list = booked_today.get(today_str, [])
         pending_list = pending_today.get(today_str, [])
-        now_time     = timezone.localtime(timezone.now()).time()
+        now_time = timezone.localtime(timezone.now()).time()
 
         available_today = []
         for slot in all_slots:
@@ -452,7 +482,7 @@ def reschedule_appointment(request, pk):
     if request.method == 'POST':
         new_date = request.POST.get('preferred_date', '').strip()
         new_time = request.POST.get('preferred_time', '').strip()
-        errors   = {}
+        errors = {}
 
         if not new_date:
             errors['preferred_date'] = 'Please select a date.'
@@ -488,9 +518,9 @@ def reschedule_appointment(request, pk):
         appointment.save()
 
         service_display = appointment.get_service_display()
-        time_formatted  = datetime.datetime.strptime(new_time, '%H:%M').strftime('%I:%M %p')
-        approve_url     = f"{settings.BASE_URL}/whatsapp/approve/{appointment.pk}/"
-        decline_url     = f"{settings.BASE_URL}/whatsapp/decline/{appointment.pk}/"
+        time_formatted = datetime.datetime.strptime(new_time, '%H:%M').strftime('%I:%M %p')
+        approve_url = f"{settings.BASE_URL}/whatsapp/approve/{appointment.pk}/"
+        decline_url = f"{settings.BASE_URL}/whatsapp/decline/{appointment.pk}/"
 
         whatsapp_message = (
             f"🔄 *Reschedule Request!*%0A"
@@ -503,7 +533,8 @@ def reschedule_appointment(request, pk):
             f"❌ *Decline:* {decline_url}"
         )
 
-        return redirect(f"https://wa.me/{settings.OWNER_PHONE}?text={whatsapp_message}")
+        owner_phone = settings.OWNER_PHONE.replace('+', '').replace(' ', '')
+        return redirect(f"https://wa.me/{owner_phone}?text={whatsapp_message}")
 
     booked_slots, pending_slots = get_booked_slots(exclude_pk=appointment.pk)
     return render(request, 'bookings/reschedule.html', {
@@ -517,19 +548,19 @@ def reschedule_appointment(request, pk):
 
 def book_confirm(request, pk):
     appointment = get_object_or_404(Appointment, pk=pk, status='approved')
-    is_package  = appointment.service in PACKAGE_CONFIGS
+    is_package = appointment.service in PACKAGE_CONFIGS
 
     if request.method == 'POST':
-        addon              = request.POST.get('addon', 'none')
-        zone               = request.POST.get('zone', 'zone1')
-        client_email       = request.POST.get('client_email', '')
-        client_address     = request.POST.get('client_address', '')
-        notes              = request.POST.get('notes', '')
+        addon = request.POST.get('addon', 'none')
+        zone = request.POST.get('zone', 'zone1')
+        client_email = request.POST.get('client_email', '')
+        client_address = request.POST.get('client_address', '')
+        notes = request.POST.get('notes', '')
         preferred_pressure = request.POST.get('preferred_pressure')
-        payment_method     = request.POST.get('payment_method')
+        payment_method = request.POST.get('payment_method')
 
         if is_package:
-            zone_fee  = ZONE_FEES.get(zone, 0)
+            zone_fee = ZONE_FEES.get(zone, 0)
             addon_fee = ADDON_PRICES.get(addon, 0)
             if appointment.client_package:
                 total_price = zone_fee + addon_fee
@@ -550,24 +581,25 @@ def book_confirm(request, pk):
         else:
             total_price = calculate_price(appointment.service, appointment.duration, addon, zone)
 
-        appointment.addon              = addon
-        appointment.zone               = zone
-        appointment.client_email       = client_email
-        appointment.client_address     = client_address
-        appointment.notes              = notes
+        appointment.addon = addon
+        appointment.zone = zone
+        appointment.client_email = client_email
+        appointment.client_address = client_address
+        appointment.notes = notes
         appointment.preferred_pressure = preferred_pressure
-        appointment.payment_method     = payment_method
-        appointment.total_price        = total_price
-        appointment.status             = 'confirmed'
+        appointment.payment_method = payment_method
+        appointment.total_price = total_price
+        appointment.status = 'confirmed'
         appointment.save()
 
-        request.session['client_phone']  = appointment.client_phone
-        request.session['prefill_name']  = appointment.client_name
+        request.session['client_phone'] = appointment.client_phone
+        request.session['prefill_name'] = appointment.client_name
         request.session['prefill_phone'] = appointment.client_phone
 
         response = redirect('client_dashboard')
         response['Cache-Control'] = 'no-store, no-cache, must-revalidate'
         response['Pragma'] = 'no-cache'
+        logger.info(f"Booking confirmed: {appointment.pk} - {appointment.client_name}")
         return response
 
     return render(request, 'bookings/book_confirm.html', {
@@ -587,14 +619,17 @@ def masseuse_login(request):
         pin = request.POST.get('pin', '')
         if pin == settings.MASSEUSE_PIN:
             request.session['masseuse_authenticated'] = True
+            logger.info("Masseuse logged in successfully")
             return redirect('masseuse_dashboard')
         else:
             error = 'Incorrect PIN. Please try again.'
+            logger.warning(f"Failed login attempt from {request.META.get('REMOTE_ADDR')}")
     return render(request, 'bookings/masseuse_login.html', {'error': error})
 
 
 def masseuse_logout(request):
     request.session.pop('masseuse_authenticated', None)
+    logger.info("Masseuse logged out")
     return redirect('home')
 
 
@@ -606,13 +641,15 @@ def masseuse_dashboard(request):
 
     today = timezone.now().date()
 
-    pending   = Appointment.objects.filter(status='pending').order_by('appointment_date', 'appointment_time')
-    approved  = Appointment.objects.filter(status='approved', appointment_date__gte=today).order_by('appointment_date', 'appointment_time')
+    pending = Appointment.objects.filter(status='pending').order_by('appointment_date', 'appointment_time')
+    approved = Appointment.objects.filter(status='approved', appointment_date__gte=today).order_by('appointment_date', 'appointment_time')
     confirmed = Appointment.objects.filter(status='confirmed', appointment_date__gte=today).order_by('appointment_date', 'appointment_time')
     completed = Appointment.objects.filter(status='completed').order_by('-appointment_date', '-appointment_time')
-    expired   = Appointment.objects.filter(status='declined').order_by('-appointment_date', '-appointment_time')
+    expired = Appointment.objects.filter(status='declined').order_by('-appointment_date', '-appointment_time')
 
     total_earnings = sum(apt.total_price for apt in completed)
+
+    logger.info(f"Dashboard viewed - Pending: {pending.count()}, Confirmed: {confirmed.count()}")
 
     return render(request, 'bookings/masseuse.html', {
         'pending': pending,
@@ -623,6 +660,7 @@ def masseuse_dashboard(request):
         'today': today,
         'total_earnings': total_earnings,
         'base_url': settings.BASE_URL,
+        'owner_phone': settings.OWNER_PHONE,
     })
 
 
@@ -633,10 +671,11 @@ def approve_appointment(request, pk):
     appointment = get_object_or_404(Appointment, pk=pk)
     appointment.status = 'approved'
     appointment.save()
+    logger.info(f"Appointment {appointment.pk} approved by masseuse")
 
     service_display = appointment.get_service_display()
-    time_formatted  = appointment.appointment_time.strftime('%I:%M %p')
-    confirm_url     = f"{settings.BASE_URL}/book/confirm/{appointment.pk}/"
+    time_formatted = appointment.appointment_time.strftime('%I:%M %p')
+    confirm_url = f"{settings.BASE_URL}/book/confirm/{appointment.pk}/"
 
     if appointment.client_package:
         pkg = appointment.client_package
@@ -682,9 +721,10 @@ def decline_appointment(request, pk):
     appointment = get_object_or_404(Appointment, pk=pk)
     appointment.status = 'declined'
     appointment.save()
+    logger.info(f"Appointment {appointment.pk} declined by masseuse")
 
     if appointment.client_package:
-        pkg         = appointment.client_package
+        pkg = appointment.client_package
         session_num = pkg.sessions_completed + 1
         whatsapp_message = (
             f"Hi {appointment.client_name}, unfortunately we are unable to accommodate "
@@ -709,6 +749,7 @@ def complete_appointment(request, pk):
     appointment = get_object_or_404(Appointment, pk=pk)
     appointment.status = 'completed'
     appointment.save()
+    logger.info(f"Appointment {appointment.pk} marked as completed")
 
     if appointment.client_package:
         appointment.client_package.sessions_completed += 1
@@ -746,11 +787,11 @@ def client_dashboard(request):
 
     today = timezone.now().date()
 
-    latest      = Appointment.objects.filter(client_phone=phone).order_by('-created_at').first()
+    latest = Appointment.objects.filter(client_phone=phone).order_by('-created_at').first()
     client_name = latest.client_name if latest else ''
 
-    all_packages       = ClientPackage.objects.filter(client_phone=phone).order_by('-purchase_date')
-    packages           = all_packages.filter(is_active=True)
+    all_packages = ClientPackage.objects.filter(client_phone=phone).order_by('-purchase_date')
+    packages = all_packages.filter(is_active=True)
     has_active_package = packages.exists()
 
     # Package fully used — stay on dashboard, show completion banner
@@ -774,22 +815,22 @@ def client_dashboard(request):
     slots = get_time_slots()
     booked_slots, pending_slots = get_booked_slots()
 
-    request.session['prefill_name']  = client_name
+    request.session['prefill_name'] = client_name
     request.session['prefill_phone'] = phone
 
     return render(request, 'bookings/client_dashboard.html', {
-        'client_name':        client_name,
-        'client_phone':       phone,
-        'packages':           packages,
-        'upcoming':           upcoming,
-        'past':               past,
-        'today':              today.isoformat(),
-        'slots':              slots,
-        'booked_slots':       json.dumps(booked_slots),
-        'pending_slots':      json.dumps(pending_slots),
-        'services':           Appointment.SERVICE_CHOICES,
+        'client_name': client_name,
+        'client_phone': phone,
+        'packages': packages,
+        'upcoming': upcoming,
+        'past': past,
+        'today': today.isoformat(),
+        'slots': slots,
+        'booked_slots': json.dumps(booked_slots),
+        'pending_slots': json.dumps(pending_slots),
+        'services': Appointment.SERVICE_CHOICES,
         'has_active_package': has_active_package,
-        'completed_package':  completed_package,
+        'completed_package': completed_package,
     })
 
 
@@ -803,7 +844,7 @@ def start_package_session(request, pkg_id):
     if not pkg.is_active or pkg.sessions_remaining() <= 0:
         return redirect('client_dashboard')
 
-    request.session['prefill_name']  = pkg.client_name
+    request.session['prefill_name'] = pkg.client_name
     request.session['prefill_phone'] = pkg.client_phone
 
     return redirect('home')
