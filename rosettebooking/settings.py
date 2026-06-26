@@ -85,7 +85,7 @@ STATIC_ROOT = BASE_DIR / 'staticfiles'
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
-OWNER_PHONE = os.getenv('OWNER_PHONE', '971505389174')
-OWNER_NAME = os.getenv('OWNER_NAME', 'Rosette Wellness')
-BASE_URL = os.getenv('BASE_URL', 'http://127.0.0.1:8000')
-MASSEUSE_PIN = os.getenv('MASSEUSE_PIN', '1234')
+BASE_URL = os.environ.get('BASE_URL', 'https://rosettewellness.up.railway.app')
+OWNER_PHONE = os.environ.get('OWNER_PHONE', '971505389174')
+OWNER_NAME = os.environ.get('OWNER_NAME', 'Rosette Wellness')
+MASSEUSE_PIN = os.environ.get('MASSEUSE_PIN', '1234')

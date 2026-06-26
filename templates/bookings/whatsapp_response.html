@@ -1,0 +1,198 @@
+{% extends 'bookings/base.html' %}
+
+{% block title %}WhatsApp Response — Rosette Wellness{% endblock %}
+
+{% block extra_css %}
+<style>
+    .response-hero {
+        background-color: var(--secondary);
+        padding: 80px 0 50px;
+        text-align: center;
+        border-bottom: 1px solid var(--border);
+    }
+
+    .response-icon {
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 24px;
+        font-size: 36px;
+    }
+
+    .response-icon.success {
+        background: rgba(34,197,94,0.15);
+        border: 1px solid rgba(34,197,94,0.3);
+        color: #22c55e;
+    }
+
+    .response-icon.declined {
+        background: rgba(239,68,68,0.15);
+        border: 1px solid rgba(239,68,68,0.3);
+        color: #ef4444;
+    }
+
+    .response-icon.info {
+        background: rgba(232,137,14,0.15);
+        border: 1px solid rgba(232,137,14,0.3);
+        color: var(--primary);
+    }
+
+    .response-card {
+        background: var(--card-bg);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 32px;
+        margin-bottom: 24px;
+    }
+
+    .wa-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        background: #25d366;
+        color: #000;
+        border-radius: 8px;
+        padding: 14px 28px;
+        font-size: 15px;
+        font-weight: 600;
+        text-decoration: none;
+        letter-spacing: 0.5px;
+        transition: opacity 0.2s ease;
+        margin: 6px;
+    }
+
+    .wa-btn:hover { opacity: 0.88; color: #000; }
+
+    .btn-dashboard {
+        display: inline-block;
+        padding: 12px 28px;
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        color: var(--foreground-muted);
+        font-size: 13px;
+        text-decoration: none;
+        letter-spacing: 1px;
+        transition: all 0.2s ease;
+        margin: 6px;
+    }
+
+    .btn-dashboard:hover {
+        border-color: rgba(232,137,14,0.4);
+        color: var(--foreground);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="response-hero">
+    <div class="container">
+        <div class="response-icon {{ status }}">
+            {% if status == 'success' %}
+            <i class="fas fa-check"></i>
+            {% elif status == 'declined' %}
+            <i class="fas fa-times"></i>
+            {% else %}
+            <i class="fas fa-info-circle"></i>
+            {% endif %}
+        </div>
+        <h1 class="rw-section-title">{{ message }}</h1>
+        <div class="rw-divider mx-auto"></div>
+        <p class="rw-section-subtitle mt-3">
+            {% if status == 'success' %}
+            The appointment has been approved. Send the confirmation to the client below.
+            {% elif status == 'declined' %}
+            The appointment has been declined. Send the apology message to the client below.
+            {% else %}
+            This request has already been processed.
+            {% endif %}
+        </p>
+    </div>
+</div>
+
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-7">
+
+            <div class="response-card">
+                <p style="font-size:12px; letter-spacing:2px; text-transform:uppercase;
+                           color:var(--primary); margin-bottom:16px;">
+                    Appointment Details
+                </p>
+                <div style="display:flex; justify-content:space-between; padding:8px 0; border-bottom:1px solid var(--border); font-size:14px; color:var(--foreground-muted);">
+                    <span>Client</span>
+                    <strong style="color:white;">{{ appointment.client_name }}</strong>
+                </div>
+                <div style="display:flex; justify-content:space-between; padding:8px 0; border-bottom:1px solid var(--border); font-size:14px; color:var(--foreground-muted);">
+                    <span>Service</span>
+                    <strong style="color:white;">{{ appointment.get_service_display }}</strong>
+                </div>
+                <div style="display:flex; justify-content:space-between; padding:8px 0; border-bottom:1px solid var(--border); font-size:14px; color:var(--foreground-muted);">
+                    <span>Date</span>
+                    <strong style="color:white;">{{ appointment.appointment_date }}</strong>
+                </div>
+                <div style="display:flex; justify-content:space-between; padding:8px 0; border-bottom:1px solid var(--border); font-size:14px; color:var(--foreground-muted);">
+                    <span>Time</span>
+                    <strong style="color:white;">{{ appointment.appointment_time|time:"g:i A" }}</strong>
+                </div>
+                <div style="display:flex; justify-content:space-between; padding:8px 0; font-size:14px; color:var(--foreground-muted);">
+                    <span>Status</span>
+                    <strong style="color:{% if status == 'success' %}#22c55e{% elif status == 'declined' %}#ef4444{% else %}var(--primary){% endif %};">
+                        {{ appointment.get_status_display }}
+                    </strong>
+                </div>
+            </div>
+
+            {% if status == 'success' %}
+            <div style="text-align:center;">
+                <p style="color:var(--foreground-muted); font-size:14px; margin-bottom:16px;">
+                    <i class="fas fa-arrow-right me-2"></i>
+                    Send confirmation to <strong style="color:white;">{{ client_phone }}</strong>
+                </p>
+                <a href="{{ client_whatsapp }}" target="_blank" class="wa-btn">
+                    <i class="fab fa-whatsapp" style="font-size:20px;"></i>
+                    Send to Client
+                </a>
+                <a href="{{ owner_whatsapp }}" target="_blank" class="wa-btn" style="background:#1a1a1a; color:white; border:1px solid var(--border);">
+                    <i class="fas fa-check-circle"></i>
+                    Confirm to Owner
+                </a>
+            </div>
+            {% endif %}
+
+            {% if status == 'declined' %}
+            <div style="text-align:center;">
+                <p style="color:var(--foreground-muted); font-size:14px; margin-bottom:16px;">
+                    <i class="fas fa-arrow-right me-2"></i>
+                    Send apology to <strong style="color:white;">{{ client_phone }}</strong>
+                </p>
+                <a href="{{ client_whatsapp }}" target="_blank" class="wa-btn">
+                    <i class="fab fa-whatsapp" style="font-size:20px;"></i>
+                    Send to Client
+                </a>
+            </div>
+            {% endif %}
+
+            {% if status == 'info' %}
+            <div style="text-align:center;">
+                <p style="color:var(--foreground-muted); font-size:14px; margin-bottom:16px;">
+                    This request has already been processed.
+                </p>
+            </div>
+            {% endif %}
+
+            <div style="text-align:center; margin-top:24px;">
+                <a href="/masseuse/" class="btn-dashboard">
+                    <i class="fas fa-th-large me-2"></i> Therapist Dashboard
+                </a>
+                <a href="/book/" class="btn-dashboard">
+                    <i class="fas fa-home me-2"></i> Homepage
+                </a>
+            </div>
+
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -16,4 +16,9 @@ urlpatterns = [
     path('masseuse/approve/<int:pk>/', views.approve_appointment, name='approve_appointment'),
     path('masseuse/decline/<int:pk>/', views.decline_appointment, name='decline_appointment'),
     path('masseuse/complete/<int:pk>/', views.complete_appointment, name='complete_appointment'),
+    
+    # NEW: WhatsApp auto-approval webhooks
+    path('whatsapp/approve/<int:pk>/', views.whatsapp_approve, name='whatsapp_approve'),
+    path('whatsapp/decline/<int:pk>/', views.whatsapp_decline, name='whatsapp_decline'),
+    path('whatsapp/response/<int:pk>/', views.whatsapp_response, name='whatsapp_response'),
 ]

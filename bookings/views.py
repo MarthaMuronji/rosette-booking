@@ -61,7 +61,6 @@ def get_booked_slots(exclude_pk=None):
         if date_str not in booked_slots:
             booked_slots[date_str] = []
         total = b['duration'] + addon_durations.get(b['addon'], 0)
-        # FIX: Use the booking's actual appointment_date, not today's date
         t = datetime.datetime.combine(b['appointment_date'], b['appointment_time'])
         for i in range(0, total, 30):
             booked_slots[date_str].append((t + datetime.timedelta(minutes=i)).strftime('%H:%M'))
@@ -71,7 +70,6 @@ def get_booked_slots(exclude_pk=None):
         if date_str not in pending_slots:
             pending_slots[date_str] = []
         total = p['duration'] + addon_durations.get(p['addon'], 0)
-        # FIX: Use the booking's actual appointment_date, not today's date
         t = datetime.datetime.combine(p['appointment_date'], p['appointment_time'])
         for i in range(0, total, 30):
             pending_slots[date_str].append((t + datetime.timedelta(minutes=i)).strftime('%H:%M'))
@@ -213,6 +211,9 @@ def book_request(request):
 
         time_obj = datetime.datetime.strptime(preferred_time, '%H:%M').time()
 
+        # Calculate departure time (1 hour before)
+        departure_time = (datetime.datetime.combine(datetime.date.today(), time_obj) - datetime.timedelta(hours=1)).time()
+
         appointment = Appointment.objects.create(
             client_name=client_name,
             client_phone=client_phone,
@@ -220,6 +221,7 @@ def book_request(request):
             duration=int(duration),
             appointment_date=preferred_date,
             appointment_time=time_obj,
+            masseuse_departure_time=departure_time,
             status='pending',
             preferred_service=preferred_service,
         )
@@ -252,27 +254,27 @@ def book_request(request):
 
         service_display = dict(Appointment.SERVICE_CHOICES).get(service, service)
         time_formatted  = datetime.datetime.strptime(preferred_time, '%H:%M').strftime('%I:%M %p')
-        approve_url     = f"{settings.BASE_URL}/masseuse/approve/{appointment.pk}/"
-        decline_url     = f"{settings.BASE_URL}/masseuse/decline/{appointment.pk}/"
+        
+        # NEW: WhatsApp auto-approval links
+        approve_url     = f"{settings.BASE_URL}/whatsapp/approve/{appointment.pk}/"
+        decline_url     = f"{settings.BASE_URL}/whatsapp/decline/{appointment.pk}/"
 
         whatsapp_message = (
-            f"🌿 New Booking Request!%0A"
-            f"Name: {client_name}%0A"
-            f"Service: {service_display}%0A"
-            f"Duration: {duration} min%0A"
-            f"Date: {preferred_date}%0A"
-            f"Time: {time_formatted}%0A"
-            f"Phone: {client_phone}%0A%0A"
-            f"✅ Approve: {approve_url}%0A"
-            f"❌ Decline: {decline_url}"
+            f"🌿 *New Booking Request!*%0A"
+            f"• Name: {client_name}%0A"
+            f"• Service: {service_display}%0A"
+            f"• Duration: {duration} min%0A"
+            f"• Date: {preferred_date}%0A"
+            f"• Time: {time_formatted}%0A"
+            f"• Phone: {client_phone}%0A%0A"
+            f"✅ *Approve:* {approve_url}%0A"
+            f"❌ *Decline:* {decline_url}%0A%0A"
+            f"_Click Approve or Decline to auto-process_"
         )
 
-        return render(request, 'bookings/request_sent.html', {
-            'appointment': appointment,
-            'whatsapp_message': whatsapp_message,
-            'owner_phone': settings.OWNER_PHONE,
-            'owner_name': settings.OWNER_NAME,
-        })
+        # Redirect to WhatsApp to send message to owner
+        owner_phone = settings.OWNER_PHONE.replace('+', '').replace(' ', '')
+        return redirect(f"https://wa.me/{owner_phone}?text={whatsapp_message}")
 
     slots = get_time_slots()
     booked_slots, pending_slots = get_booked_slots()
@@ -286,6 +288,129 @@ def book_request(request):
         'services': Appointment.SERVICE_CHOICES,
         'prefill_name': request.session.get('prefill_name', ''),
         'prefill_phone': request.session.get('prefill_phone', ''),
+    })
+
+
+def whatsapp_approve(request, pk):
+    """Auto-approve from WhatsApp link click (no login required)"""
+    appointment = get_object_or_404(Appointment, pk=pk)
+    
+    # Only allow if status is pending
+    if appointment.status != 'pending':
+        return render(request, 'bookings/whatsapp_response.html', {
+            'appointment': appointment,
+            'message': 'This request has already been processed.',
+            'status': 'info'
+        })
+    
+    # Auto-approve
+    appointment.status = 'approved'
+    appointment.save()
+    
+    # Send WhatsApp to client with confirmation link
+    service_display = appointment.get_service_display()
+    time_formatted = appointment.appointment_time.strftime('%I:%M %p')
+    confirm_url = f"{settings.BASE_URL}/book/confirm/{appointment.pk}/"
+    
+    if appointment.client_package:
+        pkg = appointment.client_package
+        session_num = pkg.sessions_completed + 1
+        client_message = (
+            f"🌿 *Hi {appointment.client_name}!*%0A%0A"
+            f"Your Session {session_num} of {pkg.total_sessions} has been approved!%0A%0A"
+            f"• Service: {service_display}%0A"
+            f"• Date: {appointment.appointment_date}%0A"
+            f"• Time: {time_formatted}%0A%0A"
+            f"Please confirm your session details here:%0A"
+            f"{confirm_url}%0A%0A"
+            f"See you soon! 🌸"
+        )
+    elif appointment.service in PACKAGE_CONFIGS:
+        config = PACKAGE_CONFIGS[appointment.service]
+        client_message = (
+            f"🌿 *Hi {appointment.client_name}!* Your package request has been approved!%0A%0A"
+            f"• Package: {service_display}%0A"
+            f"• Sessions: {config['total_sessions']} × 90 minutes%0A"
+            f"• Date of first session: {appointment.appointment_date}%0A"
+            f"• Time: {time_formatted}%0A%0A"
+            f"Please complete your package purchase here:%0A"
+            f"{confirm_url}%0A%0A"
+            f"We look forward to your wellness journey! 🌸"
+        )
+    else:
+        client_message = (
+            f"🌿 *Hi {appointment.client_name}!* Your Rosette Wellness request has been approved!%0A%0A"
+            f"• Service: {service_display}%0A"
+            f"• Date: {appointment.appointment_date}%0A"
+            f"• Time: {time_formatted}%0A%0A"
+            f"Please complete your booking here:%0A"
+            f"{confirm_url}%0A%0A"
+            f"We look forward to seeing you! 🌸"
+        )
+    
+    # Also send confirmation to owner that it was approved
+    owner_message = (
+        f"✅ *Appointment Approved!*%0A"
+        f"• Client: {appointment.client_name}%0A"
+        f"• Service: {service_display}%0A"
+        f"• Date: {appointment.appointment_date}%0A"
+        f"• Time: {time_formatted}%0A%0A"
+        f"Confirmation sent to client. 👍"
+    )
+    
+    client_phone = appointment.client_phone.replace('+', '').replace(' ', '')
+    owner_phone = settings.OWNER_PHONE.replace('+', '').replace(' ', '')
+    
+    return render(request, 'bookings/whatsapp_response.html', {
+        'appointment': appointment,
+        'message': '✅ Appointment approved successfully!',
+        'status': 'success',
+        'client_whatsapp': f"https://wa.me/{client_phone}?text={client_message}",
+        'owner_whatsapp': f"https://wa.me/{owner_phone}?text={owner_message}",
+        'client_phone': appointment.client_phone,
+        'owner_phone': settings.OWNER_PHONE,
+        'confirm_url': confirm_url,
+    })
+
+
+def whatsapp_decline(request, pk):
+    """Auto-decline from WhatsApp link click (no login required)"""
+    appointment = get_object_or_404(Appointment, pk=pk)
+    
+    # Only allow if status is pending
+    if appointment.status != 'pending':
+        return render(request, 'bookings/whatsapp_response.html', {
+            'appointment': appointment,
+            'message': 'This request has already been processed.',
+            'status': 'info'
+        })
+    
+    appointment.status = 'declined'
+    appointment.save()
+    
+    # Send sorry message to client
+    client_message = (
+        f"Hi {appointment.client_name}, unfortunately we are unable to accommodate "
+        f"your request for {appointment.appointment_date} at the requested time. "
+        f"Please visit our booking page to choose another time: {settings.BASE_URL}/book/"
+    )
+    
+    client_phone = appointment.client_phone.replace('+', '').replace(' ', '')
+    
+    return render(request, 'bookings/whatsapp_response.html', {
+        'appointment': appointment,
+        'message': '❌ Appointment declined.',
+        'status': 'declined',
+        'client_whatsapp': f"https://wa.me/{client_phone}?text={client_message}",
+        'client_phone': appointment.client_phone,
+    })
+
+
+def whatsapp_response(request, pk):
+    """Simple response page for WhatsApp webhook"""
+    appointment = get_object_or_404(Appointment, pk=pk)
+    return render(request, 'bookings/whatsapp_response.html', {
+        'appointment': appointment,
     })
 
 
@@ -364,18 +489,18 @@ def reschedule_appointment(request, pk):
 
         service_display = appointment.get_service_display()
         time_formatted  = datetime.datetime.strptime(new_time, '%H:%M').strftime('%I:%M %p')
-        approve_url     = f"{settings.BASE_URL}/masseuse/approve/{appointment.pk}/"
-        decline_url     = f"{settings.BASE_URL}/masseuse/decline/{appointment.pk}/"
+        approve_url     = f"{settings.BASE_URL}/whatsapp/approve/{appointment.pk}/"
+        decline_url     = f"{settings.BASE_URL}/whatsapp/decline/{appointment.pk}/"
 
         whatsapp_message = (
-            f"🔄 Reschedule Request!%0A"
-            f"Client: {appointment.client_name}%0A"
-            f"Service: {service_display}%0A"
-            f"New Date: {new_date}%0A"
-            f"New Time: {time_formatted}%0A"
-            f"Phone: {appointment.client_phone}%0A%0A"
-            f"✅ Approve: {approve_url}%0A"
-            f"❌ Decline: {decline_url}"
+            f"🔄 *Reschedule Request!*%0A"
+            f"• Client: {appointment.client_name}%0A"
+            f"• Service: {service_display}%0A"
+            f"• New Date: {new_date}%0A"
+            f"• New Time: {time_formatted}%0A"
+            f"• Phone: {appointment.client_phone}%0A%0A"
+            f"✅ *Approve:* {approve_url}%0A"
+            f"❌ *Decline:* {decline_url}"
         )
 
         return redirect(f"https://wa.me/{settings.OWNER_PHONE}?text={whatsapp_message}")
