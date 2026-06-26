@@ -316,15 +316,17 @@
                 </div>
 
                 <!-- Total -->
-                <div class="total-box">
-                    <div>
-                        <div class="total-label">Total Price</div>
-                        <div style="font-size:12px; color:var(--foreground-muted); margin-top:4px;">
-                            Including zone fee and add-ons
-                        </div>
-                    </div>
-                    <div class="total-amount" id="totalPrice">— AED</div>
-                </div>
+               {% if not is_package %}
+<div class="total-box">
+    <div>
+        <div class="total-label">Total Price</div>
+        <div style="font-size:12px; color:var(--foreground-muted); margin-top:4px;">
+            Including zone fee and add-ons
+        </div>
+    </div>
+    <div class="total-amount" id="totalPrice">— AED</div>
+</div>
+{% endif %}
 
                 {% if is_package %}
     {% if appointment.client_package %}

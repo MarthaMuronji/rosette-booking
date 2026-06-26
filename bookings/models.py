@@ -82,7 +82,7 @@ class Appointment(models.Model):
         ('cash', 'Cash'),
         ('card', 'Card'),
     ]
-    preferred_service = models.CharField(max_length=20, blank=True)
+    preferred_service = models.CharField(max_length=50, blank=True)
 
     # Client details
     client_name = models.CharField(max_length=100)

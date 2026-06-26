@@ -370,12 +370,6 @@
                         </div>
                         {% endif %}
 
-                        {% if apt.notes %}
-<div class="appointment-meta">
-    <i class="fas fa-sticky-note"></i>
-    {{ apt.notes }}
-</div>
-{% endif %}
 {% if apt.preferred_service %}
 <div class="appointment-meta">
     <i class="fas fa-hand-sparkles"></i>
@@ -478,12 +472,7 @@
                         </div>
                         {% endif %}
 
-                        {% if apt.payment_method %}
-<div class="appointment-meta">
-    <i class="fas fa-credit-card"></i>
-    Payment: {{ apt.get_payment_method_display }}
-</div>
-{% endif %}
+
 {% if apt.preferred_service %}
 <div class="appointment-meta">
     <i class="fas fa-hand-sparkles"></i>
