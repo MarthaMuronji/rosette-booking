@@ -278,6 +278,21 @@
 }
 
 .package-toggle.open .chevron { transform: rotate(180deg); }
+.package-fee-notice {
+    background: rgba(232,137,14,0.06);
+    border: 1px solid rgba(232,137,14,0.2);
+    border-radius: 8px;
+    padding: 14px 18px;
+    font-size: 13px;
+    color: var(--foreground-muted);
+    margin-top: 12px;
+    display: none;
+    line-height: 1.8;
+}
+
+.package-fee-notice strong {
+    color: var(--foreground);
+}
 </style>
 {% endblock %}
 
@@ -401,6 +416,29 @@
                                 <option value="">Select duration</option>
                             </select>
                         </div>
+
+                        <!-- Preferred massage type — always shown on dashboard since client has a package -->
+<div class="mt-3" id="preferredServiceSection" style="display:none;">
+    <label class="rw-form-label">Preferred Massage Type for This Session</label>
+    <select name="preferred_service" class="rw-form-control">
+        <option value="">Select massage type</option>
+        <option value="Signature Full Body Reset">Signature Full Body Reset</option>
+        <option value="Swedish / Relaxation Massage">Swedish / Relaxation Massage</option>
+        <option value="Deep Tissue Massage">Deep Tissue Massage</option>
+        <option value="Sports Massage">Sports Massage</option>
+        <option value="Hot Stone Massage">Hot Stone Massage</option>
+        <option value="Thai Massage">Thai Massage</option>
+    </select>
+</div>
+
+{% if has_active_package %}
+<div class="package-fee-notice mt-3" style="display:block;">
+    <i class="fas fa-info-circle me-2" style="color:var(--primary);"></i>
+    <strong>Reminder:</strong> Your package covers all sessions.
+    Zone travel fees (<strong>+25 AED</strong> Zone 2 / <strong>+50 AED</strong> Zone 3)
+    and any add-ons are charged separately per session and collected on the day.
+</div>
+{% endif %}
                     </div>
 
                     <!-- Date -->
@@ -551,10 +589,12 @@ function selectService(value, card) {
     durationSection.style.display = 'block';
     durationSelect.innerHTML = '<option value="">Select duration</option>';
 
+    // Always show preferred service on dashboard
+    document.getElementById('preferredServiceSection').style.display = 'block';
+
     durations[value].forEach(d => {
         let label;
         if (hasActivePackage) {
-            // Client is on a package — no prices shown
             label = `${d} minutes`;
         } else if (packageLabels[value] && packageLabels[value][d]) {
             label = packageLabels[value][d];

@@ -248,6 +248,22 @@
 }
 
 .package-toggle.open .chevron { transform: rotate(180deg); }
+
+.package-fee-notice {
+    background: rgba(232,137,14,0.06);
+    border: 1px solid rgba(232,137,14,0.2);
+    border-radius: 8px;
+    padding: 14px 18px;
+    font-size: 13px;
+    color: var(--foreground-muted);
+    margin-top: 12px;
+    display: none;
+    line-height: 1.8;
+}
+
+.package-fee-notice strong {
+    color: var(--foreground);
+}
 </style>
 {% endblock %}
 
@@ -335,6 +351,29 @@
                             <option value="">Select duration</option>
                         </select>
                     </div>
+
+                    <!-- Preferred massage type — shown only for packages -->
+<div id="preferredServiceSection" style="display:none;" class="mt-3">
+    <label class="rw-form-label">Preferred Massage Type for This Session</label>
+    <select name="preferred_service" id="preferredServiceSelect" class="rw-form-control">
+        <option value="">Select massage type</option>
+        <option value="Signature Full Body Reset">Signature Full Body Reset</option>
+        <option value="Swedish / Relaxation Massage">Swedish / Relaxation Massage</option>
+        <option value="Deep Tissue Massage">Deep Tissue Massage</option>
+        <option value="Sports Massage">Sports Massage</option>
+        <option value="Hot Stone Massage">Hot Stone Massage</option>
+        <option value="Thai Massage">Thai Massage</option>
+    </select>
+</div>
+
+<!-- Zone + add-on fee notice — shown only for packages -->
+<div class="package-fee-notice" id="packageFeeNotice">
+    <i class="fas fa-info-circle me-2" style="color:var(--primary);"></i>
+    <strong>What's included:</strong> Your package covers all sessions at a flat rate.
+    Zone travel fees (<strong>+25 AED</strong> Zone 2 / <strong>+50 AED</strong> Zone 3)
+    and any add-ons are charged separately at each session and collected on the day.
+</div>
+
                 </div>
 
                 <!-- Date & Time -->
@@ -520,26 +559,30 @@
     let selectedService = null;
 
     function selectService(value, card) {
-        document.querySelectorAll('.service-card').forEach(c => c.classList.remove('selected'));
-        card.classList.add('selected');
-        document.getElementById('service_' + value).checked = true;
-        selectedService = value;
+    document.querySelectorAll('.service-card').forEach(c => c.classList.remove('selected'));
+    card.classList.add('selected');
+    document.getElementById('service_' + value).checked = true;
+    selectedService = value;
 
-        const durationSection = document.getElementById('durationSection');
-        const durationSelect = document.getElementById('durationSelect');
-        durationSection.style.display = 'block';
-        durationSelect.innerHTML = '<option value="">Select duration</option>';
+    const durationSection = document.getElementById('durationSection');
+    const durationSelect  = document.getElementById('durationSelect');
+    durationSection.style.display = 'block';
+    durationSelect.innerHTML = '<option value="">Select duration</option>';
 
-        durations[value].forEach(d => {
-            let label;
-            if (packageLabels[value] && packageLabels[value][d]) {
-                label = packageLabels[value][d];
-            } else {
-                label = `${d} minutes — ${prices[value][d]} AED`;
-            }
-            durationSelect.innerHTML += `<option value="${d}">${label}</option>`;
-        });
-    }
+    const isPackage = value === 'monthly_wellness' || value === 'vip_wellness';
+    document.getElementById('preferredServiceSection').style.display = isPackage ? 'block' : 'none';
+    document.getElementById('packageFeeNotice').style.display = isPackage ? 'block' : 'none';
+
+    durations[value].forEach(d => {
+        let label;
+        if (packageLabels[value] && packageLabels[value][d]) {
+            label = packageLabels[value][d];
+        } else {
+            label = `${d} minutes — ${prices[value][d]} AED`;
+        }
+        durationSelect.innerHTML += `<option value="${d}">${label}</option>`;
+    });
+}
 
     document.getElementById('dateInput').addEventListener('change', function() {
         renderTimeSlots();

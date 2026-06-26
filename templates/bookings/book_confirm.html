@@ -162,6 +162,12 @@
                     <span>Duration</span>
                     <strong>{{ appointment.duration }} minutes</strong>
                 </div>
+                {% if appointment.preferred_service %}
+<div class="summary-row">
+    <span>Massage Type</span>
+    <strong>{{ appointment.preferred_service }}</strong>
+</div>
+{% endif %}
                 <div class="summary-row">
                     <span>Date</span>
                     <strong>{{ appointment.appointment_date|date:"l, F j, Y" }}</strong>
@@ -170,12 +176,12 @@
                     <span>Session Starts</span>
                     <strong>{{ appointment.appointment_time|time:"g:i A" }}</strong>
                 </div>
+                {% if appointment.notes %}
                 <div class="summary-row">
-                    <span>Therapist Departs At</span>
-                    <strong style="color:var(--primary);">
-                        {{ appointment.masseuse_departure_time|time:"g:i A" }}
-                    </strong>
+                    <span>Notes</span>
+                    <strong>{{ appointment.notes }}</strong>
                 </div>
+                {% endif %}
             </div>
 
             <form method="POST" id="confirmForm">
@@ -335,18 +341,15 @@
             </div>
         </div>
     </div>
-    {% else %}
-    <!-- First package session — show package total -->
-    <div style="background:rgba(232,137,14,0.06); border:1px solid rgba(232,137,14,0.25); border-radius:10px; padding:18px 22px; margin-bottom:24px;">
-        <div style="color:var(--foreground-muted); font-size:13px; margin-bottom:4px;">Package Total</div>
-        <div style="font-family:'Playfair Display',serif; font-size:28px; color:var(--primary);">
-            {% if appointment.service == 'monthly_wellness' %}1,500{% else %}2,400{% endif %} AED
-        </div>
-        <div style="color:var(--foreground-muted); font-size:12px; margin-top:4px;">
-            Covers all sessions in this package + zone and add-on fees per session
-        </div>
-    </div>
-    {% endif %}
+   {% else %}
+<!-- First package session — fee notice only, no price box -->
+<div style="background:rgba(232,137,14,0.06); border:1px solid rgba(232,137,14,0.2); border-radius:10px; padding:18px 22px; margin-bottom:24px; font-size:13px; color:var(--foreground-muted); line-height:1.8;">
+    <i class="fas fa-info-circle me-2" style="color:var(--primary);"></i>
+    <strong style="color:var(--foreground);">Your package covers all sessions.</strong>
+    Zone travel fees (+25 AED Zone 2 / +50 AED Zone 3) and any add-ons selected above
+    are charged separately and collected on the day of each visit.
+</div>
+{% endif %}
 {% endif %}
 
                 <button type="submit" class="btn-primary-rw w-100 py-3"

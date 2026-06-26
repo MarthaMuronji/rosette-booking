@@ -118,6 +118,8 @@ def book_request(request):
         preferred_time = request.POST.get('preferred_time', '').strip()
         client_name    = request.POST.get('client_name', '').strip()
         client_phone   = request.POST.get('client_phone', '').strip()
+        preferred_service = request.POST.get('preferred_service', '').strip()
+
 
         errors = {}
 
@@ -217,6 +219,7 @@ def book_request(request):
             appointment_date=preferred_date,
             appointment_time=time_obj,
             status='pending',
+            preferred_service=preferred_service,
         )
 
         # Auto-link to an existing active package if this is a package service

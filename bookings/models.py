@@ -49,6 +49,7 @@ class Appointment(models.Model):
         ('thai', 'Thai Massage'),
         ('monthly_wellness', 'Monthly Wellness Package'),
         ('vip_wellness', 'VIP Wellness Package'),
+
     ]
 
     DURATION_CHOICES = [
@@ -81,6 +82,7 @@ class Appointment(models.Model):
         ('cash', 'Cash'),
         ('card', 'Card'),
     ]
+    preferred_service = models.CharField(max_length=20, blank=True)
 
     # Client details
     client_name = models.CharField(max_length=100)

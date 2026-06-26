@@ -369,6 +369,20 @@
                             {{ apt.notes }}
                         </div>
                         {% endif %}
+
+                        {% if apt.notes %}
+<div class="appointment-meta">
+    <i class="fas fa-sticky-note"></i>
+    {{ apt.notes }}
+</div>
+{% endif %}
+{% if apt.preferred_service %}
+<div class="appointment-meta">
+    <i class="fas fa-hand-sparkles"></i>
+    Preferred massage: {{ apt.preferred_service }}
+</div>
+{% endif %}
+
                         <div class="departure-tag">
                             <i class="fas fa-car me-2"></i>
                             Depart by {{ apt.masseuse_departure_time|time:"g:i A" }} to arrive on time
@@ -463,6 +477,20 @@
                             Payment: {{ apt.get_payment_method_display }}
                         </div>
                         {% endif %}
+
+                        {% if apt.payment_method %}
+<div class="appointment-meta">
+    <i class="fas fa-credit-card"></i>
+    Payment: {{ apt.get_payment_method_display }}
+</div>
+{% endif %}
+{% if apt.preferred_service %}
+<div class="appointment-meta">
+    <i class="fas fa-hand-sparkles"></i>
+    Preferred massage: {{ apt.preferred_service }}
+</div>
+{% endif %}
+
                         <div class="departure-tag">
                             <i class="fas fa-car me-2"></i>
                             Depart by {{ apt.masseuse_departure_time|time:"g:i A" }}
