@@ -328,30 +328,62 @@
 </div>
 {% endif %}
 
-                {% if is_package %}
+{% if is_package %}
     {% if appointment.client_package %}
-    <!-- Subsequent package session — already paid -->
-    <div style="background:rgba(232,137,14,0.06); border:1px solid rgba(232,137,14,0.25); border-radius:10px; padding:18px 22px; margin-bottom:24px; display:flex; align-items:center; gap:14px;">
-        <i class="fas fa-check-circle" style="color:var(--primary); font-size:20px; flex-shrink:0;"></i>
-        <div>
-            <div style="color:var(--foreground); font-weight:600; font-size:14px; margin-bottom:4px;">
-                This session is covered by your package
+    <div style="background:rgba(232,137,14,0.06); border:1px solid rgba(232,137,14,0.25); border-radius:10px; padding:18px 22px; margin-bottom:24px;">
+        <i class="fas fa-check-circle me-2" style="color:var(--primary);"></i>
+        <strong style="color:var(--foreground);">Session covered by your package</strong>
+        <div style="color:var(--foreground-muted); font-size:13px; margin-top:8px;">
+            Session {{ appointment.client_package.sessions_completed|add:1 }} of {{ appointment.client_package.total_sessions }}
+        </div>
+        <div style="margin-top:16px; padding-top:16px; border-top:1px solid var(--border);">
+            <div style="display:flex; justify-content:space-between; font-size:14px; color:var(--foreground-muted); margin-bottom:8px;">
+                <span>Session (package)</span><span style="color:var(--foreground);">Covered</span>
             </div>
-            <div style="color:var(--foreground-muted); font-size:13px;">
-                Session {{ appointment.client_package.sessions_completed|add:1 }} of {{ appointment.client_package.total_sessions }} — 
-                {{ appointment.client_package.sessions_remaining }} remaining after this
+            <div style="display:flex; justify-content:space-between; font-size:14px; color:var(--foreground-muted); margin-bottom:8px;">
+                <span>Zone fee</span><span id="zoneFeeDisplay" style="color:var(--foreground);">—</span>
+            </div>
+            <div style="display:flex; justify-content:space-between; font-size:14px; color:var(--foreground-muted); margin-bottom:12px;">
+                <span>Add-on</span><span id="addonFeeDisplay" style="color:var(--foreground);">—</span>
+            </div>
+            <div style="display:flex; justify-content:space-between; font-size:16px; color:var(--primary); font-weight:600; border-top:1px solid var(--border); padding-top:12px;">
+                <span>Due today</span><span id="packageDueToday">— AED</span>
             </div>
         </div>
     </div>
-   {% else %}
-<!-- First package session — fee notice only, no price box -->
-<div style="background:rgba(232,137,14,0.06); border:1px solid rgba(232,137,14,0.2); border-radius:10px; padding:18px 22px; margin-bottom:24px; font-size:13px; color:var(--foreground-muted); line-height:1.8;">
-    <i class="fas fa-info-circle me-2" style="color:var(--primary);"></i>
-    <strong style="color:var(--foreground);">Your package covers all sessions.</strong>
-    Zone travel fees (+25 AED Zone 2 / +50 AED Zone 3) and any add-ons selected above
-    are charged separately and collected on the day of each visit.
+    {% else %}
+    <div style="background:rgba(232,137,14,0.06); border:1px solid rgba(232,137,14,0.25); border-radius:10px; padding:18px 22px; margin-bottom:24px;">
+        <div style="margin-bottom:16px; padding-bottom:16px; border-bottom:1px solid var(--border);">
+            <div style="display:flex; justify-content:space-between; font-size:14px; color:var(--foreground-muted); margin-bottom:8px;">
+                <span>{% if appointment.service == 'monthly_wellness' %}Monthly Wellness (5 sessions){% else %}VIP Wellness (8 sessions){% endif %}</span>
+                <span style="color:var(--foreground);">{% if appointment.service == 'monthly_wellness' %}1,500{% else %}2,400{% endif %} AED</span>
+            </div>
+            <div style="display:flex; justify-content:space-between; font-size:14px; color:var(--foreground-muted); margin-bottom:8px;">
+                <span>Zone fee</span><span id="zoneFeeDisplay" style="color:var(--foreground);">—</span>
+            </div>
+            <div style="display:flex; justify-content:space-between; font-size:14px; color:var(--foreground-muted); margin-bottom:12px;">
+                <span>Add-on</span><span id="addonFeeDisplay" style="color:var(--foreground);">—</span>
+            </div>
+            <div style="display:flex; justify-content:space-between; font-size:16px; color:var(--primary); font-weight:600; border-top:1px solid var(--border); padding-top:12px;">
+                <span>Total due today</span><span id="packageDueToday">— AED</span>
+            </div>
+        </div>
+        <div style="font-size:12px; color:var(--foreground-muted); line-height:1.7;">
+            <i class="fas fa-info-circle me-1" style="color:var(--primary);"></i>
+            Zone and add-on fees apply per session and are collected on the day.
+        </div>
+    </div>
+    {% endif %}
+{% else %}
+<div class="total-box">
+    <div>
+        <div class="total-label">Total Price</div>
+        <div style="font-size:12px; color:var(--foreground-muted); margin-top:4px;">
+            Including zone fee and add-ons
+        </div>
+    </div>
+    <div class="total-amount" id="totalPrice">— AED</div>
 </div>
-{% endif %}
 {% endif %}
 
                 <button type="submit" class="btn-primary-rw w-100 py-3"
@@ -367,44 +399,76 @@
 
 {% block extra_js %}
 <script>
-    const basePrices = {
-        'signature':   { 90: 320, 120: 400 },
-        'swedish':     { 60: 250, 90: 320, 120: 400 },
-        'deep_tissue': { 90: 370, 120: 450 },
-        'sports':      { 90: 380, 120: 470 },
-        'hot_stone':   { 90: 380, 120: 470 },
-        'thai':        { 90: 320, 120: 400 },
-    };
+   const basePrices = {
+    'signature':   { 90: 320, 120: 400 },
+    'swedish':     { 60: 250, 90: 320, 120: 400 },
+    'deep_tissue': { 90: 370, 120: 450 },
+    'sports':      { 90: 380, 120: 470 },
+    'hot_stone':   { 90: 380, 120: 470 },
+    'thai':        { 90: 320, 120: 400 },
+};
 
-    const addonPrices = { none: 0, foot_30: 120, hns_30: 100, hns_60: 180 };
-    const zoneFees = { zone1: 0, zone2: 25, zone3: 50 };
+const packageBasePrices = {
+    'monthly_wellness': 1500,
+    'vip_wellness': 2400,
+};
 
-    const service = '{{ appointment.service }}';
-    const duration = {{ appointment.duration }};
-    let selectedZone = null;
-    let selectedAddon = 'none';
+const addonPrices = { none: 0, foot_30: 120, hns_30: 100, hns_60: 180 };
+const zoneFees = { zone1: 0, zone2: 25, zone3: 50, other: 0 };
 
-    function selectZone(value, card) {
-        document.querySelectorAll('.zone-card').forEach(c => c.classList.remove('selected'));
-        card.classList.add('selected');
-        document.querySelector(`input[value="${value}"]`).checked = true;
-        selectedZone = value;
-        updateTotal();
+const service = '{{ appointment.service }}';
+const duration = {{ appointment.duration }};
+const isPackage = {{ is_package|yesno:"true,false" }};
+const hasExistingPackage = {{ appointment.client_package|yesno:"true,false" }};
+
+let selectedZone = null;
+let selectedAddon = 'none';
+
+function selectZone(value, card) {
+    document.querySelectorAll('.zone-card').forEach(c => c.classList.remove('selected'));
+    card.classList.add('selected');
+    document.querySelector(`input[name="zone"][value="${value}"]`).checked = true;
+    selectedZone = value;
+    updateTotal();
+}
+
+document.getElementById('addonSelect').addEventListener('change', function() {
+    selectedAddon = this.value;
+    updateTotal();
+});
+
+function updateTotal() {
+    if (!selectedZone) return;
+
+    const zoneAmt  = zoneFees[selectedZone] || 0;
+    const addonAmt = addonPrices[selectedAddon] || 0;
+
+    if (isPackage) {
+        const zoneEl  = document.getElementById('zoneFeeDisplay');
+        const addonEl = document.getElementById('addonFeeDisplay');
+        const dueEl   = document.getElementById('packageDueToday');
+
+        if (zoneEl)  zoneEl.textContent  = zoneAmt  > 0 ? `${zoneAmt} AED`  : 'Included';
+        if (addonEl) addonEl.textContent = addonAmt > 0 ? `${addonAmt} AED` : 'None';
+
+        if (hasExistingPackage) {
+            // Subsequent session — only zone + addon due
+            if (dueEl) dueEl.textContent = (zoneAmt + addonAmt) > 0
+                ? `${zoneAmt + addonAmt} AED`
+                : 'Nothing due';
+        } else {
+            // First session — package price + zone + addon
+            const base = packageBasePrices[service] || 0;
+            if (dueEl) dueEl.textContent = `${base + zoneAmt + addonAmt} AED`;
+        }
+    } else {
+        const base = basePrices[service]?.[duration] || 0;
+        const totalEl = document.getElementById('totalPrice');
+        if (totalEl) totalEl.textContent = `${base + zoneAmt + addonAmt} AED`;
     }
+}
 
-    document.getElementById('addonSelect').addEventListener('change', function() {
-        selectedAddon = this.value;
-        updateTotal();
-    });
-
-    function updateTotal() {
-        if (!selectedZone) return;
-        const base = basePrices[service][duration] || 0;
-        const addon = addonPrices[selectedAddon] || 0;
-        const zone = zoneFees[selectedZone] || 0;
-        document.getElementById('totalPrice').textContent = (base + addon + zone) + ' AED';
-    }
-    function selectOption(name, value, card) {
+function selectOption(name, value, card) {
     document.querySelectorAll(`[onclick*="${name}"]`).forEach(c => c.classList.remove('selected'));
     card.classList.add('selected');
     document.querySelector(`input[name="${name}"][value="${value}"]`).checked = true;

@@ -461,6 +461,7 @@
                         <label class="rw-form-label">WhatsApp Number</label>
                         <input type="tel" name="client_phone" id="clientPhone" class="rw-form-control"
                                placeholder="+971 50 000 0000"
+                               maxlength="15" pattern="\+971\d{9}"
                                value="{{ form_data.client_phone|default:'' }}">
                         <div class="field-error" id="phoneError" style="display:none;">
                             <i class="fas fa-exclamation-circle"></i> <span></span>

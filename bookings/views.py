@@ -1,7 +1,11 @@
+from urllib import response
+
+from django import utils
 from django.shortcuts import render, redirect, get_object_or_404
 from django.utils import timezone
 from django.conf import settings
 from .models import Appointment, ClientPackage
+from django.utils import timezone as tz
 import datetime
 import json
 import re
@@ -222,6 +226,18 @@ def book_request(request):
             preferred_service=preferred_service,
         )
 
+        if not errors:
+            appointment_date_obj = datetime.date.fromisoformat(preferred_date)
+            same_day = Appointment.objects.filter(
+                client_phone=client_phone,
+                appointment_date=appointment_date_obj,
+                status__in=['pending', 'approved', 'confirmed']
+            ).exclude(pk=appointment.pk).exists()
+            if same_day:
+                errors['duplicate'] = 'You already have a booking request for this date. Please choose a different date or contact us on WhatsApp.'
+                appointment.delete()
+                return render_form_with_errors()
+
         # Auto-link to an existing active package if this is a package service
         if service in PACKAGE_CONFIGS:
             existing_pkg = ClientPackage.objects.filter(
@@ -388,6 +404,10 @@ def book_confirm(request, pk):
         notes              = request.POST.get('notes', '')
         preferred_pressure = request.POST.get('preferred_pressure')
         payment_method     = request.POST.get('payment_method')
+        response = redirect('client_dashboard')
+        response['Cache-Control'] = 'no-store, no-cache, must-revalidate'
+        response['Pragma'] = 'no-cache'
+        return response
 
         if is_package:
             zone_fee  = ZONE_FEES.get(zone, 0)
