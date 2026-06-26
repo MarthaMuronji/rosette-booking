@@ -299,10 +299,15 @@ def book_request(request):
             f"_Click Approve or Decline to auto-process_"
         )
 
-        # Redirect to WhatsApp to send message to owner
-        owner_phone = settings.OWNER_PHONE.replace('+', '').replace(' ', '')
+        # Show request sent page to client
+        # The WhatsApp button on this page will send the message to the therapist
         logger.info(f"New booking created: {appointment.pk} - {client_name}")
-        return redirect(f"https://wa.me/{owner_phone}?text={whatsapp_message}")
+        return render(request, 'bookings/request_sent.html', {
+            'appointment': appointment,
+            'whatsapp_message': whatsapp_message,
+            'owner_phone': settings.OWNER_PHONE,
+            'owner_name': settings.OWNER_NAME,
+        })
 
     slots = get_time_slots()
     booked_slots, pending_slots = get_booked_slots()
