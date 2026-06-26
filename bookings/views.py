@@ -1,6 +1,3 @@
-from urllib import response
-
-from django import utils
 from django.shortcuts import render, redirect, get_object_or_404
 from django.utils import timezone
 from django.conf import settings
@@ -64,7 +61,8 @@ def get_booked_slots(exclude_pk=None):
         if date_str not in booked_slots:
             booked_slots[date_str] = []
         total = b['duration'] + addon_durations.get(b['addon'], 0)
-        t = datetime.datetime.combine(datetime.date.today(), b['appointment_time'])
+        # FIX: Use the booking's actual appointment_date, not today's date
+        t = datetime.datetime.combine(b['appointment_date'], b['appointment_time'])
         for i in range(0, total, 30):
             booked_slots[date_str].append((t + datetime.timedelta(minutes=i)).strftime('%H:%M'))
 
@@ -73,7 +71,8 @@ def get_booked_slots(exclude_pk=None):
         if date_str not in pending_slots:
             pending_slots[date_str] = []
         total = p['duration'] + addon_durations.get(p['addon'], 0)
-        t = datetime.datetime.combine(datetime.date.today(), p['appointment_time'])
+        # FIX: Use the booking's actual appointment_date, not today's date
+        t = datetime.datetime.combine(p['appointment_date'], p['appointment_time'])
         for i in range(0, total, 30):
             pending_slots[date_str].append((t + datetime.timedelta(minutes=i)).strftime('%H:%M'))
 
@@ -123,7 +122,6 @@ def book_request(request):
         client_name    = request.POST.get('client_name', '').strip()
         client_phone   = request.POST.get('client_phone', '').strip()
         preferred_service = request.POST.get('preferred_service', '').strip()
-
 
         errors = {}
 
@@ -404,19 +402,13 @@ def book_confirm(request, pk):
         notes              = request.POST.get('notes', '')
         preferred_pressure = request.POST.get('preferred_pressure')
         payment_method     = request.POST.get('payment_method')
-        response = redirect('client_dashboard')
-        response['Cache-Control'] = 'no-store, no-cache, must-revalidate'
-        response['Pragma'] = 'no-cache'
-        return response
 
         if is_package:
             zone_fee  = ZONE_FEES.get(zone, 0)
             addon_fee = ADDON_PRICES.get(addon, 0)
             if appointment.client_package:
-                # Subsequent package session — package already paid
                 total_price = zone_fee + addon_fee
             else:
-                # First session — create the package record now
                 config = PACKAGE_CONFIGS[appointment.service]
                 expiry = None
                 if config['validity_days']:
@@ -444,12 +436,14 @@ def book_confirm(request, pk):
         appointment.status             = 'confirmed'
         appointment.save()
 
-        # Store in session so client dashboard works immediately
         request.session['client_phone']  = appointment.client_phone
         request.session['prefill_name']  = appointment.client_name
         request.session['prefill_phone'] = appointment.client_phone
 
-        return redirect('client_dashboard')
+        response = redirect('client_dashboard')
+        response['Cache-Control'] = 'no-store, no-cache, must-revalidate'
+        response['Pragma'] = 'no-cache'
+        return response
 
     return render(request, 'bookings/book_confirm.html', {
         'appointment': appointment,
@@ -505,6 +499,7 @@ def masseuse_dashboard(request):
         'total_earnings': total_earnings,
         'base_url': settings.BASE_URL,
     })
+
 
 def approve_appointment(request, pk):
     if not request.session.get('masseuse_authenticated'):
@@ -671,6 +666,7 @@ def client_dashboard(request):
         'has_active_package': has_active_package,
         'completed_package':  completed_package,
     })
+
 
 def start_package_session(request, pkg_id):
     phone = request.session.get('client_phone')

@@ -217,7 +217,7 @@
     font-size: 12px;
     color: var(--foreground-muted);
     line-height: 2;
-    display: none; /* hidden by default */
+    display: none;
     animation: slideDown 0.2s ease;
 }
 
@@ -560,35 +560,36 @@
     let selectedService = null;
 
     function selectService(value, card) {
-    document.querySelectorAll('.service-card').forEach(c => c.classList.remove('selected'));
-    card.classList.add('selected');
-    document.getElementById('service_' + value).checked = true;
-    selectedService = value;
+        document.querySelectorAll('.service-card').forEach(c => c.classList.remove('selected'));
+        card.classList.add('selected');
+        document.getElementById('service_' + value).checked = true;
+        selectedService = value;
 
-    const durationSection = document.getElementById('durationSection');
-    const durationSelect  = document.getElementById('durationSelect');
-    durationSection.style.display = 'block';
-    durationSelect.innerHTML = '<option value="">Select duration</option>';
+        const durationSection = document.getElementById('durationSection');
+        const durationSelect  = document.getElementById('durationSelect');
+        durationSection.style.display = 'block';
+        durationSelect.innerHTML = '<option value="">Select duration</option>';
 
-    const isPackage = value === 'monthly_wellness' || value === 'vip_wellness';
-    document.getElementById('preferredServiceSection').style.display = isPackage ? 'block' : 'none';
-    document.getElementById('packageFeeNotice').style.display = isPackage ? 'block' : 'none';
+        const isPackage = value === 'monthly_wellness' || value === 'vip_wellness';
+        document.getElementById('preferredServiceSection').style.display = isPackage ? 'block' : 'none';
+        document.getElementById('packageFeeNotice').style.display = isPackage ? 'block' : 'none';
 
-    durations[value].forEach(d => {
-        let label;
-        if (packageLabels[value] && packageLabels[value][d]) {
-            label = packageLabels[value][d];
-        } else {
-            label = `${d} minutes — ${prices[value][d]} AED`;
-        }
-        durationSelect.innerHTML += `<option value="${d}">${label}</option>`;
-    });
-}
+        durations[value].forEach(d => {
+            let label;
+            if (packageLabels[value] && packageLabels[value][d]) {
+                label = packageLabels[value][d];
+            } else {
+                label = `${d} minutes — ${prices[value][d]} AED`;
+            }
+            durationSelect.innerHTML += `<option value="${d}">${label}</option>`;
+        });
+    }
 
     document.getElementById('dateInput').addEventListener('change', function() {
         renderTimeSlots();
     });
 
+    // FIXED: renderTimeSlots function with proper availability logic
     function renderTimeSlots() {
         const date = document.getElementById('dateInput').value;
         const container = document.getElementById('timeSlots');
@@ -610,13 +611,17 @@
         allSlots.forEach(slot => {
             const [slotH, slotM] = slot.split(':').map(Number);
 
+            // FIXED: Only mark as past if time is COMPLETELY past (not if it's the current half-hour slot)
             const isPast = isToday && (
                 slotH < currentHour ||
-                (slotH === currentHour && slotM <= currentMin)
+                (slotH === currentHour && slotM < currentMin)
             );
 
+            // FIXED: Also check if this slot falls within an active booking
             const isBooked = booked.includes(slot);
             const isPending = pending.includes(slot);
+            
+            // A time slot is unavailable if it's in the past OR booked
             const isUnavailable = isPast || isBooked;
 
             const div = document.createElement('span');
@@ -722,17 +727,18 @@
             }, 50);
         }
     }
+    
     function togglePackageDetails(event, detailsId) {
-    // Stop click from bubbling up to the card's selectService onclick
-    event.stopPropagation();
+        // Stop click from bubbling up to the card's selectService onclick
+        event.stopPropagation();
 
-    const details = document.getElementById(detailsId);
-    const toggle  = event.currentTarget;
-    const isOpen  = details.style.display === 'block';
+        const details = document.getElementById(detailsId);
+        const toggle  = event.currentTarget;
+        const isOpen  = details.style.display === 'block';
 
-    details.style.display = isOpen ? 'none' : 'block';
-    toggle.classList.toggle('open', !isOpen);
-    toggle.querySelector('span').textContent = isOpen ? 'See what\'s included' : 'Hide details';
-}
+        details.style.display = isOpen ? 'none' : 'block';
+        toggle.classList.toggle('open', !isOpen);
+        toggle.querySelector('span').textContent = isOpen ? 'See what\'s included' : 'Hide details';
+    }
 </script>
 {% endblock %}
