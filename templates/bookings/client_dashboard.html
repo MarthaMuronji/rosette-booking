@@ -312,6 +312,50 @@
 <div class="container py-5">
     <div class="row justify-content-center">
         <div class="col-lg-9">
+            {% if completed_package %}
+<div style="background:linear-gradient(135deg, rgba(232,137,14,0.08), rgba(232,137,14,0.02));
+            border:1px solid rgba(232,137,14,0.3);
+            border-radius:12px; padding:28px 32px; margin-bottom:32px;">
+    <div class="d-flex align-items-start gap-4 flex-wrap">
+        <div style="width:52px; height:52px; background:rgba(232,137,14,0.1);
+                    border:1px solid rgba(232,137,14,0.3); border-radius:50%;
+                    display:flex; align-items:center; justify-content:center;
+                    flex-shrink:0;">
+            <i class="fas fa-star" style="color:var(--primary); font-size:20px;"></i>
+        </div>
+        <div style="flex:1;">
+            <div style="font-family:'Playfair Display',serif; font-size:20px;
+                        color:var(--foreground); margin-bottom:6px;">
+                Your {{ completed_package.get_package_type_display }} is complete!
+            </div>
+            <p style="color:var(--foreground-muted); font-size:14px;
+                      line-height:1.7; margin-bottom:16px;">
+                You've completed all {{ completed_package.total_sessions }} sessions.
+                We hope you enjoyed every moment of your wellness journey with Rosette.
+                Ready to continue? Book individual sessions or start a new package below.
+            </p>
+            <div class="d-flex gap-3 flex-wrap">
+                <a href="/book/"
+                   class="btn-primary-rw"
+                   style="padding:10px 24px; font-size:13px; border-radius:6px;
+                          letter-spacing:1px; text-decoration:none;">
+                    Book Again
+                </a>
+                <a href="/"
+                   style="display:inline-block; padding:10px 24px;
+                          border:1px solid var(--border); border-radius:6px;
+                          color:var(--foreground-muted); font-size:13px;
+                          text-decoration:none; letter-spacing:1px;
+                          transition:border-color 0.2s ease;"
+                   onmouseover="this.style.borderColor='rgba(232,137,14,0.4)'"
+                   onmouseout="this.style.borderColor='rgba(255,255,255,0.1)'">
+                    Back to Homepage
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
 
             <!-- ── Active Packages ── -->
             {% if packages %}

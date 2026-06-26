@@ -613,13 +613,10 @@ def client_dashboard(request):
     packages           = all_packages.filter(is_active=True)
     has_active_package = packages.exists()
 
-    # Package fully used — show completion page, dashboard no longer accessible
+    # Package fully used — stay on dashboard, show completion banner
+    completed_package = None
     if all_packages.exists() and not has_active_package:
-        completed_pkg = all_packages.first()
-        return render(request, 'bookings/package_complete.html', {
-            'client_name': client_name,
-            'package':     completed_pkg,
-        })
+        completed_package = all_packages.first()
 
     upcoming = list(Appointment.objects.filter(
         client_phone=phone,
@@ -652,6 +649,7 @@ def client_dashboard(request):
         'pending_slots':      json.dumps(pending_slots),
         'services':           Appointment.SERVICE_CHOICES,
         'has_active_package': has_active_package,
+        'completed_package':  completed_package,
     })
 
 def start_package_session(request, pkg_id):
