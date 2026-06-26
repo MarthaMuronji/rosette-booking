@@ -483,7 +483,6 @@ def masseuse_dashboard(request):
         'base_url': settings.BASE_URL,
     })
 
-
 def approve_appointment(request, pk):
     if not request.session.get('masseuse_authenticated'):
         return redirect('masseuse_login')
@@ -497,7 +496,7 @@ def approve_appointment(request, pk):
     confirm_url     = f"{settings.BASE_URL}/book/confirm/{appointment.pk}/"
 
     if appointment.client_package:
-        pkg         = appointment.client_package
+        pkg = appointment.client_package
         session_num = pkg.sessions_completed + 1
         whatsapp_message = (
             f"🌿 Hi {appointment.client_name}!%0A%0A"
@@ -507,6 +506,17 @@ def approve_appointment(request, pk):
             f"Time: {time_formatted}%0A%0A"
             f"Please confirm your session details here: {confirm_url}%0A%0A"
             f"See you soon! 🌸"
+        )
+    elif appointment.service in PACKAGE_CONFIGS:
+        config = PACKAGE_CONFIGS[appointment.service]
+        whatsapp_message = (
+            f"🌿 Hi {appointment.client_name}! Your package request has been approved!%0A%0A"
+            f"Package: {service_display}%0A"
+            f"Sessions: {config['total_sessions']} × 90 minutes%0A"
+            f"Date of first session: {appointment.appointment_date}%0A"
+            f"Time: {time_formatted}%0A%0A"
+            f"Please complete your package purchase here: {confirm_url}%0A%0A"
+            f"We look forward to your wellness journey! 🌸"
         )
     else:
         whatsapp_message = (
