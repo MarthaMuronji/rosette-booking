@@ -345,7 +345,7 @@ def whatsapp_approve(request, pk):
     time_formatted = appointment.appointment_time.strftime('%I:%M %p')
     confirm_url = f"{settings.BASE_URL}/book/confirm/{appointment.pk}/"
 
-    # Build client confirmation message
+    # ✅ FIXED: Client confirmation message (no approve/decline links)
     client_message = (
         f"🌿 *Hi {appointment.client_name}!*%0A%0A"
         f"Your Rosette Wellness request has been approved!%0A%0A"
