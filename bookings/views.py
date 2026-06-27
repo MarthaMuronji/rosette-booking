@@ -132,6 +132,7 @@ def validate_uae_phone(phone):
         return None, "Please enter a valid UAE number (e.g. +971 50 000 0000)."
     return f'+971{match.group(2)}', None
 
+
 def book_request(request):
     if request.method == 'POST':
         service = request.POST.get('service', '').strip()
@@ -286,17 +287,17 @@ def book_request(request):
         decline_url = f"{settings.BASE_URL}/whatsapp/decline/{appointment.pk}/"
 
         whatsapp_message = (
-    f"🌿 *New Booking Request!*%0A%0A"
-    f"📋 Please log in to the dashboard to approve or decline:%0A%0A"
-    f"• Client: {client_name}%0A"
-    f"• Service: {service_display}%0A"
-    f"• Duration: {duration} min%0A"
-    f"• Date: {preferred_date}%0A"
-    f"• Time: {time_formatted}%0A"
-    f"• Phone: {client_phone}%0A%0A"
-    f"🔗 Dashboard: {settings.BASE_URL}/masseuse/login/%0A"
-    f"_This is an automated notification. Please login to process this booking._"
-)
+            f"🌿 *New Booking Request!*%0A%0A"
+            f"📋 Please log in to the dashboard to approve or decline:%0A%0A"
+            f"• Client: {client_name}%0A"
+            f"• Service: {service_display}%0A"
+            f"• Duration: {duration} min%0A"
+            f"• Date: {preferred_date}%0A"
+            f"• Time: {time_formatted}%0A"
+            f"• Phone: {client_phone}%0A%0A"
+            f"🔗 Dashboard: {settings.BASE_URL}/masseuse/login/%0A"
+            f"_This is an automated notification. Please login to process this booking._"
+        )
 
         # Show request sent page to client
         logger.info(f"New booking created: {appointment.pk} - {client_name}")
@@ -344,41 +345,17 @@ def whatsapp_approve(request, pk):
     time_formatted = appointment.appointment_time.strftime('%I:%M %p')
     confirm_url = f"{settings.BASE_URL}/book/confirm/{appointment.pk}/"
 
-    if appointment.client_package:
-        pkg = appointment.client_package
-        session_num = pkg.sessions_completed + 1
-        client_message = (
-            f"🌿 *Hi {appointment.client_name}!*%0A%0A"
-            f"Your Session {session_num} of {pkg.total_sessions} has been approved!%0A%0A"
-            f"• Service: {service_display}%0A"
-            f"• Date: {appointment.appointment_date}%0A"
-            f"• Time: {time_formatted}%0A%0A"
-            f"Please confirm your session details here:%0A"
-            f"{confirm_url}%0A%0A"
-            f"See you soon! 🌸"
-        )
-    elif appointment.service in PACKAGE_CONFIGS:
-        config = PACKAGE_CONFIGS[appointment.service]
-        client_message = (
-            f"🌿 *Hi {appointment.client_name}!* Your package request has been approved!%0A%0A"
-            f"• Package: {service_display}%0A"
-            f"• Sessions: {config['total_sessions']} × 90 minutes%0A"
-            f"• Date of first session: {appointment.appointment_date}%0A"
-            f"• Time: {time_formatted}%0A%0A"
-            f"Please complete your package purchase here:%0A"
-            f"{confirm_url}%0A%0A"
-            f"We look forward to your wellness journey! 🌸"
-        )
-    else:
-        client_message = (
-            f"🌿 *Hi {appointment.client_name}!* Your Rosette Wellness request has been approved!%0A%0A"
-            f"• Service: {service_display}%0A"
-            f"• Date: {appointment.appointment_date}%0A"
-            f"• Time: {time_formatted}%0A%0A"
-            f"Please complete your booking here:%0A"
-            f"{confirm_url}%0A%0A"
-            f"We look forward to seeing you! 🌸"
-        )
+    # Build client confirmation message
+    client_message = (
+        f"🌿 *Hi {appointment.client_name}!*%0A%0A"
+        f"Your Rosette Wellness request has been approved!%0A%0A"
+        f"• Service: {service_display}%0A"
+        f"• Date: {appointment.appointment_date}%0A"
+        f"• Time: {time_formatted}%0A%0A"
+        f"Please complete your booking here:%0A"
+        f"{confirm_url}%0A%0A"
+        f"We look forward to seeing you! 🌸"
+    )
 
     # Also send confirmation to owner that it was approved
     owner_message = (
