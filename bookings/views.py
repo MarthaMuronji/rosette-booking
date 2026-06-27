@@ -479,9 +479,10 @@ def request_cancellation(request, pk):
 
 
 def whatsapp_approve_cancellation(request, pk):
+    """Owner approves cancellation from WhatsApp link"""
     if request.method != 'POST':
         return redirect('masseuse_dashboard')
-    """Owner approves cancellation from WhatsApp link"""
+    
     appointment = get_object_or_404(Appointment, pk=pk)
     
     # Only allow if status is cancellation_requested
@@ -531,9 +532,10 @@ def whatsapp_approve_cancellation(request, pk):
 
 
 def whatsapp_decline_cancellation(request, pk):
+    """Owner declines cancellation from WhatsApp link"""
     if request.method != 'POST':
         return redirect('masseuse_dashboard')
-    """Owner declines cancellation from WhatsApp link"""
+    
     appointment = get_object_or_404(Appointment, pk=pk)
     
     # Only allow if status is cancellation_requested
