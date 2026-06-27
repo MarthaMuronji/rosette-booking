@@ -479,6 +479,8 @@ def request_cancellation(request, pk):
 
 
 def whatsapp_approve_cancellation(request, pk):
+    if request.method != 'POST':
+        return redirect('masseuse_dashboard')
     """Owner approves cancellation from WhatsApp link"""
     appointment = get_object_or_404(Appointment, pk=pk)
     
@@ -529,6 +531,8 @@ def whatsapp_approve_cancellation(request, pk):
 
 
 def whatsapp_decline_cancellation(request, pk):
+    if request.method != 'POST':
+        return redirect('masseuse_dashboard')
     """Owner declines cancellation from WhatsApp link"""
     appointment = get_object_or_404(Appointment, pk=pk)
     
@@ -653,8 +657,8 @@ def reschedule_appointment(request, pk):
 
         service_display = appointment.get_service_display()
         time_formatted = datetime.datetime.strptime(new_time, '%H:%M').strftime('%I:%M %p')
-        approve_url = f"{settings.BASE_URL}/whatsapp/approve/{appointment.pk}/"
-        decline_url = f"{settings.BASE_URL}/whatsapp/decline/{appointment.pk}/"
+        approve_url = f"{settings.BASE_URL}/masseuse/approve/{appointment.pk}/"
+        decline_url = f"{settings.BASE_URL}/masseuse/decline/{appointment.pk}/"
 
         whatsapp_message = (
             f"🔄 *Reschedule Request!*%0A"

@@ -144,6 +144,13 @@
         font-size: 12px;
         color: var(--foreground-muted);
         line-height: 2;
+        display: none;
+        animation: slideDown 0.2s ease;
+    }
+
+    @keyframes slideDown {
+        from { opacity: 0; transform: translateY(-4px); }
+        to   { opacity: 1; transform: translateY(0); }
     }
 
     .package-details .highlight { color: var(--primary); font-weight: 600; }
@@ -240,101 +247,85 @@
         border-radius: 12px;
         margin-bottom: 20px;
     }
-    .package-details {
-    margin-top: 10px;
-    padding-top: 10px;
-    border-top: 1px solid rgba(255,255,255,0.06);
-    font-size: 12px;
-    color: var(--foreground-muted);
-    line-height: 2;
-    display: none; /* hidden by default */
-    animation: slideDown 0.2s ease;
-}
 
-@keyframes slideDown {
-    from { opacity: 0; transform: translateY(-4px); }
-    to   { opacity: 1; transform: translateY(0); }
-}
+    .package-toggle {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 12px;
+        color: rgba(232,137,14,0.7);
+        margin-top: 8px;
+        cursor: pointer;
+        user-select: none;
+        border: none;
+        background: none;
+        padding: 0;
+    }
 
-.package-toggle {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    font-size: 12px;
-    color: rgba(232,137,14,0.7);
-    margin-top: 8px;
-    cursor: pointer;
-    user-select: none;
-    border: none;
-    background: none;
-    padding: 0;
-}
+    .package-toggle:hover { color: var(--primary); }
 
-.package-toggle:hover { color: var(--primary); }
+    .package-toggle .chevron {
+        font-size: 10px;
+        transition: transform 0.2s ease;
+    }
 
-.package-toggle .chevron {
-    font-size: 10px;
-    transition: transform 0.2s ease;
-}
+    .package-toggle.open .chevron { transform: rotate(180deg); }
 
-.package-toggle.open .chevron { transform: rotate(180deg); }
-.package-fee-notice {
-    background: rgba(232,137,14,0.06);
-    border: 1px solid rgba(232,137,14,0.2);
-    border-radius: 8px;
-    padding: 14px 18px;
-    font-size: 13px;
-    color: var(--foreground-muted);
-    margin-top: 12px;
-    display: none;
-    line-height: 1.8;
-}
+    .package-fee-notice {
+        background: rgba(232,137,14,0.06);
+        border: 1px solid rgba(232,137,14,0.2);
+        border-radius: 8px;
+        padding: 14px 18px;
+        font-size: 13px;
+        color: var(--foreground-muted);
+        margin-top: 12px;
+        display: none;
+        line-height: 1.8;
+    }
 
-.package-fee-notice strong {
-    color: var(--foreground);
-}
+    .package-fee-notice strong {
+        color: var(--foreground);
+    }
 
-/* Cancellation button styles */
-.btn-cancel-rw {
-    background-color: rgba(239,68,68,0.1);
-    color: #ef4444;
-    border: 1px solid rgba(239,68,68,0.3);
-    padding: 6px 14px;
-    border-radius: 6px;
-    font-size: 12px;
-    text-decoration: none;
-    transition: all 0.2s;
-    white-space: nowrap;
-}
+    /* Cancellation button styles */
+    .btn-cancel-rw {
+        background-color: rgba(239,68,68,0.1);
+        color: #ef4444;
+        border: 1px solid rgba(239,68,68,0.3);
+        padding: 6px 14px;
+        border-radius: 6px;
+        font-size: 12px;
+        text-decoration: none;
+        transition: all 0.2s;
+        white-space: nowrap;
+    }
 
-.btn-cancel-rw:hover {
-    background-color: rgba(239,68,68,0.2);
-    color: #ef4444;
-}
+    .btn-cancel-rw:hover {
+        background-color: rgba(239,68,68,0.2);
+        color: #ef4444;
+    }
 
-.status-cancellation-requested {
-    background: rgba(232,137,14,0.12);
-    color: var(--primary);
-    border: 1px solid rgba(232,137,14,0.3);
-    padding: 3px 10px;
-    border-radius: 20px;
-    font-size: 11px;
-    letter-spacing: 1px;
-    text-transform: uppercase;
-}
+    .status-cancellation-requested {
+        background: rgba(232,137,14,0.12);
+        color: var(--primary);
+        border: 1px solid rgba(232,137,14,0.3);
+        padding: 3px 10px;
+        border-radius: 20px;
+        font-size: 11px;
+        letter-spacing: 1px;
+        text-transform: uppercase;
+    }
 
-.status-cancelled {
-    background: rgba(239,68,68,0.1);
-    color: #ef4444;
-    border: 1px solid rgba(239,68,68,0.3);
-    padding: 3px 10px;
-    border-radius: 20px;
-    font-size: 11px;
-    letter-spacing: 1px;
-    text-transform: uppercase;
-}
-
-
+    .status-cancelled {
+        background: rgba(239,68,68,0.1);
+        color: #ef4444;
+        border: 1px solid rgba(239,68,68,0.3);
+        padding: 3px 10px;
+        border-radius: 20px;
+        font-size: 11px;
+        letter-spacing: 1px;
+        text-transform: uppercase;
+    }
 </style>
 {% endblock %}
 
@@ -355,49 +346,49 @@
     <div class="row justify-content-center">
         <div class="col-lg-9">
             {% if completed_package %}
-<div style="background:linear-gradient(135deg, rgba(232,137,14,0.08), rgba(232,137,14,0.02));
-            border:1px solid rgba(232,137,14,0.3);
-            border-radius:12px; padding:28px 32px; margin-bottom:32px;">
-    <div class="d-flex align-items-start gap-4 flex-wrap">
-        <div style="width:52px; height:52px; background:rgba(232,137,14,0.1);
-                    border:1px solid rgba(232,137,14,0.3); border-radius:50%;
-                    display:flex; align-items:center; justify-content:center;
-                    flex-shrink:0;">
-            <i class="fas fa-star" style="color:var(--primary); font-size:20px;"></i>
-        </div>
-        <div style="flex:1;">
-            <div style="font-family:'Playfair Display',serif; font-size:20px;
-                        color:var(--foreground); margin-bottom:6px;">
-                Your {{ completed_package.get_package_type_display }} is complete!
+            <div style="background:linear-gradient(135deg, rgba(232,137,14,0.08), rgba(232,137,14,0.02));
+                        border:1px solid rgba(232,137,14,0.3);
+                        border-radius:12px; padding:28px 32px; margin-bottom:32px;">
+                <div class="d-flex align-items-start gap-4 flex-wrap">
+                    <div style="width:52px; height:52px; background:rgba(232,137,14,0.1);
+                                border:1px solid rgba(232,137,14,0.3); border-radius:50%;
+                                display:flex; align-items:center; justify-content:center;
+                                flex-shrink:0;">
+                        <i class="fas fa-star" style="color:var(--primary); font-size:20px;"></i>
+                    </div>
+                    <div style="flex:1;">
+                        <div style="font-family:'Playfair Display',serif; font-size:20px;
+                                    color:var(--foreground); margin-bottom:6px;">
+                            Your {{ completed_package.get_package_type_display }} is complete!
+                        </div>
+                        <p style="color:var(--foreground-muted); font-size:14px;
+                                  line-height:1.7; margin-bottom:16px;">
+                            You've completed all {{ completed_package.total_sessions }} sessions.
+                            We hope you enjoyed every moment of your wellness journey with Rosette.
+                            Ready to continue? Book individual sessions or start a new package below.
+                        </p>
+                        <div class="d-flex gap-3 flex-wrap">
+                            <a href="/book/"
+                               class="btn-primary-rw"
+                               style="padding:10px 24px; font-size:13px; border-radius:6px;
+                                      letter-spacing:1px; text-decoration:none;">
+                                Book Again
+                            </a>
+                            <a href="/"
+                               style="display:inline-block; padding:10px 24px;
+                                      border:1px solid var(--border); border-radius:6px;
+                                      color:var(--foreground-muted); font-size:13px;
+                                      text-decoration:none; letter-spacing:1px;
+                                      transition:border-color 0.2s ease;"
+                               onmouseover="this.style.borderColor='rgba(232,137,14,0.4)'"
+                               onmouseout="this.style.borderColor='rgba(255,255,255,0.1)'">
+                                Back to Homepage
+                            </a>
+                        </div>
+                    </div>
+                </div>
             </div>
-            <p style="color:var(--foreground-muted); font-size:14px;
-                      line-height:1.7; margin-bottom:16px;">
-                You've completed all {{ completed_package.total_sessions }} sessions.
-                We hope you enjoyed every moment of your wellness journey with Rosette.
-                Ready to continue? Book individual sessions or start a new package below.
-            </p>
-            <div class="d-flex gap-3 flex-wrap">
-                <a href="/book/"
-                   class="btn-primary-rw"
-                   style="padding:10px 24px; font-size:13px; border-radius:6px;
-                          letter-spacing:1px; text-decoration:none;">
-                    Book Again
-                </a>
-                <a href="/"
-                   style="display:inline-block; padding:10px 24px;
-                          border:1px solid var(--border); border-radius:6px;
-                          color:var(--foreground-muted); font-size:13px;
-                          text-decoration:none; letter-spacing:1px;
-                          transition:border-color 0.2s ease;"
-                   onmouseover="this.style.borderColor='rgba(232,137,14,0.4)'"
-                   onmouseout="this.style.borderColor='rgba(255,255,255,0.1)'">
-                    Back to Homepage
-                </a>
-            </div>
-        </div>
-    </div>
-</div>
-{% endif %}
+            {% endif %}
 
             <!-- ── Active Packages ── -->
             {% if packages %}
@@ -441,45 +432,43 @@
             {% endfor %}
             {% endif %}
 
-          
             <!-- ── Upcoming Appointments ── -->
             <p class="section-label mt-2">Upcoming Appointments</p>
 
             {% if upcoming %}
             {% for apt in upcoming %}
-           <div class="apt-row">
-    <div>
-        <div class="apt-service">{{ apt.get_service_display }}</div>
-        <div class="apt-meta">
-            {{ apt.appointment_date }} &middot; {{ apt.appointment_time|time:"g:i A" }} &middot; {{ apt.duration }} min
-        </div>
-        {% if apt.client_package %}
-        <div class="apt-meta mt-1" style="color:rgba(232,137,14,0.7); font-size:12px;">
-            Package — session {{ apt.client_package.sessions_completed|add:1 }} of {{ apt.client_package.total_sessions }}
-        </div>
-        {% endif %}
-    </div>
-    <div class="d-flex align-items-center gap-2 flex-wrap">
-        <span class="status-badge status-{{ apt.status }}">{{ apt.get_status_display }}</span>
-        {% if apt.can_reschedule and apt.status == 'confirmed' %}
-        <a href="/book/reschedule/{{ apt.pk }}/" class="btn-reschedule">Reschedule</a>
-        {% endif %}
-        <!-- Cancellation Button -->
-        {% if apt.status == 'confirmed' %}
-        <a href="/client/cancel/{{ apt.pk }}/" 
-           class="btn-cancel-rw"
-           onclick="return confirm('Are you sure you want to request cancellation? This will be sent to the therapist for approval.')">
-            <i class="fas fa-times me-1"></i> Request Cancellation
-        </a>
-        {% endif %}
-        {% if apt.status == 'cancellation_requested' %}
-        <span class="status-badge status-cancellation-requested">⏳ Pending Approval</span>
-        {% endif %}
-        {% if apt.status == 'cancelled' %}
-        <span class="status-badge status-cancelled">Cancelled</span>
-        {% endif %}
-    </div>
-</div>
+            <div class="apt-row">
+                <div>
+                    <div class="apt-service">{{ apt.get_service_display }}</div>
+                    <div class="apt-meta">
+                        {{ apt.appointment_date }} &middot; {{ apt.appointment_time|time:"g:i A" }} &middot; {{ apt.duration }} min
+                    </div>
+                    {% if apt.client_package %}
+                    <div class="apt-meta mt-1" style="color:rgba(232,137,14,0.7); font-size:12px;">
+                        Package — session {{ apt.client_package.sessions_completed|add:1 }} of {{ apt.client_package.total_sessions }}
+                    </div>
+                    {% endif %}
+                </div>
+                <div class="d-flex align-items-center gap-2 flex-wrap">
+                    <span class="status-badge status-{{ apt.status }}">{{ apt.get_status_display }}</span>
+                    {% if apt.can_reschedule and apt.status == 'confirmed' %}
+                    <a href="/book/reschedule/{{ apt.pk }}/" class="btn-reschedule">Reschedule</a>
+                    {% endif %}
+                    {% if apt.status == 'confirmed' %}
+                    <a href="/client/cancel/{{ apt.pk }}/"
+                       class="btn-cancel-rw"
+                       onclick="return confirm('Are you sure you want to request cancellation? This will be sent to the therapist for approval.')">
+                        <i class="fas fa-times me-1"></i> Request Cancellation
+                    </a>
+                    {% endif %}
+                    {% if apt.status == 'cancellation_requested' %}
+                    <span class="status-badge status-cancellation-requested">⏳ Pending Approval</span>
+                    {% endif %}
+                    {% if apt.status == 'cancelled' %}
+                    <span class="status-badge status-cancelled">Cancelled</span>
+                    {% endif %}
+                </div>
+            </div>
             {% endfor %}
             {% else %}
             <div class="empty-state">
@@ -487,7 +476,7 @@
             </div>
             {% endif %}
 
-              <!-- ── Book a Session (embedded form) ── -->
+            <!-- ── Book a Session (embedded form) ── -->
             <div class="form-section" id="bookingSection">
                 <div class="form-section-title">Book a Session</div>
 
@@ -500,69 +489,82 @@
                     <!-- Service -->
                     <div class="mb-4">
                         <label class="rw-form-label mb-2">Choose Your Treatment</label>
-                       {% for value, label in services %}
-{% if has_active_package and value in 'monthly_wellness,vip_wellness' %}
-{% comment %}Skip package options — client already has an active package{% endcomment %}
-{% else %}
-<div class="service-card" data-service="{{ value }}" onclick="selectService('{{ value }}', this)">
-    <div class="d-flex align-items-start">
-        <input type="radio" name="service" value="{{ value }}"
-               id="ds_{{ value }}" class="me-3 mt-1">
-        <div style="flex:1;">
-            <div class="service-name">{{ label }}</div>
-            {% if value == 'monthly_wellness' %}
-            <div class="package-badge mt-1">Wellness Package</div>
-            <button type="button" class="package-toggle" onclick="togglePackageDetails(event, 'details_monthly_wellness')">
-                <span>See what's included</span>
-                <i class="fas fa-chevron-down chevron"></i>
-            </button>
-            <div class="package-details" id="details_monthly_wellness">
-                <div>5 sessions × 90 minutes each</div>
-                <div><span class="highlight">1,500 AED total</span> — 300 AED per session</div>
-                <div>Any service type of your choice</div>
-                <div>Valid for 30 days from first session</div>
-                <div style="color:rgba(232,137,14,0.6);">Save 100 AED vs individual bookings</div>
-            </div>
-            {% elif value == 'vip_wellness' %}
-            <div class="package-badge mt-1">Wellness Package</div>
-            <button type="button" class="package-toggle" onclick="togglePackageDetails(event, 'details_vip_wellness')">
-                <span>See what's included</span>
-                <i class="fas fa-chevron-down chevron"></i>
-            </button>
-            <div class="package-details" id="details_vip_wellness">
-                <div>8 sessions × 90 minutes each</div>
-                <div><span class="highlight">2,400 AED total</span> — 300 AED per session</div>
-                <div>Any service type of your choice</div>
-                <div>No expiry — use at your own pace</div>
-                <div style="color:rgba(232,137,14,0.6);">Save 160 AED vs individual bookings</div>
-            </div>
-            {% endif %}
-        </div>
-    </div>
-</div>
-{% endif %}
-{% endfor %}
+                        {% for value, label in services %}
+                        {% if has_active_package and value in 'monthly_wellness,vip_wellness' %}
+                        {% comment %}Skip package options — client already has an active package{% endcomment %}
+                        {% else %}
+                        <div class="service-card" data-service="{{ value }}" onclick="selectService('{{ value }}', this)">
+                            <div class="d-flex align-items-start">
+                                <input type="radio" name="service" value="{{ value }}"
+                                       id="ds_{{ value }}" class="me-3 mt-1">
+                                <div style="flex:1;">
+                                    <div class="service-name">{{ label }}</div>
+                                    {% if value == 'monthly_wellness' %}
+                                    <div class="package-badge mt-1">Wellness Package</div>
+                                    <button type="button" class="package-toggle" onclick="togglePackageDetails(event, 'details_monthly_wellness')">
+                                        <span>See what's included</span>
+                                        <i class="fas fa-chevron-down chevron"></i>
+                                    </button>
+                                    <div class="package-details" id="details_monthly_wellness">
+                                        <div>5 sessions × 90 minutes each</div>
+                                        <div><span class="highlight">1,500 AED total</span> — 300 AED per session</div>
+                                        <div>Any service type of your choice</div>
+                                        <div>Valid for 30 days from first session</div>
+                                        <div style="color:rgba(232,137,14,0.6);">Save 100 AED vs individual bookings</div>
+                                    </div>
+                                    {% elif value == 'vip_wellness' %}
+                                    <div class="package-badge mt-1">Wellness Package</div>
+                                    <button type="button" class="package-toggle" onclick="togglePackageDetails(event, 'details_vip_wellness')">
+                                        <span>See what's included</span>
+                                        <i class="fas fa-chevron-down chevron"></i>
+                                    </button>
+                                    <div class="package-details" id="details_vip_wellness">
+                                        <div>8 sessions × 90 minutes each</div>
+                                        <div><span class="highlight">2,400 AED total</span> — 300 AED per session</div>
+                                        <div>Any service type of your choice</div>
+                                        <div>No expiry — use at your own pace</div>
+                                        <div style="color:rgba(232,137,14,0.6);">Save 160 AED vs individual bookings</div>
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        {% endif %}
+                        {% endfor %}
 
-                      {% if has_active_package %}
-<input type="hidden" name="duration" value="90">
-{% else %}
-<div id="durationSection" style="display:none;" class="mt-3">
-    <label class="rw-form-label">Session Duration</label>
-    <select name="duration" id="durationSelect" class="rw-form-control">
-        <option value="">Select duration</option>
-    </select>
-</div>
-{% endif %}
-   
+                        {% if has_active_package %}
+                        <input type="hidden" name="duration" value="90">
+                        {% else %}
+                        <div id="durationSection" style="display:none;" class="mt-3">
+                            <label class="rw-form-label">Session Duration</label>
+                            <select name="duration" id="durationSelect" class="rw-form-control">
+                                <option value="">Select duration</option>
+                            </select>
+                        </div>
+                        {% endif %}
 
-{% if has_active_package %}
-<div class="package-fee-notice mt-3" style="display:block;">
-    <i class="fas fa-info-circle me-2" style="color:var(--primary);"></i>
-    <strong>Reminder:</strong> Your package covers all sessions.
-    Zone travel fees (<strong>+25 AED</strong> Zone 2 / <strong>+50 AED</strong> Zone 3)
-    and any add-ons are charged separately per session and collected on the day.
-</div>
-{% endif %}
+                        <!-- Preferred Service Section -->
+                        <div class="mt-3" id="preferredServiceSection" style="display:none;">
+                            <label class="rw-form-label">Preferred Massage Type for This Session</label>
+                            <select name="preferred_service" class="rw-form-control">
+                                <option value="">Select massage type</option>
+                                <option value="Signature Full Body Reset">Signature Full Body Reset</option>
+                                <option value="Swedish / Relaxation Massage">Swedish / Relaxation Massage</option>
+                                <option value="Deep Tissue Massage">Deep Tissue Massage</option>
+                                <option value="Sports Massage">Sports Massage</option>
+                                <option value="Hot Stone Massage">Hot Stone Massage</option>
+                                <option value="Thai Massage">Thai Massage</option>
+                            </select>
+                        </div>
+
+                        {% if has_active_package %}
+                        <div class="package-fee-notice mt-3" style="display:block;">
+                            <i class="fas fa-info-circle me-2" style="color:var(--primary);"></i>
+                            <strong>Reminder:</strong> Your package covers all sessions.
+                            Zone travel fees (<strong>+25 AED</strong> Zone 2 / <strong>+50 AED</strong> Zone 3)
+                            and any add-ons are charged separately per session and collected on the day.
+                        </div>
+                        {% endif %}
                     </div>
 
                     <!-- Date -->
@@ -612,7 +614,6 @@
                     </button>
                 </form>
             </div>
-
 
             <!-- ── Past Sessions ── -->
             {% if past %}
@@ -670,34 +671,37 @@
 
     let selectedService = null;
 
-   const hasActivePackage = {{ has_active_package|yesno:"true,false" }};
+    const hasActivePackage = {{ has_active_package|yesno:"true,false" }};
 
-function selectService(value, card) {
-    document.querySelectorAll('.service-card').forEach(c => c.classList.remove('selected'));
-    card.classList.add('selected');
-    document.getElementById('ds_' + value).checked = true;
-    selectedService = value;
+    function selectService(value, card) {
+        document.querySelectorAll('.service-card').forEach(c => c.classList.remove('selected'));
+        card.classList.add('selected');
+        document.getElementById('ds_' + value).checked = true;
+        selectedService = value;
 
-    const durationSection = document.getElementById('durationSection');
-    const durationSelect  = document.getElementById('durationSelect');
-    durationSection.style.display = 'block';
-    durationSelect.innerHTML = '<option value="">Select duration</option>';
+        const durationSection = document.getElementById('durationSection');
+        const durationSelect  = document.getElementById('durationSelect');
 
-    // Always show preferred service on dashboard
-    document.getElementById('preferredServiceSection').style.display = 'block';
+        if (durationSection) {
+            durationSection.style.display = 'block';
+            durationSelect.innerHTML = '<option value="">Select duration</option>';
 
-    durations[value].forEach(d => {
-        let label;
-        if (hasActivePackage) {
-            label = `${d} minutes`;
-        } else if (packageLabels[value] && packageLabels[value][d]) {
-            label = packageLabels[value][d];
-        } else {
-            label = `${d} minutes — ${prices[value][d]} AED`;
+            durations[value].forEach(d => {
+                let label;
+                if (hasActivePackage) {
+                    label = `${d} minutes`;
+                } else if (packageLabels[value] && packageLabels[value][d]) {
+                    label = packageLabels[value][d];
+                } else {
+                    label = `${d} minutes — ${prices[value][d]} AED`;
+                }
+                durationSelect.innerHTML += `<option value="${d}">${label}</option>`;
+            });
         }
-        durationSelect.innerHTML += `<option value="${d}">${label}</option>`;
-    });
-}
+
+        // Show preferred service section
+        document.getElementById('preferredServiceSection').style.display = 'block';
+    }
 
     // Called by package card "Book Next Session" button
     function scrollToBookService(serviceValue) {
@@ -734,8 +738,8 @@ function selectService(value, card) {
                 (slotH === now.getHours() && slotM <= now.getMinutes())
             );
 
-            const isBooked    = booked.includes(slot);
-            const isPending   = pending.includes(slot);
+            const isBooked      = booked.includes(slot);
+            const isPending     = pending.includes(slot);
             const isUnavailable = isPast || isBooked;
 
             const div = document.createElement('span');
@@ -769,17 +773,15 @@ function selectService(value, card) {
         const hour = h % 12 || 12;
         return `${hour}:${String(m).padStart(2, '0')} ${ampm}`;
     }
+
     function togglePackageDetails(event, detailsId) {
-    // Stop click from bubbling up to the card's selectService onclick
-    event.stopPropagation();
-
-    const details = document.getElementById(detailsId);
-    const toggle  = event.currentTarget;
-    const isOpen  = details.style.display === 'block';
-
-    details.style.display = isOpen ? 'none' : 'block';
-    toggle.classList.toggle('open', !isOpen);
-    toggle.querySelector('span').textContent = isOpen ? 'See what\'s included' : 'Hide details';
-}
+        event.stopPropagation();
+        const details = document.getElementById(detailsId);
+        const toggle  = event.currentTarget;
+        const isOpen  = details.style.display === 'block';
+        details.style.display = isOpen ? 'none' : 'block';
+        toggle.classList.toggle('open', !isOpen);
+        toggle.querySelector('span').textContent = isOpen ? "See what's included" : 'Hide details';
+    }
 </script>
 {% endblock %}

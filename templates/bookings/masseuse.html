@@ -432,14 +432,20 @@
                     </div>
                     <div class="col-md-5 mt-3 mt-md-0">
                         <div class="d-flex flex-column gap-2 align-items-md-end">
-                            <a href="https://wa.me/{{ owner_phone|cut:'+' }}?text=Hi%20{{ apt.client_name }}%2C%20your%20cancellation%20request%20for%20{{ apt.get_service_display }}%20on%20{{ apt.appointment_date }}%20has%20been%20APPROVED.%20Your%20booking%20has%20been%20cancelled.%20We%20hope%20to%20see%20you%20again%20soon!%20🌿"
-                               class="btn-approve-cancel-rw" target="_blank">
-                                <i class="fas fa-check me-1"></i> Approve Cancellation
-                            </a>
-                            <a href="https://wa.me/{{ owner_phone|cut:'+' }}?text=Hi%20{{ apt.client_name }}%2C%20unfortunately%20your%20cancellation%20request%20for%20{{ apt.get_service_display }}%20on%20{{ apt.appointment_date }}%20has%20been%20DECLINED.%20Your%20booking%20remains%20confirmed.%20See%20you%20soon!%20🌿"
-                               class="btn-decline-cancel-rw" target="_blank">
-                                <i class="fas fa-times me-1"></i> Decline Cancellation
-                            </a>
+                            <form method="POST" action="{% url 'approve_cancellation' apt.pk %}">
+                                {% csrf_token %}
+                                <button type="submit" class="btn-approve-cancel-rw"
+                                        onclick="return confirm('Approve this cancellation?')">
+                                    <i class="fas fa-check me-1"></i> Approve Cancellation
+                                </button>
+                            </form>
+                            <form method="POST" action="{% url 'decline_cancellation' apt.pk %}">
+                                {% csrf_token %}
+                                <button type="submit" class="btn-decline-cancel-rw"
+                                        onclick="return confirm('Decline this cancellation?')">
+                                    <i class="fas fa-times me-1"></i> Decline Cancellation
+                                </button>
+                            </form>
                             <a href="https://wa.me/{{ apt.client_phone|cut:'+' }}"
                                class="btn-whatsapp-rw" target="_blank" style="width:100%; text-align:center;">
                                 <i class="fab fa-whatsapp me-1"></i> Contact Client
@@ -497,14 +503,12 @@
                             {{ apt.notes }}
                         </div>
                         {% endif %}
-
                         {% if apt.preferred_service %}
                         <div class="appointment-meta">
                             <i class="fas fa-hand-sparkles"></i>
                             Preferred massage: {{ apt.preferred_service }}
                         </div>
                         {% endif %}
-
                         <div class="departure-tag">
                             <i class="fas fa-car me-2"></i>
                             Depart by {{ apt.masseuse_departure_time|time:"g:i A" }} to arrive on time
@@ -518,8 +522,7 @@
                                     <i class="fas fa-times me-1"></i> Decline
                                 </button>
                             </form>
-                            <a href="https://wa.me/{{ owner_phone|cut:'+' }}?text=🌿%20*New%20Booking%20Request!*%0A•%20Name:%20{{ apt.client_name }}%0A•%20Service:%20{{ apt.get_service_display }}%0A•%20Date:%20{{ apt.appointment_date }}%0A•%20Time:%20{{ apt.appointment_time|time:'g:i A' }}%0A•%20Phone:%20{{ apt.client_phone }}%0A%0A✅%20*Approve:*%20{{ base_url }}/whatsapp/approve/{{ apt.pk }}/%0A❌%20*Decline:*%20{{ base_url }}/whatsapp/decline/{{ apt.pk }}/"
-                               class="btn-whatsapp-rw" target="_blank">
+                            <a href="{% url 'approve_appointment' apt.pk %}" class="btn-whatsapp-rw">
                                 <i class="fab fa-whatsapp me-1"></i> Approve via WhatsApp
                             </a>
                         </div>
@@ -560,7 +563,6 @@
                             {{ apt.client_package.get_package_type_display }} — Session {{ apt.client_package.sessions_completed|add:1 }} of {{ apt.client_package.total_sessions }} ({{ apt.client_package.sessions_remaining }} remaining)
                         </div>
                         {% endif %}
-
                         <div class="appointment-meta">
                             <i class="fas fa-calendar"></i>
                             {{ apt.appointment_date|date:"l, F j, Y" }}
@@ -599,14 +601,12 @@
                             Payment: {{ apt.get_payment_method_display }}
                         </div>
                         {% endif %}
-
                         {% if apt.preferred_service %}
                         <div class="appointment-meta">
                             <i class="fas fa-hand-sparkles"></i>
                             Preferred massage: {{ apt.preferred_service }}
                         </div>
                         {% endif %}
-
                         <div class="departure-tag">
                             <i class="fas fa-car me-2"></i>
                             Depart by {{ apt.masseuse_departure_time|time:"g:i A" }}
