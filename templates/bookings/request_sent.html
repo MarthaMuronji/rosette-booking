@@ -44,6 +44,29 @@
                 </ol>
             </div>
 
+            <!-- WhatsApp Button for Therapist Notification -->
+            <div class="rw-card mb-4" style="border-color:#25d366; background: rgba(37, 211, 102, 0.05);">
+                <p style="font-size:13px; color:var(--foreground-muted); margin-bottom:12px;">
+                    <i class="fas fa-bolt me-2" style="color:var(--primary);"></i>
+                    <strong style="color:white;">Notify Therapist Now:</strong>
+                    Click below to send your booking request directly to the therapist.
+                </p>
+                <a href="https://wa.me/{{ owner_phone|cut:'+' }}?text={{ whatsapp_message|urlencode }}"
+                   target="_blank"
+                   style="display:inline-flex; align-items:center; gap:12px;
+                          background:#25d366; color:white; 
+                          padding:16px 40px; border-radius:8px; text-decoration:none;
+                          font-weight:600; font-size:18px; transition: all 0.3s;"
+                   onmouseover="this.style.transform='scale(1.03)'"
+                   onmouseout="this.style.transform='scale(1)'">
+                    <i class="fab fa-whatsapp" style="font-size:24px;"></i> 
+                    Notify Therapist via WhatsApp
+                </a>
+                <p style="font-size:11px; color:var(--foreground-muted); margin-top:10px;">
+                    ⚡ This sends your booking details to the therapist with Approve/Decline buttons
+                </p>
+            </div>
+
             <!-- Info box -->
             <div class="rw-card mb-4" style="border-color:var(--border-orange);">
                 <p style="font-size:14px; color:var(--foreground-muted); margin:0;">

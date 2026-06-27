@@ -132,7 +132,6 @@ def validate_uae_phone(phone):
         return None, "Please enter a valid UAE number (e.g. +971 50 000 0000)."
     return f'+971{match.group(2)}', None
 
-
 def book_request(request):
     if request.method == 'POST':
         service = request.POST.get('service', '').strip()
