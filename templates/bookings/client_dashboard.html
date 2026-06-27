@@ -293,6 +293,48 @@
 .package-fee-notice strong {
     color: var(--foreground);
 }
+
+/* Cancellation button styles */
+.btn-cancel-rw {
+    background-color: rgba(239,68,68,0.1);
+    color: #ef4444;
+    border: 1px solid rgba(239,68,68,0.3);
+    padding: 6px 14px;
+    border-radius: 6px;
+    font-size: 12px;
+    text-decoration: none;
+    transition: all 0.2s;
+    white-space: nowrap;
+}
+
+.btn-cancel-rw:hover {
+    background-color: rgba(239,68,68,0.2);
+    color: #ef4444;
+}
+
+.status-cancellation-requested {
+    background: rgba(232,137,14,0.12);
+    color: var(--primary);
+    border: 1px solid rgba(232,137,14,0.3);
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-size: 11px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+}
+
+.status-cancelled {
+    background: rgba(239,68,68,0.1);
+    color: #ef4444;
+    border: 1px solid rgba(239,68,68,0.3);
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-size: 11px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+}
+
+
 </style>
 {% endblock %}
 
@@ -405,25 +447,39 @@
 
             {% if upcoming %}
             {% for apt in upcoming %}
-            <div class="apt-row">
-                <div>
-                    <div class="apt-service">{{ apt.get_service_display }}</div>
-                    <div class="apt-meta">
-                        {{ apt.appointment_date }} &middot; {{ apt.appointment_time|time:"g:i A" }} &middot; {{ apt.duration }} min
-                    </div>
-                    {% if apt.client_package %}
-                    <div class="apt-meta mt-1" style="color:rgba(232,137,14,0.7); font-size:12px;">
-                        Package — session {{ apt.client_package.sessions_completed|add:1 }} of {{ apt.client_package.total_sessions }}
-                    </div>
-                    {% endif %}
-                </div>
-                <div class="d-flex align-items-center gap-2 flex-wrap">
-                    <span class="status-badge status-{{ apt.status }}">{{ apt.get_status_display }}</span>
-                    {% if apt.can_reschedule %}
-                    <a href="/book/reschedule/{{ apt.pk }}/" class="btn-reschedule">Reschedule</a>
-                    {% endif %}
-                </div>
-            </div>
+           <div class="apt-row">
+    <div>
+        <div class="apt-service">{{ apt.get_service_display }}</div>
+        <div class="apt-meta">
+            {{ apt.appointment_date }} &middot; {{ apt.appointment_time|time:"g:i A" }} &middot; {{ apt.duration }} min
+        </div>
+        {% if apt.client_package %}
+        <div class="apt-meta mt-1" style="color:rgba(232,137,14,0.7); font-size:12px;">
+            Package — session {{ apt.client_package.sessions_completed|add:1 }} of {{ apt.client_package.total_sessions }}
+        </div>
+        {% endif %}
+    </div>
+    <div class="d-flex align-items-center gap-2 flex-wrap">
+        <span class="status-badge status-{{ apt.status }}">{{ apt.get_status_display }}</span>
+        {% if apt.can_reschedule and apt.status == 'confirmed' %}
+        <a href="/book/reschedule/{{ apt.pk }}/" class="btn-reschedule">Reschedule</a>
+        {% endif %}
+        <!-- Cancellation Button -->
+        {% if apt.status == 'confirmed' %}
+        <a href="/client/cancel/{{ apt.pk }}/" 
+           class="btn-cancel-rw"
+           onclick="return confirm('Are you sure you want to request cancellation? This will be sent to the therapist for approval.')">
+            <i class="fas fa-times me-1"></i> Request Cancellation
+        </a>
+        {% endif %}
+        {% if apt.status == 'cancellation_requested' %}
+        <span class="status-badge status-cancellation-requested">⏳ Pending Approval</span>
+        {% endif %}
+        {% if apt.status == 'cancelled' %}
+        <span class="status-badge status-cancelled">Cancelled</span>
+        {% endif %}
+    </div>
+</div>
             {% endfor %}
             {% else %}
             <div class="empty-state">

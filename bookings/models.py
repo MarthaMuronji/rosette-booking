@@ -38,6 +38,8 @@ class Appointment(models.Model):
         ('confirmed', 'Confirmed'),
         ('completed', 'Completed'),
         ('declined', 'Declined'),
+        ('cancelled', 'Cancelled'),
+        ('cancellation_requested', 'Cancellation Requested'),
     ]
 
     SERVICE_CHOICES = [
@@ -49,7 +51,6 @@ class Appointment(models.Model):
         ('thai', 'Thai Massage'),
         ('monthly_wellness', 'Monthly Wellness Package'),
         ('vip_wellness', 'VIP Wellness Package'),
-
     ]
 
     DURATION_CHOICES = [
@@ -108,7 +109,7 @@ class Appointment(models.Model):
     )
 
     # System fields
-    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='pending')
+    status = models.CharField(max_length=30, choices=STATUS_CHOICES, default='pending')
     masseuse_departure_time = models.TimeField(blank=True, null=True)
     total_price = models.IntegerField(default=0)
     notes = models.TextField(blank=True)

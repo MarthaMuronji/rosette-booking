@@ -300,7 +300,6 @@ def book_request(request):
         )
 
         # Show request sent page to client
-        # The WhatsApp button on this page will send the message to the therapist
         logger.info(f"New booking created: {appointment.pk} - {client_name}")
         return render(request, 'bookings/request_sent.html', {
             'appointment': appointment,
@@ -446,6 +445,160 @@ def whatsapp_response(request, pk):
     appointment = get_object_or_404(Appointment, pk=pk)
     return render(request, 'bookings/whatsapp_response.html', {
         'appointment': appointment,
+    })
+
+
+def request_cancellation(request, pk):
+    """Client requests to cancel their booking"""
+    phone = request.session.get('client_phone')
+    if not phone:
+        return redirect('client_lookup')
+    
+    appointment = get_object_or_404(Appointment, pk=pk, client_phone=phone)
+    
+    # Only allow cancellation if status is confirmed
+    if appointment.status != 'confirmed':
+        return render(request, 'bookings/cancellation_error.html', {
+            'appointment': appointment,
+            'message': 'This booking cannot be cancelled.'
+        })
+    
+    # Check if cancellation was already requested
+    if appointment.status == 'cancellation_requested':
+        return render(request, 'bookings/cancellation_error.html', {
+            'appointment': appointment,
+            'message': 'Cancellation already requested. Waiting for owner approval.'
+        })
+    
+    # Update status to cancellation_requested
+    appointment.status = 'cancellation_requested'
+    appointment.save()
+    logger.info(f"Cancellation requested for appointment {appointment.pk} by {appointment.client_name}")
+    
+    # Send WhatsApp to owner
+    service_display = appointment.get_service_display()
+    time_formatted = appointment.appointment_time.strftime('%I:%M %p')
+    approve_url = f"{settings.BASE_URL}/whatsapp/approve-cancel/{appointment.pk}/"
+    decline_url = f"{settings.BASE_URL}/whatsapp/decline-cancel/{appointment.pk}/"
+    
+    owner_message = (
+        f"📋 *Cancellation Request!*%0A"
+        f"• Client: {appointment.client_name}%0A"
+        f"• Service: {service_display}%0A"
+        f"• Date: {appointment.appointment_date}%0A"
+        f"• Time: {time_formatted}%0A"
+        f"• Phone: {appointment.client_phone}%0A%0A"
+        f"✅ *Approve:* {approve_url}%0A"
+        f"❌ *Decline:* {decline_url}%0A%0A"
+        f"_Click Approve to cancel, or Decline to keep the booking_"
+    )
+    
+    owner_phone = settings.OWNER_PHONE.replace('+', '').replace(' ', '')
+    
+    return render(request, 'bookings/cancellation_requested.html', {
+        'appointment': appointment,
+        'owner_whatsapp': f"https://wa.me/{owner_phone}?text={owner_message}",
+        'owner_phone': settings.OWNER_PHONE,
+    })
+
+
+def whatsapp_approve_cancellation(request, pk):
+    """Owner approves cancellation from WhatsApp link"""
+    appointment = get_object_or_404(Appointment, pk=pk)
+    
+    # Only allow if status is cancellation_requested
+    if appointment.status != 'cancellation_requested':
+        return render(request, 'bookings/whatsapp_response.html', {
+            'appointment': appointment,
+            'message': 'This cancellation request has already been processed.',
+            'status': 'info'
+        })
+    
+    # Cancel the appointment
+    appointment.status = 'cancelled'
+    appointment.save()
+    logger.info(f"Cancellation approved for appointment {appointment.pk}")
+    
+    # Notify client
+    client_message = (
+        f"✅ *Cancellation Approved*%0A%0A"
+        f"Hi {appointment.client_name}, your cancellation request for "
+        f"{appointment.get_service_display()} on {appointment.appointment_date} "
+        f"has been approved.%0A%0A"
+        f"We hope to see you again soon! 🌸"
+    )
+    
+    client_phone = appointment.client_phone.replace('+', '').replace(' ', '')
+    
+    # Notify owner
+    owner_message = (
+        f"✅ *Cancellation Approved!*%0A"
+        f"• Client: {appointment.client_name}%0A"
+        f"• Service: {appointment.get_service_display()}%0A"
+        f"• Date: {appointment.appointment_date}%0A%0A"
+        f"Booking has been cancelled and slot is now free. 👍"
+    )
+    
+    owner_phone = settings.OWNER_PHONE.replace('+', '').replace(' ', '')
+    
+    return render(request, 'bookings/whatsapp_response.html', {
+        'appointment': appointment,
+        'message': '✅ Cancellation approved!',
+        'status': 'success',
+        'client_whatsapp': f"https://wa.me/{client_phone}?text={client_message}",
+        'owner_whatsapp': f"https://wa.me/{owner_phone}?text={owner_message}",
+        'client_phone': appointment.client_phone,
+        'owner_phone': settings.OWNER_PHONE,
+    })
+
+
+def whatsapp_decline_cancellation(request, pk):
+    """Owner declines cancellation from WhatsApp link"""
+    appointment = get_object_or_404(Appointment, pk=pk)
+    
+    # Only allow if status is cancellation_requested
+    if appointment.status != 'cancellation_requested':
+        return render(request, 'bookings/whatsapp_response.html', {
+            'appointment': appointment,
+            'message': 'This cancellation request has already been processed.',
+            'status': 'info'
+        })
+    
+    # Restore to confirmed
+    appointment.status = 'confirmed'
+    appointment.save()
+    logger.info(f"Cancellation declined for appointment {appointment.pk}")
+    
+    # Notify client
+    client_message = (
+        f"❌ *Cancellation Declined*%0A%0A"
+        f"Hi {appointment.client_name}, your cancellation request for "
+        f"{appointment.get_service_display()} on {appointment.appointment_date} "
+        f"has been declined.%0A%0A"
+        f"Your booking remains confirmed. See you soon! 🌸"
+    )
+    
+    client_phone = appointment.client_phone.replace('+', '').replace(' ', '')
+    
+    # Notify owner
+    owner_message = (
+        f"❌ *Cancellation Declined!*%0A"
+        f"• Client: {appointment.client_name}%0A"
+        f"• Service: {appointment.get_service_display()}%0A"
+        f"• Date: {appointment.appointment_date}%0A%0A"
+        f"Booking remains confirmed. 👍"
+    )
+    
+    owner_phone = settings.OWNER_PHONE.replace('+', '').replace(' ', '')
+    
+    return render(request, 'bookings/whatsapp_response.html', {
+        'appointment': appointment,
+        'message': '❌ Cancellation declined.',
+        'status': 'declined',
+        'client_whatsapp': f"https://wa.me/{client_phone}?text={client_message}",
+        'owner_whatsapp': f"https://wa.me/{owner_phone}?text={owner_message}",
+        'client_phone': appointment.client_phone,
+        'owner_phone': settings.OWNER_PHONE,
     })
 
 
@@ -647,6 +800,9 @@ def masseuse_dashboard(request):
     today = timezone.now().date()
 
     pending = Appointment.objects.filter(status='pending').order_by('appointment_date', 'appointment_time')
+    cancellation_requests = Appointment.objects.filter(
+        status='cancellation_requested'
+    ).order_by('appointment_date', 'appointment_time')
     approved = Appointment.objects.filter(status='approved', appointment_date__gte=today).order_by('appointment_date', 'appointment_time')
     confirmed = Appointment.objects.filter(status='confirmed', appointment_date__gte=today).order_by('appointment_date', 'appointment_time')
     completed = Appointment.objects.filter(status='completed').order_by('-appointment_date', '-appointment_time')
@@ -658,6 +814,7 @@ def masseuse_dashboard(request):
 
     return render(request, 'bookings/masseuse.html', {
         'pending': pending,
+        'cancellation_requests': cancellation_requests,
         'approved': approved,
         'confirmed': confirmed,
         'completed': completed,
@@ -806,7 +963,7 @@ def client_dashboard(request):
 
     upcoming = list(Appointment.objects.filter(
         client_phone=phone,
-        status__in=['pending', 'approved', 'confirmed'],
+        status__in=['pending', 'approved', 'confirmed', 'cancellation_requested'],
         appointment_date__gte=today,
     ).order_by('appointment_date', 'appointment_time'))
 

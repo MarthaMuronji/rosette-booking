@@ -1,0 +1,65 @@
+{% extends 'bookings/base.html' %}
+
+{% block title %}Cancellation Requested — Rosette Wellness{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-6 text-center">
+
+            <div style="width:80px; height:80px;
+                        background-color:var(--primary-light);
+                        border:1px solid var(--border-orange);
+                        border-radius:50%; display:flex; align-items:center;
+                        justify-content:center; margin: 0 auto 24px;">
+                <i class="fas fa-clock" style="font-size:32px; color:var(--primary);"></i>
+            </div>
+
+            <h1 class="rw-section-title mb-2">Cancellation Requested</h1>
+            <div class="rw-divider mx-auto"></div>
+
+            <p style="color:var(--foreground-muted); font-size:15px;
+                      line-height:1.8; margin: 20px 0 32px;">
+                Your cancellation request for
+                <strong style="color:white;">{{ appointment.get_service_display }}</strong>
+                on <strong style="color:white;">{{ appointment.appointment_date|date:"l, F j, Y" }}</strong>
+                at <strong style="color:white;">{{ appointment.appointment_time|time:"g:i A" }}</strong>
+                has been sent to the therapist.
+            </p>
+
+            <div class="rw-card text-start mb-4">
+                <p style="font-size:12px; letter-spacing:2px; text-transform:uppercase;
+                           color:var(--primary); margin-bottom:16px;">
+                    What happens next
+                </p>
+                <ol style="color:var(--foreground-muted); font-size:14px;
+                           line-height:2.4; margin:0; padding-left:20px;">
+                    <li>The therapist will review your cancellation request</li>
+                    <li>You will receive a WhatsApp confirmation once approved</li>
+                    <li>If approved, your booking will be cancelled</li>
+                    <li>If declined, your booking remains confirmed</li>
+                </ol>
+            </div>
+
+            <div class="rw-card mb-4" style="border-color:var(--border-orange);">
+                <p style="font-size:14px; color:var(--foreground-muted); margin:0;">
+                    <i class="fab fa-whatsapp me-2" style="color:#25d366;"></i>
+                    Please ensure your WhatsApp is active on
+                    <strong style="color:white;">{{ appointment.client_phone }}</strong>
+                    so we can reach you promptly.
+                </p>
+            </div>
+
+            <div class="d-flex gap-3 justify-content-center flex-wrap">
+                <a href="/client/dashboard/" class="btn-primary-rw">
+                    <i class="fas fa-calendar-alt me-2"></i> View My Bookings
+                </a>
+                <a href="/" class="btn-outline-rw">
+                    <i class="fas fa-home me-2"></i> Homepage
+                </a>
+            </div>
+
+        </div>
+    </div>
+</div>
+{% endblock %}
