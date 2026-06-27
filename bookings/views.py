@@ -286,17 +286,17 @@ def book_request(request):
         decline_url = f"{settings.BASE_URL}/whatsapp/decline/{appointment.pk}/"
 
         whatsapp_message = (
-            f"🌿 *New Booking Request!*%0A"
-            f"• Name: {client_name}%0A"
-            f"• Service: {service_display}%0A"
-            f"• Duration: {duration} min%0A"
-            f"• Date: {preferred_date}%0A"
-            f"• Time: {time_formatted}%0A"
-            f"• Phone: {client_phone}%0A%0A"
-            f"✅ *Approve:* {approve_url}%0A"
-            f"❌ *Decline:* {decline_url}%0A%0A"
-            f"_Click Approve or Decline to auto-process_"
-        )
+    f"🌿 *New Booking Request!*%0A%0A"
+    f"📋 Please log in to the dashboard to approve or decline:%0A%0A"
+    f"• Client: {client_name}%0A"
+    f"• Service: {service_display}%0A"
+    f"• Duration: {duration} min%0A"
+    f"• Date: {preferred_date}%0A"
+    f"• Time: {time_formatted}%0A"
+    f"• Phone: {client_phone}%0A%0A"
+    f"🔗 Dashboard: {settings.BASE_URL}/masseuse/login/%0A"
+    f"_This is an automated notification. Please login to process this booking._"
+)
 
         # Show request sent page to client
         logger.info(f"New booking created: {appointment.pk} - {client_name}")
