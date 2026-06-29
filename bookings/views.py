@@ -448,18 +448,18 @@ def request_cancellation(request, pk):
     time_formatted = appointment.appointment_time.strftime('%I:%M %p')
 
     owner_message = (
-        f"⚠️ *Cancellation Request!*%0A%0A"
-        f"• Client: {appointment.client_name}%0A"
-        f"• Service: {service_display}%0A"
-        f"• Date: {appointment.appointment_date}%0A"
-        f"• Time: {time_formatted}%0A"
-        f"• Phone: {appointment.client_phone}%0A%0A"
-        f"Please log in to your dashboard to approve or decline:%0A"
+        f"⚠️ *Cancellation Request!*\n\n"
+        f"• Client: {appointment.client_name}\n"
+        f"• Service: {service_display}\n"
+        f"• Date: {appointment.appointment_date}\n"
+        f"• Time: {time_formatted}\n"
+        f"• Phone: {appointment.client_phone}\n\n"
+        f"Please log in to your dashboard to approve or decline:\n"
         f"{settings.BASE_URL}/masseuse/login/"
     )
 
     owner_phone = settings.OWNER_PHONE.replace('+', '').replace(' ', '')
-    return redirect(f"https://wa.me/{owner_phone}?text={owner_message}")
+    return redirect(f"https://wa.me/{owner_phone}?text={urllib.parse.quote(owner_message)}")
 
 
 def whatsapp_approve_cancellation(request, pk):
@@ -646,19 +646,19 @@ def reschedule_appointment(request, pk):
         approve_url = f"{settings.BASE_URL}/masseuse/approve/{appointment.pk}/"
         decline_url = f"{settings.BASE_URL}/masseuse/decline/{appointment.pk}/"
 
-        whatsapp_message = (
-            f"🔄 *Reschedule Request!*%0A"
-            f"• Client: {appointment.client_name}%0A"
-            f"• Service: {service_display}%0A"
-            f"• New Date: {new_date}%0A"
-            f"• New Time: {time_formatted}%0A"
-            f"• Phone: {appointment.client_phone}%0A%0A"
-            f"✅ *Approve:* {approve_url}%0A"
-            f"❌ *Decline:* {decline_url}"
+        raw_message = (
+            f"🔄 *Reschedule Request!*\n"
+            f"• Client: {appointment.client_name}\n"
+            f"• Service: {service_display}\n"
+            f"• New Date: {new_date}\n"
+            f"• New Time: {time_formatted}\n"
+            f"• Phone: {appointment.client_phone}\n\n"
+            f"Please log in to your dashboard to approve or decline:\n"
+            f"{settings.BASE_URL}/masseuse/login/"
         )
 
         owner_phone = settings.OWNER_PHONE.replace('+', '').replace(' ', '')
-        return redirect(f"https://wa.me/{owner_phone}?text={whatsapp_message}")
+        return redirect(f"https://wa.me/{owner_phone}?text={urllib.parse.quote(raw_message)}")
 
     booked_slots, pending_slots = get_booked_slots(exclude_pk=appointment.pk)
     return render(request, 'bookings/reschedule.html', {
@@ -808,38 +808,38 @@ def approve_appointment(request, pk):
     if appointment.client_package:
         pkg = appointment.client_package
         session_num = pkg.sessions_completed + 1
-        whatsapp_message = (
-            f"🌿 Hi {appointment.client_name}!%0A%0A"
-            f"Your Session {session_num} of {pkg.total_sessions} has been approved!%0A%0A"
-            f"Service: {service_display}%0A"
-            f"Date: {appointment.appointment_date}%0A"
-            f"Time: {time_formatted}%0A%0A"
-            f"Please confirm your session details here: {confirm_url}%0A%0A"
+        raw_message = (
+            f"🌿 Hi {appointment.client_name}!\n\n"
+            f"Your Session {session_num} of {pkg.total_sessions} has been approved!\n\n"
+            f"Service: {service_display}\n"
+            f"Date: {appointment.appointment_date}\n"
+            f"Time: {time_formatted}\n\n"
+            f"Please confirm your session details here: {confirm_url}\n\n"
             f"See you soon! 🌸"
         )
     elif appointment.service in PACKAGE_CONFIGS:
         config = PACKAGE_CONFIGS[appointment.service]
-        whatsapp_message = (
-            f"🌿 Hi {appointment.client_name}! Your package request has been approved!%0A%0A"
-            f"Package: {service_display}%0A"
-            f"Sessions: {config['total_sessions']} × 90 minutes%0A"
-            f"Date of first session: {appointment.appointment_date}%0A"
-            f"Time: {time_formatted}%0A%0A"
-            f"Please complete your package purchase here: {confirm_url}%0A%0A"
+        raw_message = (
+            f"🌿 Hi {appointment.client_name}! Your package request has been approved!\n\n"
+            f"Package: {service_display}\n"
+            f"Sessions: {config['total_sessions']} × 90 minutes\n"
+            f"Date of first session: {appointment.appointment_date}\n"
+            f"Time: {time_formatted}\n\n"
+            f"Please complete your package purchase here: {confirm_url}\n\n"
             f"We look forward to your wellness journey! 🌸"
         )
     else:
-        whatsapp_message = (
-            f"🌿 Hi {appointment.client_name}! Your Rosette Wellness request has been approved!%0A%0A"
-            f"Service: {service_display}%0A"
-            f"Date: {appointment.appointment_date}%0A"
-            f"Time: {time_formatted}%0A%0A"
-            f"Please complete your booking here: {confirm_url}%0A%0A"
+        raw_message = (
+            f"🌿 Hi {appointment.client_name}! Your Rosette Wellness request has been approved!\n\n"
+            f"Service: {service_display}\n"
+            f"Date: {appointment.appointment_date}\n"
+            f"Time: {time_formatted}\n\n"
+            f"Please complete your booking here: {confirm_url}\n\n"
             f"We look forward to seeing you! 🌸"
         )
 
     phone = appointment.client_phone.replace('+', '').replace(' ', '')
-    return redirect(f"https://wa.me/{phone}?text={whatsapp_message}")
+    return redirect(f"https://wa.me/{phone}?text={urllib.parse.quote(raw_message)}")
 
 
 def decline_appointment(request, pk):
