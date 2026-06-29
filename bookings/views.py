@@ -275,15 +275,13 @@ def book_request(request):
                 appointment.delete()
                 return render_form_with_errors()
 
-        if service in PACKAGE_CONFIGS:
-            existing_pkg = ClientPackage.objects.filter(
-                client_phone=client_phone,
-                package_type=service,
-                is_active=True,
-            ).first()
-            if existing_pkg:
-                appointment.client_package = existing_pkg
-                appointment.save()
+        existing_pkg = ClientPackage.objects.filter(
+            client_phone=client_phone,
+            is_active=True
+        ).first()
+        if existing_pkg:
+            appointment.client_package = existing_pkg
+            appointment.save()
 
         request.session['prefill_name'] = client_name
         request.session['prefill_phone'] = client_phone
@@ -685,7 +683,7 @@ def reschedule_appointment(request, pk):
 
 def book_confirm(request, pk):
     appointment = get_object_or_404(Appointment, pk=pk, status='approved')
-    is_package = appointment.service in PACKAGE_CONFIGS
+    is_package = appointment.service in PACKAGE_CONFIGS or appointment.client_package is not None
 
     if request.method == 'POST':
         addon = request.POST.get('addon', 'none')
