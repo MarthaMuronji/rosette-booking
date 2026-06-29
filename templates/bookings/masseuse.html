@@ -432,14 +432,14 @@
                     </div>
                     <div class="col-md-5 mt-3 mt-md-0">
                         <div class="d-flex flex-column gap-2 align-items-md-end">
-                            <form method="POST" action="{% url 'approve_cancellation' apt.pk %}">
+                            <form method="POST" action="{% url 'whatsapp_approve_cancellation' apt.pk %}">
                                 {% csrf_token %}
                                 <button type="submit" class="btn-approve-cancel-rw"
                                         onclick="return confirm('Approve this cancellation?')">
                                     <i class="fas fa-check me-1"></i> Approve Cancellation
                                 </button>
                             </form>
-                            <form method="POST" action="{% url 'decline_cancellation' apt.pk %}">
+                            <form method="POST" action="{% url 'whatsapp_decline_cancellation' apt.pk %}">
                                 {% csrf_token %}
                                 <button type="submit" class="btn-decline-cancel-rw"
                                         onclick="return confirm('Decline this cancellation?')">
