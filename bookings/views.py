@@ -206,6 +206,17 @@ def book_request(request):
             slots = get_time_slots()
             booked_slots, pending_slots = get_booked_slots()
             today = timezone.now().date()
+
+            # If submitted from dashboard, redirect back with error
+            if request.POST.get('source') == 'dashboard':
+                request.session['booking_errors'] = errors
+                request.session['booking_form_data'] = {
+                    'service': service,
+                    'preferred_date': preferred_date,
+                    'preferred_time': preferred_time,
+                }
+                return redirect('client_dashboard')
+
             return render(request, 'bookings/book_request.html', {
                 'slots': slots,
                 'booked_slots': json.dumps(booked_slots),
@@ -912,6 +923,8 @@ def client_dashboard(request):
     phone = request.session.get('client_phone')
     if not phone:
         return redirect('client_lookup')
+    
+    booking_errors = request.session.pop('booking_errors', {})
 
     today = timezone.now().date()
 
@@ -959,6 +972,7 @@ def client_dashboard(request):
         'services': Appointment.SERVICE_CHOICES,
         'has_active_package': has_active_package,
         'completed_package': completed_package,
+        'booking_errors': booking_errors,
     })
 
 

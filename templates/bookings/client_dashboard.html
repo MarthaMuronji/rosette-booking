@@ -480,6 +480,17 @@
             <div class="form-section" id="bookingSection">
                 <div class="form-section-title">Book a Session</div>
 
+                  {% if booking_errors %}
+    <div style="background:rgba(239,68,68,0.1); border:1px solid rgba(239,68,68,0.3);
+                border-radius:8px; padding:14px 18px; margin-bottom:20px;">
+        {% for field, msg in booking_errors.items %}
+        <div style="color:#ef4444; font-size:13px; margin-bottom:4px;">
+            <i class="fas fa-exclamation-circle me-2"></i>{{ msg }}
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
                 <form action="/book/" method="POST" id="dashboardBookingForm">
                     {% csrf_token %}
                     <input type="hidden" name="client_name"  value="{{ client_name }}">
