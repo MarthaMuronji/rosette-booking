@@ -313,6 +313,8 @@ def book_request(request):
             'owner_whatsapp_url': owner_whatsapp_url,
             'owner_phone': settings.OWNER_PHONE,
             'owner_name': settings.OWNER_NAME,
+            'service_display': service_display,
+            'message_preview': raw_message,
         })
 
     slots = get_time_slots()
@@ -850,7 +852,16 @@ def approve_appointment(request, pk):
         )
 
     phone = appointment.client_phone.replace('+', '').replace(' ', '')
-    return redirect(f"https://wa.me/{phone}?text={urllib.parse.quote(raw_message)}")
+    whatsapp_url = f"https://wa.me/{phone}?text={urllib.parse.quote(raw_message)}"
+
+    return render(request, 'bookings/whatsapp_response.html', {
+        'appointment': appointment,
+        'message': '✅ Appointment approved!',
+        'status': 'success',
+        'client_whatsapp': whatsapp_url,
+        'client_phone': appointment.client_phone,
+        'message_preview': raw_message,
+    })
 
 
 def decline_appointment(request, pk):

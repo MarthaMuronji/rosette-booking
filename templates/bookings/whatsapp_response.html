@@ -151,6 +151,20 @@
                     <i class="fas fa-arrow-right me-2"></i>
                     Send confirmation to <strong style="color:white;">{{ client_phone }}</strong>
                 </p>
+
+                <!-- Message Preview -->
+    {% if message_preview %}
+    <div style="text-align:left; background:#111; border:1px solid rgba(37,211,102,0.2);
+                border-radius:8px; padding:16px; margin-bottom:16px;">
+        <p style="font-size:11px; letter-spacing:2px; text-transform:uppercase;
+                   color:#25d366; margin-bottom:10px;">Message Preview</p>
+        <pre style="color:var(--foreground-muted); font-size:13px;
+                    white-space:pre-wrap; word-break:break-word;
+                    font-family:'Inter',sans-serif; line-height:1.8; margin:0;">{{ message_preview }}</pre>
+    </div>
+    {% endif %}
+
+    
                 <a href="{{ client_whatsapp }}" target="_blank" class="wa-btn">
                     <i class="fab fa-whatsapp" style="font-size:20px;"></i>
                     Send to Client
