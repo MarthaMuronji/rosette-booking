@@ -699,8 +699,10 @@
             });
         }
 
-        // Show preferred service section
-        document.getElementById('preferredServiceSection').style.display = 'block';
+        
+        // Show preferred service section only for packages
+        const isPackage = value === 'monthly_wellness' || value === 'vip_wellness';
+        document.getElementById('preferredServiceSection').style.display = isPackage ? 'block' : 'none';
     }
 
     // Called by package card "Book Next Session" button
