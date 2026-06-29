@@ -233,7 +233,6 @@ def book_request(request):
 
         time_obj = datetime.datetime.strptime(preferred_time, '%H:%M').time()
 
-        # Calculate departure time (1 hour before session)
         appointment_datetime = datetime.datetime.combine(
             datetime.datetime.strptime(preferred_date, '%Y-%m-%d').date(),
             time_obj
@@ -265,7 +264,6 @@ def book_request(request):
                 appointment.delete()
                 return render_form_with_errors()
 
-        # Auto-link to an existing active package if this is a package service
         if service in PACKAGE_CONFIGS:
             existing_pkg = ClientPackage.objects.filter(
                 client_phone=client_phone,
@@ -282,28 +280,26 @@ def book_request(request):
         service_display = dict(Appointment.SERVICE_CHOICES).get(service, service)
         time_formatted = datetime.datetime.strptime(preferred_time, '%H:%M').strftime('%I:%M %p')
 
-        # WhatsApp auto-approval links
-        approve_url = f"{settings.BASE_URL}/whatsapp/approve/{appointment.pk}/"
-        decline_url = f"{settings.BASE_URL}/whatsapp/decline/{appointment.pk}/"
-
-        whatsapp_message = (
-            f"🌿 *New Booking Request!*%0A%0A"
-            f"📋 Please log in to the dashboard to approve or decline:%0A%0A"
-            f"• Client: {client_name}%0A"
-            f"• Service: {service_display}%0A"
-            f"• Duration: {duration} min%0A"
-            f"• Date: {preferred_date}%0A"
-            f"• Time: {time_formatted}%0A"
-            f"• Phone: {client_phone}%0A%0A"
-            f"🔗 Dashboard: {settings.BASE_URL}/masseuse/login/%0A"
+        raw_message = (
+            f"🌿 *New Booking Request!*\n\n"
+            f"📋 Please log in to the dashboard to approve or decline:\n\n"
+            f"• Client: {client_name}\n"
+            f"• Service: {service_display}\n"
+            f"• Duration: {duration} min\n"
+            f"• Date: {preferred_date}\n"
+            f"• Time: {time_formatted}\n"
+            f"• Phone: {client_phone}\n\n"
+            f"🔗 Dashboard: {settings.BASE_URL}/masseuse/login/\n"
             f"_This is an automated notification. Please login to process this booking._"
         )
 
-        # Show request sent page to client
+        owner_phone_clean = settings.OWNER_PHONE.replace('+', '').replace(' ', '')
+        owner_whatsapp_url = f"https://wa.me/{owner_phone_clean}?text={urllib.parse.quote(raw_message)}"
+
         logger.info(f"New booking created: {appointment.pk} - {client_name}")
         return render(request, 'bookings/request_sent.html', {
             'appointment': appointment,
-            'whatsapp_message': whatsapp_message,
+            'owner_whatsapp_url': owner_whatsapp_url,
             'owner_phone': settings.OWNER_PHONE,
             'owner_name': settings.OWNER_NAME,
         })
@@ -429,53 +425,41 @@ def request_cancellation(request, pk):
     phone = request.session.get('client_phone')
     if not phone:
         return redirect('client_lookup')
-    
+
     appointment = get_object_or_404(Appointment, pk=pk, client_phone=phone)
-    
-    # Only allow cancellation if status is confirmed
-    if appointment.status != 'confirmed':
-        return render(request, 'bookings/cancellation_error.html', {
-            'appointment': appointment,
-            'message': 'This booking cannot be cancelled.'
-        })
-    
-    # Check if cancellation was already requested
+
     if appointment.status == 'cancellation_requested':
         return render(request, 'bookings/cancellation_error.html', {
             'appointment': appointment,
             'message': 'Cancellation already requested. Waiting for owner approval.'
         })
-    
-    # Update status to cancellation_requested
+
+    if appointment.status != 'confirmed':
+        return render(request, 'bookings/cancellation_error.html', {
+            'appointment': appointment,
+            'message': 'This booking cannot be cancelled.'
+        })
+
     appointment.status = 'cancellation_requested'
     appointment.save()
     logger.info(f"Cancellation requested for appointment {appointment.pk} by {appointment.client_name}")
-    
-    # Send WhatsApp to owner
+
     service_display = appointment.get_service_display()
     time_formatted = appointment.appointment_time.strftime('%I:%M %p')
-    approve_url = f"{settings.BASE_URL}/whatsapp/approve-cancel/{appointment.pk}/"
-    decline_url = f"{settings.BASE_URL}/whatsapp/decline-cancel/{appointment.pk}/"
-    
+
     owner_message = (
-        f"📋 *Cancellation Request!*%0A"
+        f"⚠️ *Cancellation Request!*%0A%0A"
         f"• Client: {appointment.client_name}%0A"
         f"• Service: {service_display}%0A"
         f"• Date: {appointment.appointment_date}%0A"
         f"• Time: {time_formatted}%0A"
         f"• Phone: {appointment.client_phone}%0A%0A"
-        f"✅ *Approve:* {approve_url}%0A"
-        f"❌ *Decline:* {decline_url}%0A%0A"
-        f"_Click Approve to cancel, or Decline to keep the booking_"
+        f"Please log in to your dashboard to approve or decline:%0A"
+        f"{settings.BASE_URL}/masseuse/login/"
     )
-    
+
     owner_phone = settings.OWNER_PHONE.replace('+', '').replace(' ', '')
-    
-    return render(request, 'bookings/cancellation_requested.html', {
-        'appointment': appointment,
-        'owner_whatsapp': f"https://wa.me/{owner_phone}?text={owner_message}",
-        'owner_phone': settings.OWNER_PHONE,
-    })
+    return redirect(f"https://wa.me/{owner_phone}?text={owner_message}")
 
 
 def whatsapp_approve_cancellation(request, pk):

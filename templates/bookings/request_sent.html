@@ -51,17 +51,17 @@
                     <strong style="color:white;">Notify Therapist Now:</strong>
                     Click below to send your booking request directly to the therapist.
                 </p>
-                <a href="https://wa.me/{{ owner_phone|cut:'+' }}?text={{ whatsapp_message|urlencode }}"
-                   target="_blank"
-                   style="display:inline-flex; align-items:center; gap:12px;
-                          background:#25d366; color:white; 
-                          padding:16px 40px; border-radius:8px; text-decoration:none;
-                          font-weight:600; font-size:18px; transition: all 0.3s;"
-                   onmouseover="this.style.transform='scale(1.03)'"
-                   onmouseout="this.style.transform='scale(1)'">
-                    <i class="fab fa-whatsapp" style="font-size:24px;"></i> 
-                    Notify Therapist via WhatsApp
-                </a>
+                <a href="{{ owner_whatsapp_url }}"
+   target="_blank"
+   style="display:inline-flex; align-items:center; gap:12px;
+          background:#25d366; color:white; 
+          padding:16px 40px; border-radius:8px; text-decoration:none;
+          font-weight:600; font-size:18px; transition: all 0.3s;"
+   onmouseover="this.style.transform='scale(1.03)'"
+   onmouseout="this.style.transform='scale(1)'">
+    <i class="fab fa-whatsapp" style="font-size:24px;"></i> 
+    Notify Therapist via WhatsApp
+</a>
                 <p style="font-size:11px; color:var(--foreground-muted); margin-top:10px;">
                     ⚡ This sends your booking details to the therapist for review
                 </p>
