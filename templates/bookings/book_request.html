@@ -458,20 +458,33 @@
                     </div>
 
                     <div class="mb-3">
-                        <label class="rw-form-label">WhatsApp Number</label>
-                        <input type="tel" name="client_phone" id="clientPhone" class="rw-form-control"
-                               placeholder="+971 50 000 0000"
-                               maxlength="15" pattern="\+971\d{9}"
-                               value="{{ form_data.client_phone|default:'' }}">
-                        <div class="field-error" id="phoneError" style="display:none;">
-                            <i class="fas fa-exclamation-circle"></i> <span></span>
-                        </div>
-                        {% if errors.client_phone %}
-                        <div class="field-error">
-                            <i class="fas fa-exclamation-circle"></i> {{ errors.client_phone }}
-                        </div>
-                        {% endif %}
-                    </div>
+    <label class="rw-form-label">WhatsApp Number</label>
+    <div style="display:flex; align-items:center; background:#1e1e1e;
+                border:1px solid var(--border); border-radius:8px; overflow:hidden;
+                transition:border-color 0.2s ease;" id="phoneInputWrapper">
+        <span style="padding:12px 14px; background:#2a2a2a; color:var(--primary);
+                     font-size:14px; border-right:1px solid var(--border);
+                     white-space:nowrap; font-weight:500;">
+            +971
+        </span>
+        <input type="tel"
+               id="phoneSuffix"
+               class="rw-form-control"
+               placeholder="50 123 4567"
+               maxlength="9"
+               style="border:none; border-radius:0; background:transparent;"
+               oninput="this.value=this.value.replace(/[^0-9]/g,'')">
+    </div>
+    <input type="hidden" name="client_phone" id="clientPhone">
+    <div class="field-error" id="phoneError" style="display:none;">
+        <i class="fas fa-exclamation-circle"></i> <span></span>
+    </div>
+    {% if errors.client_phone %}
+    <div class="field-error">
+        <i class="fas fa-exclamation-circle"></i> {{ errors.client_phone }}
+    </div>
+    {% endif %}
+</div>
                 </div>
 
                 <!-- Spacious Room Notice -->
@@ -665,29 +678,42 @@ const isPast = isTimePast(slotH, slotM, isToday, currentHour, currentMin);
         return `${hour}:${String(m).padStart(2,'0')} ${ampm}`;
     }
 
-    // Block letters from phone field live
-    const phoneInput = document.getElementById('clientPhone');
-    phoneInput.addEventListener('input', function () {
-        this.value = this.value.replace(/[^0-9\+\s\-\(\)]/g, '');
+    // Phone prefix input
+    const phoneSuffix = document.getElementById('phoneSuffix');
+    const phoneHidden = document.getElementById('clientPhone');
+    const phoneWrapper = document.getElementById('phoneInputWrapper');
+
+    phoneSuffix.addEventListener('focus', function() {
+        phoneWrapper.style.borderColor = 'var(--primary)';
     });
 
-    phoneInput.addEventListener('blur', function () {
+    phoneSuffix.addEventListener('blur', function() {
+        phoneWrapper.style.borderColor = 'rgba(255,255,255,0.1)';
         const val = this.value.trim();
         const errEl = document.getElementById('phoneError');
         const errSpan = errEl.querySelector('span');
         if (!val) {
             errSpan.textContent = 'WhatsApp number is required.';
             errEl.style.display = 'flex';
-            return;
-        }
-        const cleaned = val.replace(/[\s\-\(\)\.]/g, '');
-        const valid = /^(\+971|00971|0)[0-9]{9}$/.test(cleaned);
-        if (!valid) {
-            errSpan.textContent = 'Please enter a valid UAE number (e.g. +971 50 000 0000).';
+        } else if (val.length !== 9) {
+            errSpan.textContent = 'Please enter 9 digits after +971.';
             errEl.style.display = 'flex';
         } else {
             errEl.style.display = 'none';
         }
+    });
+
+    // Combine +971 prefix with suffix on submit
+    document.getElementById('requestForm').addEventListener('submit', function(e) {
+        const suffix = phoneSuffix.value.trim();
+        if (!suffix || suffix.length !== 9) {
+            e.preventDefault();
+            const errEl = document.getElementById('phoneError');
+            errEl.querySelector('span').textContent = 'Please enter a valid 9-digit UAE number.';
+            errEl.style.display = 'flex';
+            return;
+        }
+        phoneHidden.value = '+971' + suffix;
     });
 
     // Name validation on blur
