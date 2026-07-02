@@ -734,7 +734,7 @@ def book_confirm(request, pk):
         logger.info(f"Booking confirmed: {appointment.pk} - {appointment.client_name}")
 
         if payment_method == 'card':
-            return redirect('https://pay.ziina.com/rosettestella?source=app')
+            return redirect(f'https://pay.ziina.com/rosettestella?amount={total_price}&source=app')
 
         response = redirect('client_dashboard')
         response['Cache-Control'] = 'no-store, no-cache, must-revalidate'
