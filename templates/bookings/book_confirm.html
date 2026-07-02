@@ -312,6 +312,14 @@
                                 <strong>Card</strong>
                             </div>
                         </div>
+
+                       <!-- ADD THIS BELOW THE PAYMENT METHOD DIV -->
+        <div id="cardNotice" style="display:none; margin-top:12px; background:rgba(232,137,14,0.06);
+             border:1px solid rgba(232,137,14,0.2); border-radius:8px; padding:12px 16px;
+             font-size:13px; color:var(--foreground-muted);">
+            <i class="fas fa-info-circle me-2" style="color:var(--primary);"></i>
+            After confirming, you'll be redirected to our secure payment page to complete your card payment.
+        </div>  
                     </div>
                 </div>
 
@@ -474,5 +482,12 @@ function selectOption(name, value, card) {
     document.querySelector(`input[name="${name}"][value="${value}"]`).checked = true;
     updateTotal();
 }
+// Show card notice when card is selected
+    document.querySelectorAll('[onclick*="payment_method"]').forEach(card => {
+        card.addEventListener('click', function() {
+            const isCard = this.querySelector('input').value === 'card';
+            document.getElementById('cardNotice').style.display = isCard ? 'block' : 'none';
+        });
+    });
 </script>
 {% endblock %}

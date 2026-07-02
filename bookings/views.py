@@ -731,10 +731,14 @@ def book_confirm(request, pk):
         request.session['prefill_name'] = appointment.client_name
         request.session['prefill_phone'] = appointment.client_phone
 
+        logger.info(f"Booking confirmed: {appointment.pk} - {appointment.client_name}")
+
+        if payment_method == 'card':
+            return redirect('https://pay.ziina.com/rosettestella?source=app')
+
         response = redirect('client_dashboard')
         response['Cache-Control'] = 'no-store, no-cache, must-revalidate'
         response['Pragma'] = 'no-cache'
-        logger.info(f"Booking confirmed: {appointment.pk} - {appointment.client_name}")
         return response
 
     return render(request, 'bookings/book_confirm.html', {
