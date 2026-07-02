@@ -796,6 +796,19 @@ def masseuse_dashboard(request):
     auto_complete_past_sessions()
 
     today = timezone.now().date()
+    this_month_start = today.replace(day=1)
+
+    # Daily earnings
+    daily_earnings = sum(
+        apt.total_price for apt in completed
+        if apt.appointment_date == today
+    )
+
+    # Monthly earnings
+    monthly_earnings = sum(
+        apt.total_price for apt in completed
+        if apt.appointment_date >= this_month_start
+    )
 
     pending = Appointment.objects.filter(status='pending').order_by('appointment_date', 'appointment_time')
     cancellation_requests = Appointment.objects.filter(
@@ -819,6 +832,8 @@ def masseuse_dashboard(request):
         'expired': expired,
         'today': today,
         'total_earnings': total_earnings,
+        'daily_earnings': daily_earnings,
+        'monthly_earnings': monthly_earnings,
         'base_url': settings.BASE_URL,
         'owner_phone': settings.OWNER_PHONE,
     })
