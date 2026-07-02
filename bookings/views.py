@@ -797,6 +797,7 @@ def masseuse_dashboard(request):
 
     today = timezone.now().date()
     this_month_start = today.replace(day=1)
+    this_year_start = today.replace(month=1, day=1)
 
     pending = Appointment.objects.filter(status='pending').order_by('appointment_date', 'appointment_time')
     cancellation_requests = Appointment.objects.filter(
@@ -804,21 +805,27 @@ def masseuse_dashboard(request):
     ).order_by('appointment_date', 'appointment_time')
     approved = Appointment.objects.filter(status='approved', appointment_date__gte=today).order_by('appointment_date', 'appointment_time')
     confirmed = Appointment.objects.filter(status='confirmed', appointment_date__gte=today).order_by('appointment_date', 'appointment_time')
-    completed = Appointment.objects.filter(status='completed').order_by('-appointment_date', '-appointment_time')
     expired = Appointment.objects.filter(status='declined').order_by('-appointment_date', '-appointment_time')
 
-    # Earnings — calculated AFTER completed is defined
-    total_earnings = sum(apt.total_price for apt in completed)
+    # Completed — this month only for display
+    completed = Appointment.objects.filter(
+        status='completed',
+        appointment_date__gte=this_month_start
+    ).order_by('-appointment_date', '-appointment_time')
 
+    # Earnings
     daily_earnings = sum(
         apt.total_price for apt in completed
         if apt.appointment_date == today
     )
+    monthly_earnings = sum(apt.total_price for apt in completed)
 
-    monthly_earnings = sum(
-        apt.total_price for apt in completed
-        if apt.appointment_date >= this_month_start
+    # All time = this year only (resets January 1st)
+    all_year = Appointment.objects.filter(
+        status='completed',
+        appointment_date__gte=this_year_start
     )
+    total_earnings = sum(apt.total_price for apt in all_year)
 
     logger.info(f"Dashboard viewed - Pending: {pending.count()}, Confirmed: {confirmed.count()}")
 
