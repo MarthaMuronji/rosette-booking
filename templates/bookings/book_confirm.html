@@ -250,13 +250,15 @@
                     <div class="mb-3">
                         <label class="rw-form-label">Email Address (Optional)</label>
                         <input type="email" name="client_email" class="rw-form-control"
-                               placeholder="your@email.com">
+                               placeholder="your@email.com"
+                               value="{{ prefill.client_email }}">
+                            
                     </div>
                     <div class="mb-3">
                         <label class="rw-form-label">Full Address</label>
                         <textarea name="client_address" class="rw-form-control" rows="3"
                                   placeholder="Building name, apartment number, street, area"
-                                  required></textarea>
+                                  required>{{prefill.client_address }}</textarea>
                     </div>
                     <div class="mb-3">
                         <label class="rw-form-label">Any injuries, medical conditions or areas of concern (Optional)</label>
@@ -489,5 +491,25 @@ function selectOption(name, value, card) {
             document.getElementById('cardNotice').style.display = isCard ? 'block' : 'none';
         });
     });
+
+    // Autofill from last booking
+    const prefillZone     = "{{ prefill.zone }}";
+    const prefillPressure = "{{ prefill.preferred_pressure }}";
+    const prefillPayment  = "{{ prefill.payment_method }}";
+
+    if (prefillZone) {
+        const zoneCard = document.querySelector(`.zone-card [value="${prefillZone}"]`);
+        if (zoneCard) zoneCard.closest('.zone-card').click();
+    }
+
+    if (prefillPressure) {
+        const pressureCard = document.querySelector(`[onclick*="preferred_pressure"][onclick*="${prefillPressure}"]`);
+        if (pressureCard) pressureCard.click();
+    }
+
+    if (prefillPayment) {
+        const paymentCard = document.querySelector(`[onclick*="payment_method"][onclick*="${prefillPayment}"]`);
+        if (paymentCard) paymentCard.click();
+    }
 </script>
 {% endblock %}

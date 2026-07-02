@@ -741,9 +741,26 @@ def book_confirm(request, pk):
         response['Pragma'] = 'no-cache'
         return response
 
+    # Autofill from last booking
+    last_booking = Appointment.objects.filter(
+        client_phone=appointment.client_phone,
+        status__in=['confirmed', 'completed'],
+    ).exclude(pk=appointment.pk).order_by('-created_at').first()
+
+    prefill = {}
+    if last_booking:
+        prefill = {
+            'zone': last_booking.zone,
+            'client_email': last_booking.client_email,
+            'client_address': last_booking.client_address,
+            'preferred_pressure': last_booking.preferred_pressure,
+            'payment_method': last_booking.payment_method,
+        }
+
     return render(request, 'bookings/book_confirm.html', {
         'appointment': appointment,
         'is_package': is_package,
+        'prefill': prefill,
     })
 
 
