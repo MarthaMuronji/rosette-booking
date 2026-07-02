@@ -325,23 +325,8 @@
     {% endif %}
     {% endwith %}
 
-    <!-- Earnings Summary -->
 <div class="row g-3 mb-4">
-    <div class="col-md-4">
-        <div class="rw-card h-100" style="background:linear-gradient(135deg, #1a1100, #1a1a1a); border-color:var(--border-orange);">
-            <p style="font-size:12px; letter-spacing:2px; text-transform:uppercase;
-                       color:var(--primary); margin-bottom:8px;">
-                <i class="fas fa-coins me-2"></i> All Time Earnings
-            </p>
-            <div style="font-family:'Playfair Display',serif; font-size:36px;
-                        color:var(--primary); line-height:1;">
-                {{ total_earnings }} <span style="font-size:16px;">AED</span>
-            </div>
-            <p style="color:var(--foreground-muted); font-size:12px; margin-top:6px;">
-                From {{ completed.count }} session{{ completed.count|pluralize }}
-            </p>
-        </div>
-    </div>
+    <!-- Today's Earnings FIRST -->
     <div class="col-md-4">
         <div class="rw-card h-100" style="background:linear-gradient(135deg, #001a0d, #1a1a1a); border-color:rgba(34,197,94,0.3);">
             <p style="font-size:12px; letter-spacing:2px; text-transform:uppercase;
@@ -357,6 +342,7 @@
             </p>
         </div>
     </div>
+    <!-- This Month SECOND -->
     <div class="col-md-4">
         <div class="rw-card h-100" style="background:linear-gradient(135deg, #00101a, #1a1a1a); border-color:rgba(59,130,246,0.3);">
             <p style="font-size:12px; letter-spacing:2px; text-transform:uppercase;
@@ -369,6 +355,22 @@
             </div>
             <p style="color:var(--foreground-muted); font-size:12px; margin-top:6px;">
                 Resets on 1st of each month
+            </p>
+        </div>
+    </div>
+    <!-- All Time LAST -->
+    <div class="col-md-4">
+        <div class="rw-card h-100" style="background:linear-gradient(135deg, #1a1100, #1a1a1a); border-color:var(--border-orange);">
+            <p style="font-size:12px; letter-spacing:2px; text-transform:uppercase;
+                       color:var(--primary); margin-bottom:8px;">
+                <i class="fas fa-coins me-2"></i> All Time Earnings
+            </p>
+            <div style="font-family:'Playfair Display',serif; font-size:36px;
+                        color:var(--primary); line-height:1;">
+                {{ total_earnings }} <span style="font-size:16px;">AED</span>
+            </div>
+            <p style="color:var(--foreground-muted); font-size:12px; margin-top:6px;">
+                From {{ completed.count }} session{{ completed.count|pluralize }}
             </p>
         </div>
     </div>
