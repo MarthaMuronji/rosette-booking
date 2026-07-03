@@ -649,12 +649,19 @@
                                 <i class="fab fa-whatsapp me-1"></i> WhatsApp Client
                             </a>
                             <form method="POST" action="{% url 'complete_appointment' apt.pk %}">
-                                {% csrf_token %}
-                                <button type="submit" class="btn-complete-rw"
-                                        onclick="return confirm('Mark this session as completed?')">
-                                    <i class="fas fa-check-double me-1"></i> Mark as Complete
-                                </button>
-                            </form>
+    {% csrf_token %}
+    <button type="submit" class="btn-complete-rw"
+            onclick="return confirm('Mark this session as completed?')">
+        <i class="fas fa-check-double me-1"></i> Mark as Complete
+    </button>
+</form>
+<form method="POST" action="{% url 'therapist_cancel_appointment' apt.pk %}">
+    {% csrf_token %}
+    <button type="submit" class="btn-decline-rw" style="width:100%;"
+            onclick="return confirm('Cancel this appointment for {{ apt.client_name }}? The client will be notified.')">
+        <i class="fas fa-ban me-1"></i> Cancel Appointment
+    </button>
+</form>
                         </div>
                     </div>
                 </div>

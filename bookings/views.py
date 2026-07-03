@@ -1041,3 +1041,35 @@ def start_package_session(request, pkg_id):
     request.session['prefill_phone'] = pkg.client_phone
 
     return redirect('home')
+
+def therapist_cancel_appointment(request, pk):
+    if not request.session.get('masseuse_authenticated'):
+        return redirect('masseuse_login')
+
+    appointment = get_object_or_404(Appointment, pk=pk)
+
+    if request.method == 'POST':
+        appointment.status = 'cancelled'
+        appointment.save()
+        logger.info(f"Appointment {appointment.pk} cancelled by therapist")
+
+        message = (
+            f"Hi {appointment.client_name}, your appointment on "
+            f"{appointment.appointment_date.strftime('%d %b')} at "
+            f"{appointment.appointment_time.strftime('%I:%M %p')} has been cancelled "
+            f"by Rosette Wellness. We hope you feel better soon and look forward to "
+            f"welcoming you another time."
+        )
+        encoded_message = urllib.parse.quote(message)
+        client_whatsapp = f"https://wa.me/{appointment.client_phone}?text={encoded_message}"
+
+        return render(request, 'bookings/whatsapp_response.html', {
+            'appointment': appointment,
+            'message': '❌ Appointment cancelled.',
+            'status': 'success',
+            'client_whatsapp': client_whatsapp,
+            'client_phone': appointment.client_phone,
+            'message_preview': message,
+        })
+
+    return redirect('masseuse_dashboard')

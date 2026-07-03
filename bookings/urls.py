@@ -24,6 +24,7 @@ urlpatterns = [
     path('whatsapp/response/<int:pk>/', views.whatsapp_response, name='whatsapp_response'),
     
     # WhatsApp cancellation webhooks
-    path('whatsapp/approve-cancel/<int:pk>/', views.whatsapp_approve_cancellation, name='whatsapp_approve_cancellation'),  # <-- ADD THIS
-    path('whatsapp/decline-cancel/<int:pk>/', views.whatsapp_decline_cancellation, name='whatsapp_decline_cancellation'),  # <-- ADD THIS
+    path('whatsapp/approve-cancel/<int:pk>/', views.whatsapp_approve_cancellation, name='whatsapp_approve_cancellation'),  
+    path('whatsapp/decline-cancel/<int:pk>/', views.whatsapp_decline_cancellation, name='whatsapp_decline_cancellation'),  
+    path('masseuse/cancel/<int:pk>/', views.therapist_cancel_appointment, name='therapist_cancel_appointment'),
 ]
