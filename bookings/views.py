@@ -1010,12 +1010,19 @@ def client_dashboard(request):
     request.session['prefill_name'] = client_name
     request.session['prefill_phone'] = phone
 
+    cancelled = Appointment.objects.filter(
+        client_phone=phone,
+        status='cancelled',
+
+    ).order_by('-appointment_date', '-appointment_time')[:10]
+
     return render(request, 'bookings/client_dashboard.html', {
         'client_name': client_name,
         'client_phone': phone,
         'packages': packages,
         'upcoming': upcoming,
         'past': past,
+        'cancelled' : cancelled,
         'today': today.isoformat(),
         'slots': slots,
         'booked_slots': json.dumps(booked_slots),

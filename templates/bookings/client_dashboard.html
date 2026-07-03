@@ -648,6 +648,22 @@
                 </form>
             </div>
 
+{% if cancelled %}
+<p class="section-label mt-4">Cancelled Appointments</p>
+{% for apt in cancelled %}
+<div class="apt-row" style="opacity:0.6;">
+    <div>
+        <div class="apt-service">{{ apt.get_service_display }}</div>
+        <div class="apt-meta">
+            {{ apt.appointment_date }} &middot; {{ apt.appointment_time|time:"g:i A" }}
+        </div>
+    </div>
+    <span class="status-badge status-cancelled">Cancelled</span>
+</div>
+{% endfor %}
+{% endif %}
+
+
             <!-- ── Past Sessions ── -->
             {% if past %}
             <p class="section-label mt-4">Past Sessions</p>
