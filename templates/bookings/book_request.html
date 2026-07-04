@@ -541,6 +541,9 @@
     const bookedSlots = {{ booked_slots|safe }};
     const pendingSlots = {{ pending_slots|safe }};
     const allSlots = {{ slots|safe }};
+    const blockedDates = {{ blocked_dates|safe }};
+
+    
 
     const durations = {
         signature:         [90, 120],
@@ -599,6 +602,12 @@
     }
 
     document.getElementById('dateInput').addEventListener('change', function() {
+        if (blockedDates.includes(this.value)) {
+            alert('This date is unavailable. Please choose another day.');
+            this.value = '';
+            document.getElementById('timeSlots').innerHTML = '<p style="color:var(--foreground-muted); font-size:14px;">Please select a date first.</p>';
+            return;
+        }
         renderTimeSlots();
     });
 

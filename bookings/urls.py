@@ -26,5 +26,10 @@ urlpatterns = [
     # WhatsApp cancellation webhooks
     path('whatsapp/approve-cancel/<int:pk>/', views.whatsapp_approve_cancellation, name='whatsapp_approve_cancellation'),  
     path('whatsapp/decline-cancel/<int:pk>/', views.whatsapp_decline_cancellation, name='whatsapp_decline_cancellation'),  
+
+    path('masseuse/block-date/', views.block_date, name='block_date'),
+    path('masseuse/unblock-date/<int:pk>/', views.unblock_date, name='unblock_date'),
     path('masseuse/cancel/<int:pk>/', views.therapist_cancel_appointment, name='therapist_cancel_appointment'),
 ]
+
+

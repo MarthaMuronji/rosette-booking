@@ -396,6 +396,7 @@
                 <div class="stat-label">Expired</div>
             </div>
         </div>
+        
         <div class="col-6 col-md-3">
             <div class="stat-box">
                 <div class="stat-number">{{ completed.count }}</div>
@@ -404,7 +405,58 @@
         </div>
     </div>
 
+    <!-- Block a Day Section -->
+    <div class="mb-5">
+        <div class="section-header">
+            <i class="fas fa-ban"></i> Block a Day
+        </div>
+        <div class="rw-card">
+            <form method="POST" action="{% url 'block_date' %}" class="d-flex gap-3 flex-wrap align-items-end">
+                {% csrf_token %}
+                <div>
+                    <label class="rw-form-label mb-1" style="display:block; font-size:12px; color:var(--foreground-muted);">Date</label>
+                    <input type="date" name="block_date" class="rw-form-control" required>
+                </div>
+                <div>
+                    <label class="rw-form-label mb-1" style="display:block; font-size:12px; color:var(--foreground-muted);">Reason (optional)</label>
+                    <input type="text" name="reason" class="rw-form-control" placeholder="e.g. Day off">
+                </div>
+                <button type="submit" class="btn-decline-rw">
+                    <i class="fas fa-ban me-1"></i> Block Day
+                </button>
+            </form>
+
+            {% if blocked_dates %}
+            <div class="mt-4" style="border-top:1px solid var(--border); padding-top:16px;">
+                {% for bd in blocked_dates %}
+                <div class="d-flex justify-content-between align-items-center py-2" style="border-bottom:1px solid var(--border);">
+                    <span style="color:var(--foreground);">
+                        <i class="fas fa-calendar-times me-2" style="color:#ef4444;"></i>
+                        {{ bd.date|date:"l, F j, Y" }}
+                        {% if bd.reason %}<span style="color:var(--foreground-muted);"> — {{ bd.reason }}</span>{% endif %}
+                    </span>
+                    <form method="POST" action="{% url 'unblock_date' bd.pk %}" style="margin:0;">
+                        {% csrf_token %}
+                        <button type="submit" class="btn-whatsapp-rw"
+                                style="background:rgba(239,68,68,0.1); color:#ef4444; border-color:rgba(239,68,68,0.3); border:1px solid rgba(239,68,68,0.3); cursor:pointer;"
+                                onclick="return confirm('Unblock this date? Clients will be able to book it again.')">
+                            Unblock
+                        </button>
+                    </form>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <p style="color:var(--foreground-muted); font-size:13px; margin-top:12px; margin-bottom:0;">
+                No blocked days currently.
+            </p>
+            {% endif %}
+        </div>
+    </div>
+
     <!-- Cancellation Requests Section -->
+
+
     <div class="mb-5">
         <div class="section-header">
             <i class="fas fa-times-circle"></i> Cancellation Requests

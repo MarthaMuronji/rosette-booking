@@ -3,6 +3,7 @@ from django.utils import timezone
 from django.conf import settings
 from .models import Appointment, ClientPackage
 from django.utils import timezone as tz
+from .models import BlockedDate
 import datetime
 import json
 import re
@@ -94,6 +95,8 @@ def get_booked_slots(exclude_pk=None):
 
     return booked_slots, pending_slots
 
+def get_blocked_dates():
+    return [d.date.isoformat() for d in BlockedDate.objects.all()]
 
 def auto_complete_past_sessions():
     now = timezone.now()
@@ -221,10 +224,9 @@ def book_request(request):
                 'slots': slots,
                 'booked_slots': json.dumps(booked_slots),
                 'pending_slots': json.dumps(pending_slots),
+                'blocked_dates' :json.dumps(get_blocked_dates()),
                 'today': today.isoformat(),
                 'services': Appointment.SERVICE_CHOICES,
-                'errors': errors,
-                'form_data': request.POST,
                 'prefill_name': request.session.get('prefill_name', ''),
                 'prefill_phone': request.session.get('prefill_phone', ''),
             })
@@ -323,6 +325,7 @@ def book_request(request):
         'slots': slots,
         'booked_slots': json.dumps(booked_slots),
         'pending_slots': json.dumps(pending_slots),
+        'blocked_dates' : json.dumps(get_blocked_dates()),
         'today': today.isoformat(),
         'services': Appointment.SERVICE_CHOICES,
         'prefill_name': request.session.get('prefill_name', ''),
@@ -677,6 +680,7 @@ def reschedule_appointment(request, pk):
         'slots': get_time_slots(),
         'booked_slots': json.dumps(booked_slots),
         'pending_slots': json.dumps(pending_slots),
+        'blocked_dates' : json.dumps(get_blocked_dates()),
         'today': today.isoformat(),
     })
 
@@ -827,6 +831,8 @@ def masseuse_dashboard(request):
     )
     total_earnings = sum(apt.total_price for apt in all_year)
 
+    blocked_dates = BlockedDate.objects.filter(date__gte=today).order_by('date')
+
     logger.info(f"Dashboard viewed - Pending: {pending.count()}, Confirmed: {confirmed.count()}")
 
     return render(request, 'bookings/masseuse.html', {
@@ -842,8 +848,31 @@ def masseuse_dashboard(request):
         'monthly_earnings': monthly_earnings,
         'base_url': settings.BASE_URL,
         'owner_phone': settings.OWNER_PHONE,
+        'blocked_dates' : blocked_dates,
     })
 
+
+def block_date(request):
+    if not request.session.get('masseuse_authenticated'):
+        return redirect('masseuse_login')
+
+    if request.method == 'POST':
+        date_str = request.POST.get('block_date')
+        reason = request.POST.get('reason', '').strip()
+        if date_str:
+            date_obj = datetime.date.fromisoformat(date_str)
+            BlockedDate.objects.get_or_create(date=date_obj, defaults={'reason': reason})
+            logger.info(f"Date blocked: {date_obj}")
+
+    return redirect('masseuse_dashboard')
+
+
+def unblock_date(request, pk):
+    if not request.session.get('masseuse_authenticated'):
+        return redirect('masseuse_login')
+
+    BlockedDate.objects.filter(pk=pk).delete()
+    return redirect('masseuse_dashboard')
 
 def approve_appointment(request, pk):
     if not request.session.get('masseuse_authenticated'):
@@ -1027,6 +1056,7 @@ def client_dashboard(request):
         'slots': slots,
         'booked_slots': json.dumps(booked_slots),
         'pending_slots': json.dumps(pending_slots),
+        'blocked_dates' : json.dumps(get_blocked_dates()),
         'services': Appointment.SERVICE_CHOICES,
         'has_active_package': has_active_package,
         'completed_package': completed_package,

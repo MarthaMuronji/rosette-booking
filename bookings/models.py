@@ -132,3 +132,11 @@ class Appointment(models.Model):
 
     class Meta:
         ordering = ['appointment_date', 'appointment_time']
+
+class BlockedDate(models.Model):
+    date = models.DateField(unique=True)
+    reason = models.CharField(max_length=100, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.date} - {self.reason or 'Blocked'}"
