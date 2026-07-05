@@ -3,8 +3,8 @@ from django.db import models
 
 class ClientPackage(models.Model):
     PACKAGE_TYPE_CHOICES = [
-        ('monthly_wellness', 'Monthly Wellness'),
-        ('vip_wellness', 'VIP Wellness'),
+        ('monthly_wellness', 'Rosette Wellness Membership'),
+        ('vip_wellness', 'Rosette Wellness Membership - VIP'),
     ]
 
     client_name = models.CharField(max_length=100)

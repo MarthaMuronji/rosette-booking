@@ -301,34 +301,39 @@
                                    {% if form_data.service == value %}checked{% endif %}>
                             <div>
                                 <div class="service-name">{{ label }}</div>
-                               {% if value == 'monthly_wellness' %}
-<div class="package-badge mt-1">Wellness Package</div>
+                              
+                                {% if value == 'monthly_wellness' %}
+<div class="package-badge mt-1">Rosette Wellness Membership</div>
 <button type="button" class="package-toggle" onclick="togglePackageDetails(event, 'details_monthly_wellness')">
     <span>See what's included</span>
     <i class="fas fa-chevron-down chevron"></i>
 </button>
 <div class="package-details" id="details_monthly_wellness">
-    <div>5 sessions × 90 minutes each</div>
-    <div><span class="highlight">1,500 AED total</span> — 300 AED per session</div>
-    <div>Any service type of your choice</div>
+    <div>✓ 5 × 90-minute treatments</div>
+    <div>✓ Priority booking</div>
+    <div>✓ Personalized treatment plan</div>
+    <div>✓ Progress tracking</div>
+    <div>✓ Flexible choice of massage styles</div>
+    <div style="margin-top:6px;"><span class="highlight">1,500 AED total</span></div>
     <div>Valid for 30 days from first session</div>
-    <div style="color:rgba(232,137,14,0.6);">Save 100 AED vs individual bookings</div>
 </div>
 {% elif value == 'vip_wellness' %}
-<div class="package-badge mt-1">Wellness Package</div>
+<div class="package-badge mt-1">Rosette Wellness Membership — VIP</div>
 <button type="button" class="package-toggle" onclick="togglePackageDetails(event, 'details_vip_wellness')">
     <span>See what's included</span>
     <i class="fas fa-chevron-down chevron"></i>
 </button>
 <div class="package-details" id="details_vip_wellness">
-    <div>8 sessions × 90 minutes each</div>
-    <div><span class="highlight">2,400 AED total</span> — 300 AED per session</div>
-    <div>Any service type of your choice</div>
+    <div>✓ 8 × 90-minute treatments</div>
+    <div>✓ Priority booking</div>
+    <div>✓ Personalized treatment plan</div>
+    <div>✓ Progress tracking</div>
+    <div>✓ Flexible choice of massage styles</div>
+    <div style="margin-top:6px;"><span class="highlight">2,400 AED total</span></div>
     <div>No expiry — use at your own pace</div>
-    <div>Priority booking access</div>
-    <div style="color:rgba(232,137,14,0.6);">Save 160 AED vs individual bookings</div>
 </div>
 {% endif %}
+
                             </div>
                         </div>
                     </div>
@@ -367,7 +372,7 @@
 <!-- Zone + add-on fee notice — shown only for packages -->
 <div class="package-fee-notice" id="packageFeeNotice">
     <i class="fas fa-info-circle me-2" style="color:var(--primary);"></i>
-    <strong>What's included:</strong> Your package covers all sessions at a flat rate.
+    <strong>What's included:</strong> Your membership covers all sessions at a flat rate.
     Zone travel fees (<strong>+25 AED</strong> Zone 2 / <strong>+50 AED</strong> Zone 3)
     and any add-ons are charged separately at each session and collected on the day.
 </div>
