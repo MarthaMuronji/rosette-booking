@@ -48,8 +48,8 @@ class Appointment(models.Model):
         ('deep_tissue', 'Deep Tissue Massage'),
         ('sports', 'Sports Massage'),
         ('hot_stone', 'Hot Stone Massage'),
-        ('monthly_wellness', 'Monthly Wellness Package'),
-        ('vip_wellness', 'VIP Wellness Package'),
+        ('monthly_wellness', 'Monthly Wellness Membership'),
+        ('vip_wellness', 'Rosette Wellness Membership - VIP'),
     ]
 
     DURATION_CHOICES = [
