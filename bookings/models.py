@@ -59,10 +59,11 @@ class Appointment(models.Model):
     ]
 
     ZONE_CHOICES = [
-        ('zone1', 'Zone 1 — Business Bay, Downtown, DIFC, City Walk, Al Safa'),
-        ('zone2', 'Zone 2 — JVC, Arjan, Motor City, Dubai Hills Estate'),
-        ('zone3', 'Zone 3 — Marina, JBR, Palm Jumeirah, Jumeirah Golf Estates'),
-        ('other', 'Other — Contact via WhatsApp'),
+        ('zone1', 'Zone 1 — Business Bay, Downtown Dubai, DIFC, City Walk, Al Wasl, Jumeirah 1, Jumeirah 2, Al Satwa, Dubai Canal area'),
+        ('zone2', 'Zone 2 — Dubai Hills Estate, Al Barsha, JVC, Arjan, Motor City, Dubai Science Park, Meydan, Nad Al Sheba, Jumeirah Islands, JLT'),
+        ('zone3', 'Zone 3 — Dubai Marina, JBR, Palm Jumeirah, Bluewaters Island, Emirates Hills, Jumeirah Golf Estates, Dubai Sports City, Arabian Ranches, Damac Hills, Tilal Al Ghaf, The Springs, The Meadows, The Lakes'),
+        ('zone4', 'Zone 4 — Dubai South, Expo City, Al Furjan, Jebel Ali, Dubai Investment Park (DIP), The Villa, Mudon, Town Square, Arabian Ranches 2 & 3'),
+        ('zone5', 'Zone 5 — Custom Quote (The Oasis, Al Qudra, Dubai Parks & Resorts, Dubai Industrial City, Al Awir, Hatta)'),
     ]
 
     ADDON_CHOICES = [

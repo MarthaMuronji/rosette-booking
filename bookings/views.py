@@ -25,7 +25,7 @@ PACKAGE_CONFIGS = {
     'vip_wellness': {'total_sessions': 8, 'validity_days': None, 'base_price': 2400},
 }
 
-ZONE_FEES = {'zone1': 0, 'zone2': 25, 'zone3': 50, 'other': 0}
+ZONE_FEES = {'zone1': 0, 'zone2': 25, 'zone3': 50, 'zone4': 75, 'zone5': 0}
 ADDON_PRICES = {'none': 0, 'foot_30': 120, 'hns_30': 100, 'hns_60': 180}
 
 

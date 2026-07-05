@@ -679,10 +679,18 @@
                             <i class="fas fa-map-marker-alt"></i>
                             {{ apt.client_address }}
                         </div>
-                        <div class="appointment-meta">
+                       <div class="appointment-meta">
                             <i class="fas fa-map"></i>
                             {{ apt.get_zone_display }}
                         </div>
+                        {% if apt.zone == 'zone5' %}
+                        <div style="background:rgba(232,137,14,0.08); border-left:3px solid rgba(232,137,14,0.4);
+                                    padding:10px 14px; border-radius:4px; font-size:13px; color:var(--primary);
+                                    margin-top:8px; margin-bottom:8px;">
+                            <i class="fas fa-exclamation-circle me-2"></i>
+                            <strong>Zone 5 — Custom Quote:</strong> Confirm travel fee with client via WhatsApp if not already done.
+                        </div>
+                        {% endif %}
                         {% if apt.addon != 'none' %}
                         <div class="appointment-meta">
                             <i class="fas fa-plus-circle"></i>
@@ -701,7 +709,7 @@
                             Payment: {{ apt.get_payment_method_display }}
                         </div>
                         {% endif %}
-                        {% if apt.preferred_service %}
+                       {% if apt.preferred_service %}
                         <div class="appointment-meta">
                             <i class="fas fa-hand-sparkles"></i>
                             Preferred massage: {{ apt.preferred_service }}
