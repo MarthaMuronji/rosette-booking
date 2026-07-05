@@ -4,6 +4,14 @@ from django.conf import settings
 from .models import Appointment, ClientPackage
 from django.utils import timezone as tz
 from .models import BlockedDate
+from .forms import (
+    BlockDateForm,
+    BookingRequestForm,
+    ClientLookupForm,
+    ConfirmBookingForm,
+    MasseuseLoginForm,
+    RescheduleForm,
+)
 import datetime
 import json
 import re
@@ -21,6 +29,41 @@ ZONE_FEES = {'zone1': 0, 'zone2': 25, 'zone3': 50, 'other': 0}
 ADDON_PRICES = {'none': 0, 'foot_30': 120, 'hns_30': 100, 'hns_60': 180}
 
 
+def get_phone_suffix(phone):
+    if not phone:
+        return ''
+    cleaned = re.sub(r'\D', '', phone)
+    if cleaned.startswith('971'):
+        return cleaned[3:]
+    if cleaned.startswith('0'):
+        return cleaned[1:]
+    return cleaned[-9:]
+
+
+def get_booking_context(request, form=None):
+    slots = get_time_slots()
+    booked_slots, pending_slots = get_booked_slots()
+    today = timezone.now().date()
+    form_data = form.data if form and form.is_bound else {}
+    phone_value = form_data.get('client_phone') or request.session.get('prefill_phone', '')
+
+    return {
+        'form': form,
+        'errors': form.as_error_dict() if form and form.is_bound else {},
+        'non_field_errors': form.non_field_errors() if form and form.is_bound else [],
+        'form_data': form_data,
+        'phone_suffix': get_phone_suffix(phone_value),
+        'slots': slots,
+        'booked_slots': json.dumps(booked_slots),
+        'pending_slots': json.dumps(pending_slots),
+        'blocked_dates': json.dumps(get_blocked_dates()),
+        'today': today.isoformat(),
+        'services': Appointment.SERVICE_CHOICES,
+        'prefill_name': request.session.get('prefill_name', ''),
+        'prefill_phone': request.session.get('prefill_phone', ''),
+    }
+
+
 def calculate_price(service, duration, addon, zone):
     base_prices = {
         'signature': {90: 320, 120: 400},
@@ -28,7 +71,6 @@ def calculate_price(service, duration, addon, zone):
         'deep_tissue': {90: 370, 120: 450},
         'sports': {90: 380, 120: 470},
         'hot_stone': {90: 380, 120: 470},
-        'thai': {90: 320, 120: 400},
     }
     base = base_prices.get(service, {}).get(int(duration), 0)
     addon_fee = ADDON_PRICES.get(addon, 0)
@@ -126,128 +168,29 @@ def auto_complete_past_sessions():
     Appointment.objects.filter(status='declined', appointment_date__lt=seven_days_ago).delete()
 
 
-def validate_uae_phone(phone):
-    if re.search(r'[a-zA-Z]', phone):
-        return None, "Phone number cannot contain letters."
-    cleaned = re.sub(r'[\s\-\(\)\.]', '', phone)
-    match = re.match(r'^(\+971|00971|0)([0-9]{9})$', cleaned)
-    if not match:
-        return None, "Please enter a valid UAE number (e.g. +971 50 000 0000)."
-    return f'+971{match.group(2)}', None
-
-
 def book_request(request):
     if request.method == 'POST':
-        service = request.POST.get('service', '').strip()
-        duration = request.POST.get('duration', '').strip()
-        preferred_date = request.POST.get('preferred_date', '').strip()
-        preferred_time = request.POST.get('preferred_time', '').strip()
-        client_name = request.POST.get('client_name', '').strip()
-        client_phone = request.POST.get('client_phone', '').strip()
-        preferred_service = request.POST.get('preferred_service', '').strip()
+        form = BookingRequestForm(request.POST, time_slots=get_time_slots())
 
-        errors = {}
-
-        valid_service_keys = [v for v, _ in Appointment.SERVICE_CHOICES]
-        valid_durations = {
-            'signature': [90, 120],
-            'swedish': [60, 90, 120],
-            'deep_tissue': [90, 120],
-            'sports': [90, 120],
-            'hot_stone': [90, 120],
-            'thai': [90, 120],
-            'monthly_wellness': [90],
-            'vip_wellness': [90],
-        }
-
-        if not client_name:
-            errors['client_name'] = 'Full name is required.'
-        elif len(client_name) < 2:
-            errors['client_name'] = 'Please enter your full name.'
-
-        if not client_phone:
-            errors['client_phone'] = 'WhatsApp number is required.'
-        else:
-            cleaned_phone, phone_error = validate_uae_phone(client_phone)
-            if phone_error:
-                errors['client_phone'] = phone_error
-            else:
-                client_phone = cleaned_phone
-
-        if not service:
-            errors['service'] = 'Please select a treatment.'
-        elif service not in valid_service_keys:
-            errors['service'] = 'Invalid service selected.'
-
-        if not duration:
-            errors['duration'] = 'Please select a session duration.'
-        else:
-            try:
-                dur_int = int(duration)
-                if service in valid_durations and dur_int not in valid_durations[service]:
-                    errors['duration'] = 'Invalid duration for this service.'
-            except ValueError:
-                errors['duration'] = 'Invalid duration.'
-
-        if not preferred_date:
-            errors['preferred_date'] = 'Please select a date.'
-        else:
-            try:
-                date_obj = datetime.date.fromisoformat(preferred_date)
-                if date_obj < timezone.now().date():
-                    errors['preferred_date'] = 'Please select today or a future date.'
-            except ValueError:
-                errors['preferred_date'] = 'Invalid date.'
-
-        valid_slots = get_time_slots()
-        if not preferred_time:
-            errors['preferred_time'] = 'Please select a time slot.'
-        elif preferred_time not in valid_slots:
-            errors['preferred_time'] = 'Invalid time slot.'
-
-        def render_form_with_errors():
-            slots = get_time_slots()
-            booked_slots, pending_slots = get_booked_slots()
-            today = timezone.now().date()
-
-            # If submitted from dashboard, redirect back with error
+        if not form.is_valid():
             if request.POST.get('source') == 'dashboard':
-                request.session['booking_errors'] = errors
-                request.session['booking_form_data'] = {
-                    'service': service,
-                    'preferred_date': preferred_date,
-                    'preferred_time': preferred_time,
-                }
+                request.session['booking_errors'] = form.as_error_dict()
+                request.session['booking_non_field_errors'] = list(form.non_field_errors())
+                request.session['booking_form_data'] = dict(request.POST.items())
                 return redirect('client_dashboard')
+            return render(request, 'bookings/book_request.html', get_booking_context(request, form))
 
-            return render(request, 'bookings/book_request.html', {
-                'slots': slots,
-                'booked_slots': json.dumps(booked_slots),
-                'pending_slots': json.dumps(pending_slots),
-                'blocked_dates' :json.dumps(get_blocked_dates()),
-                'today': today.isoformat(),
-                'services': Appointment.SERVICE_CHOICES,
-                'prefill_name': request.session.get('prefill_name', ''),
-                'prefill_phone': request.session.get('prefill_phone', ''),
-            })
-
-        if errors:
-            return render_form_with_errors()
-
-        existing = Appointment.objects.filter(
-            client_phone=client_phone,
-            appointment_date=preferred_date,
-            status__in=['pending', 'approved', 'confirmed']
-        ).exists()
-
-        if existing:
-            errors['duplicate'] = 'You already have a booking request for this date. Please choose a different date or contact us on WhatsApp.'
-            return render_form_with_errors()
-
+        service = form.cleaned_data['service']
+        duration = form.cleaned_data['duration']
+        preferred_date = form.cleaned_data['preferred_date']
+        preferred_time = form.cleaned_data['preferred_time']
+        client_name = form.cleaned_data['client_name']
+        client_phone = form.cleaned_data['client_phone']
+        preferred_service = form.cleaned_data['preferred_service']
         time_obj = datetime.datetime.strptime(preferred_time, '%H:%M').time()
 
         appointment_datetime = datetime.datetime.combine(
-            datetime.datetime.strptime(preferred_date, '%Y-%m-%d').date(),
+            preferred_date,
             time_obj
         )
         departure_datetime = appointment_datetime - datetime.timedelta(hours=1)
@@ -257,25 +200,13 @@ def book_request(request):
             client_name=client_name,
             client_phone=client_phone,
             service=service,
-            duration=int(duration),
+            duration=duration,
             appointment_date=preferred_date,
             appointment_time=time_obj,
             masseuse_departure_time=departure_time,
             status='pending',
             preferred_service=preferred_service,
         )
-
-        if not errors:
-            appointment_date_obj = datetime.date.fromisoformat(preferred_date)
-            same_day = Appointment.objects.filter(
-                client_phone=client_phone,
-                appointment_date=appointment_date_obj,
-                status__in=['pending', 'approved', 'confirmed']
-            ).exclude(pk=appointment.pk).exists()
-            if same_day:
-                errors['duplicate'] = 'You already have a booking request for this date. Please choose a different date or contact us on WhatsApp.'
-                appointment.delete()
-                return render_form_with_errors()
 
         existing_pkg = ClientPackage.objects.filter(
             client_phone=client_phone,
@@ -317,20 +248,8 @@ def book_request(request):
             'message_preview': raw_message,
         })
 
-    slots = get_time_slots()
-    booked_slots, pending_slots = get_booked_slots()
-    today = timezone.now().date()
-
-    return render(request, 'bookings/book_request.html', {
-        'slots': slots,
-        'booked_slots': json.dumps(booked_slots),
-        'pending_slots': json.dumps(pending_slots),
-        'blocked_dates' : json.dumps(get_blocked_dates()),
-        'today': today.isoformat(),
-        'services': Appointment.SERVICE_CHOICES,
-        'prefill_name': request.session.get('prefill_name', ''),
-        'prefill_phone': request.session.get('prefill_phone', ''),
-    })
+    form = BookingRequestForm(time_slots=get_time_slots())
+    return render(request, 'bookings/book_request.html', get_booking_context(request, form))
 
 
 def whatsapp_approve(request, pk):
@@ -618,37 +537,26 @@ def reschedule_appointment(request, pk):
         })
 
     if request.method == 'POST':
-        new_date = request.POST.get('preferred_date', '').strip()
-        new_time = request.POST.get('preferred_time', '').strip()
-        errors = {}
-
-        if not new_date:
-            errors['preferred_date'] = 'Please select a date.'
-        else:
-            try:
-                date_obj = datetime.date.fromisoformat(new_date)
-                if date_obj < today:
-                    errors['preferred_date'] = 'Please select a future date.'
-            except ValueError:
-                errors['preferred_date'] = 'Invalid date.'
-
         valid_slots = get_time_slots()
-        if not new_time:
-            errors['preferred_time'] = 'Please select a time slot.'
-        elif new_time not in valid_slots:
-            errors['preferred_time'] = 'Invalid time slot.'
+        form = RescheduleForm(request.POST, time_slots=valid_slots, exclude_pk=appointment.pk)
 
-        if errors:
+        if not form.is_valid():
             booked_slots, pending_slots = get_booked_slots(exclude_pk=appointment.pk)
             return render(request, 'bookings/reschedule.html', {
                 'appointment': appointment,
                 'slots': valid_slots,
                 'booked_slots': json.dumps(booked_slots),
                 'pending_slots': json.dumps(pending_slots),
+                'blocked_dates': json.dumps(get_blocked_dates()),
                 'today': today.isoformat(),
-                'errors': errors,
+                'form': form,
+                'errors': form.as_error_dict(),
+                'non_field_errors': form.non_field_errors(),
+                'form_data': form.data,
             })
 
+        new_date = form.cleaned_data['preferred_date']
+        new_time = form.cleaned_data['preferred_time']
         time_obj = datetime.datetime.strptime(new_time, '%H:%M').time()
         appointment.appointment_date = new_date
         appointment.appointment_time = time_obj
@@ -675,6 +583,7 @@ def reschedule_appointment(request, pk):
         return redirect(f"https://wa.me/{owner_phone}?text={urllib.parse.quote(raw_message)}")
 
     booked_slots, pending_slots = get_booked_slots(exclude_pk=appointment.pk)
+    form = RescheduleForm(time_slots=get_time_slots(), exclude_pk=appointment.pk)
     return render(request, 'bookings/reschedule.html', {
         'appointment': appointment,
         'slots': get_time_slots(),
@@ -682,6 +591,10 @@ def reschedule_appointment(request, pk):
         'pending_slots': json.dumps(pending_slots),
         'blocked_dates' : json.dumps(get_blocked_dates()),
         'today': today.isoformat(),
+        'form': form,
+        'errors': {},
+        'non_field_errors': [],
+        'form_data': {},
     })
 
 
@@ -689,14 +602,40 @@ def book_confirm(request, pk):
     appointment = get_object_or_404(Appointment, pk=pk, status='approved')
     is_package = appointment.service in PACKAGE_CONFIGS or appointment.client_package is not None
 
+    last_booking = Appointment.objects.filter(
+        client_phone=appointment.client_phone,
+        status__in=['confirmed', 'completed'],
+    ).exclude(pk=appointment.pk).order_by('-created_at').first()
+
+    prefill = {}
+    if last_booking:
+        prefill = {
+            'zone': last_booking.zone,
+            'client_email': last_booking.client_email,
+            'client_address': last_booking.client_address,
+            'preferred_pressure': last_booking.preferred_pressure,
+            'payment_method': last_booking.payment_method,
+        }
+
     if request.method == 'POST':
-        addon = request.POST.get('addon', 'none')
-        zone = request.POST.get('zone', 'zone1')
-        client_email = request.POST.get('client_email', '')
-        client_address = request.POST.get('client_address', '')
-        notes = request.POST.get('notes', '')
-        preferred_pressure = request.POST.get('preferred_pressure')
-        payment_method = request.POST.get('payment_method')
+        form = ConfirmBookingForm(request.POST, instance=appointment)
+        if not form.is_valid():
+            return render(request, 'bookings/book_confirm.html', {
+                'appointment': appointment,
+                'is_package': is_package,
+                'prefill': request.POST,
+                'form': form,
+                'errors': form.as_error_dict(),
+                'non_field_errors': form.non_field_errors(),
+            })
+
+        addon = form.cleaned_data['addon']
+        zone = form.cleaned_data['zone']
+        client_email = form.cleaned_data['client_email']
+        client_address = form.cleaned_data['client_address']
+        notes = form.cleaned_data['notes']
+        preferred_pressure = form.cleaned_data['preferred_pressure']
+        payment_method = form.cleaned_data['payment_method']
 
         if is_package:
             zone_fee = ZONE_FEES.get(zone, 0)
@@ -720,13 +659,7 @@ def book_confirm(request, pk):
         else:
             total_price = calculate_price(appointment.service, appointment.duration, addon, zone)
 
-        appointment.addon = addon
-        appointment.zone = zone
-        appointment.client_email = client_email
-        appointment.client_address = client_address
-        appointment.notes = notes
-        appointment.preferred_pressure = preferred_pressure
-        appointment.payment_method = payment_method
+        appointment = form.save(commit=False)
         appointment.total_price = total_price
         appointment.status = 'confirmed'
         appointment.save()
@@ -745,26 +678,15 @@ def book_confirm(request, pk):
         response['Pragma'] = 'no-cache'
         return response
 
-    # Autofill from last booking
-    last_booking = Appointment.objects.filter(
-        client_phone=appointment.client_phone,
-        status__in=['confirmed', 'completed'],
-    ).exclude(pk=appointment.pk).order_by('-created_at').first()
-
-    prefill = {}
-    if last_booking:
-        prefill = {
-            'zone': last_booking.zone,
-            'client_email': last_booking.client_email,
-            'client_address': last_booking.client_address,
-            'preferred_pressure': last_booking.preferred_pressure,
-            'payment_method': last_booking.payment_method,
-        }
+    form = ConfirmBookingForm(instance=appointment, initial=prefill)
 
     return render(request, 'bookings/book_confirm.html', {
         'appointment': appointment,
         'is_package': is_package,
         'prefill': prefill,
+        'form': form,
+        'errors': {},
+        'non_field_errors': [],
     })
 
 
@@ -774,17 +696,18 @@ def book_success(request, pk):
 
 
 def masseuse_login(request):
-    error = None
+    form = MasseuseLoginForm()
     if request.method == 'POST':
-        pin = request.POST.get('pin', '')
-        if pin == settings.MASSEUSE_PIN:
+        form = MasseuseLoginForm(request.POST)
+        if form.is_valid():
             request.session['masseuse_authenticated'] = True
             logger.info("Masseuse logged in successfully")
             return redirect('masseuse_dashboard')
-        else:
-            error = 'Incorrect PIN. Please try again.'
-            logger.warning(f"Failed login attempt from {request.META.get('REMOTE_ADDR')}")
-    return render(request, 'bookings/masseuse_login.html', {'error': error})
+        logger.warning(f"Failed login attempt from {request.META.get('REMOTE_ADDR')}")
+    return render(request, 'bookings/masseuse_login.html', {
+        'form': form,
+        'errors': form.as_error_dict() if form.is_bound else {},
+    })
 
 
 def masseuse_logout(request):
@@ -832,6 +755,14 @@ def masseuse_dashboard(request):
     total_earnings = sum(apt.total_price for apt in all_year)
 
     blocked_dates = BlockedDate.objects.filter(date__gte=today).order_by('date')
+    block_date_form_data = request.session.pop('block_date_form_data', None)
+    block_date_errors = request.session.pop('block_date_errors', {})
+    block_date_non_field_errors = request.session.pop('block_date_non_field_errors', [])
+    if block_date_form_data:
+        block_date_form = BlockDateForm(block_date_form_data)
+        block_date_form.is_valid()
+    else:
+        block_date_form = BlockDateForm()
 
     logger.info(f"Dashboard viewed - Pending: {pending.count()}, Confirmed: {confirmed.count()}")
 
@@ -849,6 +780,9 @@ def masseuse_dashboard(request):
         'base_url': settings.BASE_URL,
         'owner_phone': settings.OWNER_PHONE,
         'blocked_dates' : blocked_dates,
+        'block_date_form': block_date_form,
+        'block_date_errors': block_date_errors,
+        'block_date_non_field_errors': block_date_non_field_errors,
     })
 
 
@@ -857,12 +791,14 @@ def block_date(request):
         return redirect('masseuse_login')
 
     if request.method == 'POST':
-        date_str = request.POST.get('block_date')
-        reason = request.POST.get('reason', '').strip()
-        if date_str:
-            date_obj = datetime.date.fromisoformat(date_str)
-            BlockedDate.objects.get_or_create(date=date_obj, defaults={'reason': reason})
-            logger.info(f"Date blocked: {date_obj}")
+        form = BlockDateForm(request.POST)
+        if form.is_valid():
+            blocked_date = form.save()
+            logger.info(f"Date blocked: {blocked_date.date}")
+        else:
+            request.session['block_date_errors'] = form.as_error_dict()
+            request.session['block_date_non_field_errors'] = list(form.non_field_errors())
+            request.session['block_date_form_data'] = dict(request.POST.items())
 
     return redirect('masseuse_dashboard')
 
@@ -980,23 +916,16 @@ def complete_appointment(request, pk):
 
 
 def client_lookup(request):
-    error = None
+    form = ClientLookupForm()
     if request.method == 'POST':
-        phone = request.POST.get('phone', '').strip()
-        if not phone:
-            error = 'Please enter your WhatsApp number.'
-        else:
-            cleaned_phone, phone_error = validate_uae_phone(phone)
-            if phone_error:
-                error = phone_error
-            else:
-                has_bookings = Appointment.objects.filter(client_phone=cleaned_phone).exists()
-                if not has_bookings:
-                    error = 'No bookings found for this number. Please check and try again.'
-                else:
-                    request.session['client_phone'] = cleaned_phone
-                    return redirect('client_dashboard')
-    return render(request, 'bookings/client_lookup.html', {'error': error})
+        form = ClientLookupForm(request.POST)
+        if form.is_valid():
+            request.session['client_phone'] = form.cleaned_data['phone']
+            return redirect('client_dashboard')
+    return render(request, 'bookings/client_lookup.html', {
+        'form': form,
+        'errors': form.as_error_dict() if form.is_bound else {},
+    })
 
 
 def client_dashboard(request):
@@ -1005,6 +934,8 @@ def client_dashboard(request):
         return redirect('client_lookup')
     
     booking_errors = request.session.pop('booking_errors', {})
+    booking_non_field_errors = request.session.pop('booking_non_field_errors', [])
+    booking_form_data = request.session.pop('booking_form_data', {})
 
     today = timezone.now().date()
 
@@ -1061,6 +992,8 @@ def client_dashboard(request):
         'has_active_package': has_active_package,
         'completed_package': completed_package,
         'booking_errors': booking_errors,
+        'booking_non_field_errors': booking_non_field_errors,
+        'form_data': booking_form_data,
     })
 
 

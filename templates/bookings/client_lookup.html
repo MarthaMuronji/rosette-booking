@@ -35,11 +35,11 @@
                     {% csrf_token %}
                     <div class="mb-4">
                         <label class="rw-form-label">Your WhatsApp Number</label>
-                        <input type="tel" name="phone" class="rw-form-control"
-                               placeholder="+971 50 000 0000" autofocus>
-                        {% if error %}
-                        <div style="color:#e85d5d; font-size:12px; margin-top:8px; display:flex; align-items:center; gap:6px;">
-                            <i class="fas fa-exclamation-circle"></i> {{ error }}
+                        <input type="tel" name="phone" class="rw-form-control{% if errors.phone %} is-invalid{% endif %}"
+                               placeholder="+971 50 000 0000" value="{{ form.phone.value|default:'' }}" autofocus>
+                        {% if errors.phone %}
+                        <div class="invalid-feedback d-block">
+                            <i class="fas fa-exclamation-circle"></i> {{ errors.phone }}
                         </div>
                         {% endif %}
                     </div>

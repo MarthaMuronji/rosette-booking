@@ -48,7 +48,6 @@ class Appointment(models.Model):
         ('deep_tissue', 'Deep Tissue Massage'),
         ('sports', 'Sports Massage'),
         ('hot_stone', 'Hot Stone Massage'),
-        ('thai', 'Thai Massage'),
         ('monthly_wellness', 'Monthly Wellness Package'),
         ('vip_wellness', 'VIP Wellness Package'),
     ]

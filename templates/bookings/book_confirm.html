@@ -186,25 +186,37 @@
 
             <form method="POST" id="confirmForm">
                 {% csrf_token %}
+                {% if non_field_errors %}
+                <div class="rw-form-alert">
+                    {% for error in non_field_errors %}
+                    <div><i class="fas fa-exclamation-circle me-2"></i>{{ error }}</div>
+                    {% endfor %}
+                </div>
+                {% endif %}
 
                 <!-- 1. Add-On -->
                 <div class="form-section">
                     <div class="form-section-title">1. Add-On (Optional)</div>
-                    <select name="addon" id="addonSelect" class="rw-form-control">
-                        <option value="none">No Add-On</option>
-                        <option value="foot_30">Foot Massage — 30 min (+120 AED)</option>
-                        <option value="hns_30">Head, Neck & Shoulders — 30 min (+100 AED)</option>
-                        <option value="hns_60">Head, Neck & Shoulders — 60 min (+180 AED)</option>
+                    <select name="addon" id="addonSelect" class="rw-form-control{% if errors.addon %} is-invalid{% endif %}">
+                        <option value="none" {% if prefill.addon == 'none' %}selected{% endif %}>No Add-On</option>
+                        <option value="foot_30" {% if prefill.addon == 'foot_30' %}selected{% endif %}>Foot Massage — 30 min (+120 AED)</option>
+                        <option value="hns_30" {% if prefill.addon == 'hns_30' %}selected{% endif %}>Head, Neck & Shoulders — 30 min (+100 AED)</option>
+                        <option value="hns_60" {% if prefill.addon == 'hns_60' %}selected{% endif %}>Head, Neck & Shoulders — 60 min (+180 AED)</option>
                     </select>
+                    {% if errors.addon %}
+                    <div class="invalid-feedback d-block">
+                        <i class="fas fa-exclamation-circle"></i> {{ errors.addon }}
+                    </div>
+                    {% endif %}
                 </div>
 
                 <!-- 2. Zone -->
                 <div class="form-section">
                     <div class="form-section-title">2. Your Location Zone</div>
 
-                    <div class="zone-card" onclick="selectZone('zone1', this)">
+                    <div class="zone-card{% if errors.zone %} is-invalid{% endif %}" onclick="selectZone('zone1', this)">
                         <div class="d-flex align-items-center">
-                            <input type="radio" name="zone" value="zone1" class="me-3" required>
+                            <input type="radio" name="zone" value="zone1" class="me-3{% if errors.zone %} is-invalid{% endif %}" {% if prefill.zone == 'zone1' %}checked{% endif %}>
                             <div>
                                 <strong>Zone 1</strong> — No extra fee<br>
                                 <small>Business Bay, Downtown, DIFC, City Walk, Al Safa</small>
@@ -212,9 +224,9 @@
                         </div>
                     </div>
 
-                    <div class="zone-card" onclick="selectZone('zone2', this)">
+                    <div class="zone-card{% if errors.zone %} is-invalid{% endif %}" onclick="selectZone('zone2', this)">
                         <div class="d-flex align-items-center">
-                            <input type="radio" name="zone" value="zone2" class="me-3" required>
+                            <input type="radio" name="zone" value="zone2" class="me-3{% if errors.zone %} is-invalid{% endif %}" {% if prefill.zone == 'zone2' %}checked{% endif %}>
                             <div>
                                 <strong>Zone 2</strong> — +25 AED<br>
                                 <small>JVC, Arjan, Motor City, Dubai Hills Estate</small>
@@ -222,9 +234,9 @@
                         </div>
                     </div>
 
-                    <div class="zone-card" onclick="selectZone('zone3', this)">
+                    <div class="zone-card{% if errors.zone %} is-invalid{% endif %}" onclick="selectZone('zone3', this)">
                         <div class="d-flex align-items-center">
-                            <input type="radio" name="zone" value="zone3" class="me-3" required>
+                            <input type="radio" name="zone" value="zone3" class="me-3{% if errors.zone %} is-invalid{% endif %}" {% if prefill.zone == 'zone3' %}checked{% endif %}>
                             <div>
                                 <strong>Zone 3</strong> — +50 AED<br>
                                 <small>Marina, JBR, Palm Jumeirah, Jumeirah Golf Estates</small>
@@ -232,15 +244,20 @@
                         </div>
                     </div>
 
-                    <div class="zone-card" onclick="selectZone('other', this)">
+                    <div class="zone-card{% if errors.zone %} is-invalid{% endif %}" onclick="selectZone('other', this)">
                         <div class="d-flex align-items-center">
-                            <input type="radio" name="zone" value="other" class="me-3" required>
+                            <input type="radio" name="zone" value="other" class="me-3{% if errors.zone %} is-invalid{% endif %}" {% if prefill.zone == 'other' %}checked{% endif %}>
                             <div>
                                 <strong>My area is not listed</strong><br>
                                 <small>We will contact you on WhatsApp to confirm travel fee</small>
                             </div>
                         </div>
                     </div>
+                    {% if errors.zone %}
+                    <div class="invalid-feedback d-block">
+                        <i class="fas fa-exclamation-circle"></i> {{ errors.zone }}
+                    </div>
+                    {% endif %}
                 </div>
 
                 <!-- 3. Your Details -->
@@ -249,71 +266,90 @@
 
                     <div class="mb-3">
                         <label class="rw-form-label">Email Address (Optional)</label>
-                        <input type="email" name="client_email" class="rw-form-control"
+                        <input type="email" name="client_email" class="rw-form-control{% if errors.client_email %} is-invalid{% endif %}"
                                placeholder="your@email.com"
                                value="{{ prefill.client_email }}">
+                        {% if errors.client_email %}
+                        <div class="invalid-feedback d-block">
+                            <i class="fas fa-exclamation-circle"></i> {{ errors.client_email }}
+                        </div>
+                        {% endif %}
                             
                     </div>
                     <div class="mb-3">
                         <label class="rw-form-label">Full Address</label>
-                        <textarea name="client_address" class="rw-form-control" rows="3"
+                        <textarea name="client_address" class="rw-form-control{% if errors.client_address %} is-invalid{% endif %}" rows="3"
                                   placeholder="Building name, apartment number, street, area"
-                                  required>{{prefill.client_address }}</textarea>
+                                  >{{ prefill.client_address }}</textarea>
+                        {% if errors.client_address %}
+                        <div class="invalid-feedback d-block">
+                            <i class="fas fa-exclamation-circle"></i> {{ errors.client_address }}
+                        </div>
+                        {% endif %}
                     </div>
                     <div class="mb-3">
                         <label class="rw-form-label">Any injuries, medical conditions or areas of concern (Optional)</label>
                         <textarea name="notes" class="rw-form-control" rows="2"
-                                  placeholder="e.g. lower back pain, knee injury, sensitive shoulders">
-                        </textarea>
+                                  placeholder="e.g. lower back pain, knee injury, sensitive shoulders">{{ prefill.notes }}</textarea>
                     </div>
 
                     <!-- Preferred Pressure -->
                     <div class="mb-3">
                         <label class="rw-form-label">Preferred Pressure</label>
                         <div class="d-flex gap-3 mt-2">
-                            <div class="zone-card flex-fill text-center py-3"
+                            <div class="zone-card flex-fill text-center py-3{% if errors.preferred_pressure %} is-invalid{% endif %}"
                                  onclick="selectOption('preferred_pressure', 'light', this)">
                                 <input type="radio" name="preferred_pressure"
-                                       value="light" class="d-none" required>
+                                       value="light" class="d-none" {% if prefill.preferred_pressure == 'light' %}checked{% endif %}>
                                 <i class="fas fa-feather mb-2" style="color:var(--primary); font-size:20px; display:block;"></i>
                                 <strong>Light</strong>
                             </div>
-                            <div class="zone-card flex-fill text-center py-3"
+                            <div class="zone-card flex-fill text-center py-3{% if errors.preferred_pressure %} is-invalid{% endif %}"
                                  onclick="selectOption('preferred_pressure', 'medium', this)">
                                 <input type="radio" name="preferred_pressure"
-                                       value="medium" class="d-none" required>
+                                       value="medium" class="d-none" {% if prefill.preferred_pressure == 'medium' %}checked{% endif %}>
                                 <i class="fas fa-hand-paper mb-2" style="color:var(--primary); font-size:20px; display:block;"></i>
                                 <strong>Medium</strong>
                             </div>
-                            <div class="zone-card flex-fill text-center py-3"
+                            <div class="zone-card flex-fill text-center py-3{% if errors.preferred_pressure %} is-invalid{% endif %}"
                                  onclick="selectOption('preferred_pressure', 'firm', this)">
                                 <input type="radio" name="preferred_pressure"
-                                       value="firm" class="d-none" required>
+                                       value="firm" class="d-none" {% if prefill.preferred_pressure == 'firm' %}checked{% endif %}>
                                 <i class="fas fa-fist-raised mb-2" style="color:var(--primary); font-size:20px; display:block;"></i>
                                 <strong>Firm</strong>
                             </div>
                         </div>
+                        {% if errors.preferred_pressure %}
+                        <div class="invalid-feedback d-block">
+                            <i class="fas fa-exclamation-circle"></i> {{ errors.preferred_pressure }}
+                        </div>
+                        {% endif %}
                     </div>
 
                     <!-- Payment Method -->
                     <div class="mb-3">
                         <label class="rw-form-label">Payment Method</label>
                         <div class="d-flex gap-3 mt-2">
-                            <div class="zone-card flex-fill text-center py-3"
+                            <div class="zone-card flex-fill text-center py-3{% if errors.payment_method %} is-invalid{% endif %}"
                                  onclick="selectOption('payment_method', 'cash', this)">
                                 <input type="radio" name="payment_method"
-                                       value="cash" class="d-none" required>
+                                       value="cash" class="d-none" {% if prefill.payment_method == 'cash' %}checked{% endif %}>
                                 <i class="fas fa-money-bill-wave mb-2" style="color:var(--primary); font-size:20px; display:block;"></i>
                                 <strong>Cash</strong>
                             </div>
-                            <div class="zone-card flex-fill text-center py-3"
+                            <div class="zone-card flex-fill text-center py-3{% if errors.payment_method %} is-invalid{% endif %}"
                                  onclick="selectOption('payment_method', 'card', this)">
                                 <input type="radio" name="payment_method"
-                                       value="card" class="d-none" required>
+                                       value="card" class="d-none" {% if prefill.payment_method == 'card' %}checked{% endif %}>
                                 <i class="fas fa-credit-card mb-2" style="color:var(--primary); font-size:20px; display:block;"></i>
                                 <strong>Card</strong>
                             </div>
                         </div>
+                        {% if errors.payment_method %}
+                        <div class="invalid-feedback d-block">
+                            <i class="fas fa-exclamation-circle"></i> {{ errors.payment_method }}
+                        </div>
+                        {% endif %}
 
                        <!-- ADD THIS BELOW THE PAYMENT METHOD DIV -->
         <div id="cardNotice" style="display:none; margin-top:12px; background:rgba(232,137,14,0.06);
@@ -415,7 +451,6 @@
     'deep_tissue': { 90: 370, 120: 450 },
     'sports':      { 90: 380, 120: 470 },
     'hot_stone':   { 90: 380, 120: 470 },
-    'thai':        { 90: 320, 120: 400 },
 };
 
 const packageBasePrices = {
@@ -493,9 +528,15 @@ function selectOption(name, value, card) {
     });
 
     // Autofill from last booking
+    const prefillAddon    = "{{ prefill.addon|default:'none' }}";
     const prefillZone     = "{{ prefill.zone }}";
     const prefillPressure = "{{ prefill.preferred_pressure }}";
     const prefillPayment  = "{{ prefill.payment_method }}";
+
+    if (prefillAddon) {
+        document.getElementById('addonSelect').value = prefillAddon;
+        selectedAddon = prefillAddon;
+    }
 
     if (prefillZone) {
         const zoneCard = document.querySelector(`.zone-card [value="${prefillZone}"]`);

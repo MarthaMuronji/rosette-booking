@@ -202,14 +202,6 @@
         margin: 0;
     }
 
-    .field-error {
-        color: #e85d5d;
-        font-size: 12px;
-        margin-top: 6px;
-        display: flex;
-        align-items: center;
-        gap: 6px;
-    }
     .package-details {
     margin-top: 10px;
     padding-top: 10px;
@@ -290,15 +282,23 @@
 
             <form method="POST" id="requestForm">
                 {% csrf_token %}
+                {% if non_field_errors %}
+                <div class="rw-form-alert">
+                    {% for error in non_field_errors %}
+                    <div><i class="fas fa-exclamation-circle me-2"></i>{{ error }}</div>
+                    {% endfor %}
+                </div>
+                {% endif %}
 
                 <!-- Service Selection -->
                 <div class="form-section">
                     <div class="form-section-title">1. Choose Your Treatment</div>
                     {% for value, label in services %}
-                    <div class="service-card" onclick="selectService('{{ value }}', this)">
+                    <div class="service-card{% if errors.service %} is-invalid{% endif %}" onclick="selectService('{{ value }}', this)">
                         <div class="d-flex align-items-center">
                             <input type="radio" name="service" value="{{ value }}"
-                                   id="service_{{ value }}" class="me-3">
+                                   id="service_{{ value }}" class="me-3{% if errors.service %} is-invalid{% endif %}"
+                                   {% if form_data.service == value %}checked{% endif %}>
                             <div>
                                 <div class="service-name">{{ label }}</div>
                                {% if value == 'monthly_wellness' %}
@@ -335,21 +335,20 @@
                     {% endfor %}
 
                     {% if errors.service %}
-                    <div class="field-error mt-2">
+                    <div class="invalid-feedback d-block">
                         <i class="fas fa-exclamation-circle"></i> {{ errors.service }}
                     </div>
                     {% endif %}
-                    {% if errors.duration %}
-                    <div class="field-error mt-2">
-                        <i class="fas fa-exclamation-circle"></i> {{ errors.duration }}
-                    </div>
-                    {% endif %}
-
                     <div class="mt-3" id="durationSection" style="display:none;">
                         <label class="rw-form-label">Session Duration</label>
-                        <select name="duration" id="durationSelect" class="rw-form-control">
+                        <select name="duration" id="durationSelect" class="rw-form-control{% if errors.duration %} is-invalid{% endif %}">
                             <option value="">Select duration</option>
                         </select>
+                        {% if errors.duration %}
+                        <div class="invalid-feedback d-block">
+                            <i class="fas fa-exclamation-circle"></i> {{ errors.duration }}
+                        </div>
+                        {% endif %}
                     </div>
 
                     <!-- Preferred massage type — shown only for packages -->
@@ -357,12 +356,11 @@
     <label class="rw-form-label">Preferred Massage Type for This Session</label>
     <select name="preferred_service" id="preferredServiceSelect" class="rw-form-control">
         <option value="">Select massage type</option>
-        <option value="Signature Full Body Reset">Signature Full Body Reset</option>
-        <option value="Swedish / Relaxation Massage">Swedish / Relaxation Massage</option>
-        <option value="Deep Tissue Massage">Deep Tissue Massage</option>
-        <option value="Sports Massage">Sports Massage</option>
-        <option value="Hot Stone Massage">Hot Stone Massage</option>
-        <option value="Thai Massage">Thai Massage</option>
+        <option value="Signature Full Body Reset" {% if form_data.preferred_service == 'Signature Full Body Reset' %}selected{% endif %}>Signature Full Body Reset</option>
+        <option value="Swedish / Relaxation Massage" {% if form_data.preferred_service == 'Swedish / Relaxation Massage' %}selected{% endif %}>Swedish / Relaxation Massage</option>
+        <option value="Deep Tissue Massage" {% if form_data.preferred_service == 'Deep Tissue Massage' %}selected{% endif %}>Deep Tissue Massage</option>
+        <option value="Sports Massage" {% if form_data.preferred_service == 'Sports Massage' %}selected{% endif %}>Sports Massage</option>
+        <option value="Hot Stone Massage" {% if form_data.preferred_service == 'Hot Stone Massage' %}selected{% endif %}>Hot Stone Massage</option>
     </select>
 </div>
 
@@ -383,10 +381,10 @@
                     <div class="mb-4">
                         <label class="rw-form-label">Preferred Date</label>
                         <input type="date" name="preferred_date" id="dateInput"
-                               class="rw-form-control" min="{{ today }}"
+                               class="rw-form-control{% if errors.preferred_date %} is-invalid{% endif %}" min="{{ today }}"
                                value="{{ form_data.preferred_date|default:'' }}">
                         {% if errors.preferred_date %}
-                        <div class="field-error mt-2">
+                        <div class="invalid-feedback d-block">
                             <i class="fas fa-exclamation-circle"></i> {{ errors.preferred_date }}
                         </div>
                         {% endif %}
@@ -413,7 +411,7 @@
                         </div>
                     </div>
 
-                    <div id="timeSlots">
+                    <div id="timeSlots" class="{% if errors.preferred_time %}is-invalid{% endif %}">
                         <p style="color:var(--foreground-muted); font-size:14px;">
                             Please select a date first.
                         </p>
@@ -421,7 +419,7 @@
                     <input type="hidden" name="preferred_time" id="selectedTime">
 
                     {% if errors.preferred_time %}
-                    <div class="field-error mt-2">
+                    <div class="invalid-feedback d-block">
                         <i class="fas fa-exclamation-circle"></i> {{ errors.preferred_time }}
                     </div>
                     {% endif %}
@@ -436,22 +434,13 @@
                 <div class="form-section">
                     <div class="form-section-title">3. Your Details</div>
 
-                    {% if errors.duplicate %}
-                    <div class="field-error mb-3" style="font-size:14px;">
-                        <i class="fas fa-exclamation-circle"></i> {{ errors.duplicate }}
-                    </div>
-                    {% endif %}
-
                     <div class="mb-3">
                         <label class="rw-form-label">Full Name</label>
-                        <input type="text" name="client_name" id="clientName" class="rw-form-control"
+                        <input type="text" name="client_name" id="clientName" class="rw-form-control{% if errors.client_name %} is-invalid{% endif %}"
                                placeholder="Your full name"
-                               value="{{ form_data.client_name|default:'' }}">
-                        <div class="field-error" id="nameError" style="display:none;">
-                            <i class="fas fa-exclamation-circle"></i> <span></span>
-                        </div>
+                               value="{{ form_data.client_name|default:prefill_name }}">
                         {% if errors.client_name %}
-                        <div class="field-error">
+                        <div class="invalid-feedback d-block">
                             <i class="fas fa-exclamation-circle"></i> {{ errors.client_name }}
                         </div>
                         {% endif %}
@@ -461,7 +450,7 @@
     <label class="rw-form-label">WhatsApp Number</label>
     <div style="display:flex; align-items:center; background:#1e1e1e;
                 border:1px solid var(--border); border-radius:8px; overflow:hidden;
-                transition:border-color 0.2s ease;" id="phoneInputWrapper">
+                transition:border-color 0.2s ease;" id="phoneInputWrapper" class="{% if errors.client_phone %}is-invalid{% endif %}">
         <span style="padding:12px 14px; background:#2a2a2a; color:var(--primary);
                      font-size:14px; border-right:1px solid var(--border);
                      white-space:nowrap; font-weight:500;">
@@ -472,15 +461,13 @@
                class="rw-form-control"
                placeholder="000 000 000"
                maxlength="9"
+               value="{{ phone_suffix }}"
                style="border:none; border-radius:0; background:transparent;"
                oninput="this.value=this.value.replace(/[^0-9]/g,'')">
     </div>
     <input type="hidden" name="client_phone" id="clientPhone">
-    <div class="field-error" id="phoneError" style="display:none;">
-        <i class="fas fa-exclamation-circle"></i> <span></span>
-    </div>
     {% if errors.client_phone %}
-    <div class="field-error">
+    <div class="invalid-feedback d-block">
         <i class="fas fa-exclamation-circle"></i> {{ errors.client_phone }}
     </div>
     {% endif %}
@@ -551,7 +538,6 @@
         deep_tissue:       [90, 120],
         sports:            [90, 120],
         hot_stone:         [90, 120],
-        thai:              [90, 120],
         monthly_wellness:  [90],
         vip_wellness:      [90],
     };
@@ -562,7 +548,6 @@
         deep_tissue:       {90: 370, 120: 450},
         sports:            {90: 380, 120: 470},
         hot_stone:         {90: 380, 120: 470},
-        thai:              {90: 320, 120: 400},
         monthly_wellness:  {90: 1500},
         vip_wellness:      {90: 2400},
     };
@@ -698,45 +683,11 @@ const isPast = isTimePast(slotH, slotM, isToday, currentHour, currentMin);
 
     phoneSuffix.addEventListener('blur', function() {
         phoneWrapper.style.borderColor = 'rgba(255,255,255,0.1)';
-        const val = this.value.trim();
-        const errEl = document.getElementById('phoneError');
-        const errSpan = errEl.querySelector('span');
-        if (!val) {
-            errSpan.textContent = 'WhatsApp number is required.';
-            errEl.style.display = 'flex';
-        } else if (val.length !== 9) {
-            errSpan.textContent = 'Please enter 9 digits after +971.';
-            errEl.style.display = 'flex';
-        } else {
-            errEl.style.display = 'none';
-        }
     });
 
-    // Combine +971 prefix with suffix on submit
-    document.getElementById('requestForm').addEventListener('submit', function(e) {
+    document.getElementById('requestForm').addEventListener('submit', function() {
         const suffix = phoneSuffix.value.trim();
-        if (!suffix || suffix.length !== 9) {
-            e.preventDefault();
-            const errEl = document.getElementById('phoneError');
-            errEl.querySelector('span').textContent = 'Please enter a valid 9-digit UAE number.';
-            errEl.style.display = 'flex';
-            return;
-        }
-        phoneHidden.value = '+971' + suffix;
-    });
-
-    // Name validation on blur
-    const nameInput = document.getElementById('clientName');
-    nameInput.addEventListener('blur', function () {
-        const val = this.value.trim();
-        const errEl = document.getElementById('nameError');
-        const errSpan = errEl.querySelector('span');
-        if (!val || val.length < 2) {
-            errSpan.textContent = 'Please enter your full name.';
-            errEl.style.display = 'flex';
-        } else {
-            errEl.style.display = 'none';
-        }
+        phoneHidden.value = suffix ? '+971' + suffix : '';
     });
 
     // Restore selected service after a validation error (form re-render)

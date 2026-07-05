@@ -63,15 +63,6 @@
         color: rgba(255,255,255,0.2);
     }
 
-    .error-msg {
-        background: rgba(239,68,68,0.1);
-        border: 1px solid rgba(239,68,68,0.3);
-        border-radius: 8px;
-        padding: 12px;
-        color: #ef4444;
-        font-size: 14px;
-        margin-bottom: 16px;
-    }
 </style>
 {% endblock %}
 
@@ -89,23 +80,21 @@
             Enter your PIN to access the dashboard
         </p>
 
-        {% if error %}
-        <div class="error-msg">
-            <i class="fas fa-exclamation-circle me-2"></i>{{ error }}
-        </div>
-        {% endif %}
-
         <form method="POST">
             {% csrf_token %}
             <input
                 type="password"
                 name="pin"
-                class="pin-input"
+                class="pin-input{% if errors.pin %} is-invalid{% endif %}"
                 placeholder="• • • •"
                 maxlength="4"
                 autofocus
-                required
             >
+            {% if errors.pin %}
+            <div class="invalid-feedback d-block" style="margin-top:-12px; margin-bottom:16px;">
+                <i class="fas fa-exclamation-circle me-2"></i>{{ errors.pin }}
+            </div>
+            {% endif %}
             <button type="submit" class="btn-primary-rw w-100 py-3"
                     style="font-size:15px; letter-spacing:1px; border-radius:8px;">
                 <i class="fas fa-unlock me-2"></i> ACCESS DASHBOARD

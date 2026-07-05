@@ -411,15 +411,34 @@
             <i class="fas fa-ban"></i> Block a Day
         </div>
         <div class="rw-card">
+            {% if block_date_non_field_errors %}
+            <div class="rw-form-alert mb-3">
+                {% for error in block_date_non_field_errors %}
+                <div><i class="fas fa-exclamation-circle me-2"></i>{{ error }}</div>
+                {% endfor %}
+            </div>
+            {% endif %}
             <form method="POST" action="{% url 'block_date' %}" class="d-flex gap-3 flex-wrap align-items-end">
                 {% csrf_token %}
                 <div>
                     <label class="rw-form-label mb-1" style="display:block; font-size:12px; color:var(--foreground-muted);">Date</label>
-                    <input type="date" name="block_date" class="rw-form-control" required>
+                    <input type="date" name="block_date" class="rw-form-control{% if block_date_errors.block_date %} is-invalid{% endif %}"
+                           value="{{ block_date_form.block_date.value|default:'' }}">
+                    {% if block_date_errors.block_date %}
+                    <div class="invalid-feedback d-block">
+                        <i class="fas fa-exclamation-circle"></i> {{ block_date_errors.block_date }}
+                    </div>
+                    {% endif %}
                 </div>
                 <div>
                     <label class="rw-form-label mb-1" style="display:block; font-size:12px; color:var(--foreground-muted);">Reason (optional)</label>
-                    <input type="text" name="reason" class="rw-form-control" placeholder="e.g. Day off">
+                    <input type="text" name="reason" class="rw-form-control{% if block_date_errors.reason %} is-invalid{% endif %}"
+                           placeholder="e.g. Day off" value="{{ block_date_form.reason.value|default:'' }}">
+                    {% if block_date_errors.reason %}
+                    <div class="invalid-feedback d-block">
+                        <i class="fas fa-exclamation-circle"></i> {{ block_date_errors.reason }}
+                    </div>
+                    {% endif %}
                 </div>
                 <button type="submit" class="btn-decline-rw">
                     <i class="fas fa-ban me-1"></i> Block Day

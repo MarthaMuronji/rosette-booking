@@ -75,15 +75,6 @@
     .legend-item  { display: flex; align-items: center; gap: 8px; color: var(--foreground-muted); }
     .legend-dot   { width: 14px; height: 14px; border-radius: 4px; display: inline-block; }
 
-    .field-error {
-        color: #e85d5d;
-        font-size: 12px;
-        margin-top: 6px;
-        display: flex;
-        align-items: center;
-        gap: 6px;
-    }
-
     .blocked-notice {
         background: rgba(232,137,14,0.06);
         border: 1px solid rgba(232,137,14,0.25);
@@ -216,6 +207,13 @@
             <!-- ── Reschedule form ── -->
             <form method="POST" id="rescheduleForm">
                 {% csrf_token %}
+                {% if non_field_errors %}
+                <div class="rw-form-alert">
+                    {% for error in non_field_errors %}
+                    <div><i class="fas fa-exclamation-circle me-2"></i>{{ error }}</div>
+                    {% endfor %}
+                </div>
+                {% endif %}
 
                 <div class="form-section">
                     <div class="form-section-title">Choose a New Date & Time</div>
@@ -223,9 +221,10 @@
                     <div class="mb-4">
                         <label class="rw-form-label">New Date</label>
                         <input type="date" name="preferred_date" id="dateInput"
-                               class="rw-form-control" min="{{ today }}">
+                               class="rw-form-control{% if errors.preferred_date %} is-invalid{% endif %}" min="{{ today }}"
+                               value="{{ form_data.preferred_date|default:'' }}">
                         {% if errors.preferred_date %}
-                        <div class="field-error mt-2">
+                        <div class="invalid-feedback d-block">
                             <i class="fas fa-exclamation-circle"></i> {{ errors.preferred_date }}
                         </div>
                         {% endif %}
@@ -252,7 +251,7 @@
                         </div>
                     </div>
 
-                    <div id="timeSlots">
+                    <div id="timeSlots" class="{% if errors.preferred_time %}is-invalid{% endif %}">
                         <p style="color:var(--foreground-muted); font-size:14px;">
                             Please select a date first.
                         </p>
@@ -260,7 +259,7 @@
                     <input type="hidden" name="preferred_time" id="selectedTime">
 
                     {% if errors.preferred_time %}
-                    <div class="field-error mt-2">
+                    <div class="invalid-feedback d-block">
                         <i class="fas fa-exclamation-circle"></i> {{ errors.preferred_time }}
                     </div>
                     {% endif %}
@@ -296,8 +295,15 @@
     const bookedSlots  = {{ booked_slots|safe }};
     const pendingSlots = {{ pending_slots|safe }};
     const allSlots     = {{ slots|safe }};
+    const blockedDates = {{ blocked_dates|safe }};
 
     document.getElementById('dateInput').addEventListener('change', function () {
+        if (blockedDates.includes(this.value)) {
+            alert('This date is unavailable. Please choose another day.');
+            this.value = '';
+            document.getElementById('timeSlots').innerHTML = '<p style="color:var(--foreground-muted); font-size:14px;">Please select a date first.</p>';
+            return;
+        }
         renderTimeSlots();
     });
 
@@ -359,6 +365,24 @@
         const ampm = h >= 12 ? 'PM' : 'AM';
         const hour = h % 12 || 12;
         return `${hour}:${String(m).padStart(2, '0')} ${ampm}`;
+    }
+
+    const savedDate = '{{ form_data.preferred_date|default:"" }}';
+    if (savedDate) {
+        document.getElementById('dateInput').value = savedDate;
+        renderTimeSlots();
+        const savedTime = '{{ form_data.preferred_time|default:"" }}';
+        if (savedTime) {
+            setTimeout(() => {
+                document.querySelectorAll('.time-slot:not(.booked):not(.pending)').forEach(slot => {
+                    if (slot.textContent.trim() === formatTime(savedTime)) {
+                        slot.classList.add('selected');
+                        document.getElementById('selectedTime').value = savedTime;
+                        document.getElementById('timeSelectedNotice').style.display = 'block';
+                    }
+                });
+            }, 50);
+        }
     }
 </script>
 {% endif %}

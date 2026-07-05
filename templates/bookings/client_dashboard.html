@@ -188,15 +188,6 @@
         display: none;
     }
 
-    .field-error {
-        color: #e85d5d;
-        font-size: 12px;
-        margin-top: 6px;
-        display: flex;
-        align-items: center;
-        gap: 6px;
-    }
-
     /* Appointment rows */
     .apt-row {
         background: var(--card-bg);
@@ -502,16 +493,13 @@
             <div class="form-section" id="bookingSection">
                 <div class="form-section-title">Book a Session</div>
 
-                  {% if booking_errors %}
-    <div style="background:rgba(239,68,68,0.1); border:1px solid rgba(239,68,68,0.3);
-                border-radius:8px; padding:14px 18px; margin-bottom:20px;">
-        {% for field, msg in booking_errors.items %}
-        <div style="color:#ef4444; font-size:13px; margin-bottom:4px;">
-            <i class="fas fa-exclamation-circle me-2"></i>{{ msg }}
-        </div>
-        {% endfor %}
-    </div>
-    {% endif %}
+                {% if booking_non_field_errors %}
+                <div class="rw-form-alert">
+                    {% for msg in booking_non_field_errors %}
+                    <div><i class="fas fa-exclamation-circle me-2"></i>{{ msg }}</div>
+                    {% endfor %}
+                </div>
+                {% endif %}
 
                 <form action="/book/" method="POST" id="dashboardBookingForm">
                     {% csrf_token %}
@@ -526,10 +514,11 @@
                         {% if has_active_package and value in 'monthly_wellness,vip_wellness' %}
                         {% comment %}Skip package options — client already has an active package{% endcomment %}
                         {% else %}
-                        <div class="service-card" data-service="{{ value }}" onclick="selectService('{{ value }}', this)">
+                        <div class="service-card{% if booking_errors.service %} is-invalid{% endif %}" data-service="{{ value }}" onclick="selectService('{{ value }}', this)">
                             <div class="d-flex align-items-start">
                                 <input type="radio" name="service" value="{{ value }}"
-                                       id="ds_{{ value }}" class="me-3 mt-1">
+                                       id="ds_{{ value }}" class="me-3 mt-1{% if booking_errors.service %} is-invalid{% endif %}"
+                                       {% if form_data.service == value %}checked{% endif %}>
                                 <div style="flex:1;">
                                     <div class="service-name">{{ label }}</div>
                                     {% if value == 'monthly_wellness' %}
@@ -565,14 +554,25 @@
                         {% endif %}
                         {% endfor %}
 
+                        {% if booking_errors.service %}
+                        <div class="invalid-feedback d-block">
+                            <i class="fas fa-exclamation-circle"></i> {{ booking_errors.service }}
+                        </div>
+                        {% endif %}
+
                         {% if has_active_package %}
                         <input type="hidden" name="duration" value="90">
                         {% else %}
                         <div id="durationSection" style="display:none;" class="mt-3">
                             <label class="rw-form-label">Session Duration</label>
-                            <select name="duration" id="durationSelect" class="rw-form-control">
+                            <select name="duration" id="durationSelect" class="rw-form-control{% if booking_errors.duration %} is-invalid{% endif %}">
                                 <option value="">Select duration</option>
                             </select>
+                            {% if booking_errors.duration %}
+                            <div class="invalid-feedback d-block">
+                                <i class="fas fa-exclamation-circle"></i> {{ booking_errors.duration }}
+                            </div>
+                            {% endif %}
                         </div>
                         {% endif %}
 
@@ -581,12 +581,11 @@
                             <label class="rw-form-label">Preferred Massage Type for This Session</label>
                             <select name="preferred_service" class="rw-form-control">
                                 <option value="">Select massage type</option>
-                                <option value="Signature Full Body Reset">Signature Full Body Reset</option>
-                                <option value="Swedish / Relaxation Massage">Swedish / Relaxation Massage</option>
-                                <option value="Deep Tissue Massage">Deep Tissue Massage</option>
-                                <option value="Sports Massage">Sports Massage</option>
-                                <option value="Hot Stone Massage">Hot Stone Massage</option>
-                                <option value="Thai Massage">Thai Massage</option>
+                                <option value="Signature Full Body Reset" {% if form_data.preferred_service == 'Signature Full Body Reset' %}selected{% endif %}>Signature Full Body Reset</option>
+                                <option value="Swedish / Relaxation Massage" {% if form_data.preferred_service == 'Swedish / Relaxation Massage' %}selected{% endif %}>Swedish / Relaxation Massage</option>
+                                <option value="Deep Tissue Massage" {% if form_data.preferred_service == 'Deep Tissue Massage' %}selected{% endif %}>Deep Tissue Massage</option>
+                                <option value="Sports Massage" {% if form_data.preferred_service == 'Sports Massage' %}selected{% endif %}>Sports Massage</option>
+                                <option value="Hot Stone Massage" {% if form_data.preferred_service == 'Hot Stone Massage' %}selected{% endif %}>Hot Stone Massage</option>
                             </select>
                         </div>
 
@@ -604,7 +603,13 @@
                     <div class="mb-4">
                         <label class="rw-form-label">Preferred Date</label>
                         <input type="date" name="preferred_date" id="dateInput"
-                               class="rw-form-control" min="{{ today }}">
+                               class="rw-form-control{% if booking_errors.preferred_date %} is-invalid{% endif %}" min="{{ today }}"
+                               value="{{ form_data.preferred_date|default:'' }}">
+                        {% if booking_errors.preferred_date %}
+                        <div class="invalid-feedback d-block">
+                            <i class="fas fa-exclamation-circle"></i> {{ booking_errors.preferred_date }}
+                        </div>
+                        {% endif %}
                     </div>
 
                     <!-- Time slots -->
@@ -628,12 +633,17 @@
                                 <span>Not Available</span>
                             </div>
                         </div>
-                        <div id="timeSlots">
+                        <div id="timeSlots" class="{% if booking_errors.preferred_time %}is-invalid{% endif %}">
                             <p style="color:var(--foreground-muted); font-size:14px;">
                                 Please select a date first.
                             </p>
                         </div>
                         <input type="hidden" name="preferred_time" id="selectedTime">
+                        {% if booking_errors.preferred_time %}
+                        <div class="invalid-feedback d-block">
+                            <i class="fas fa-exclamation-circle"></i> {{ booking_errors.preferred_time }}
+                        </div>
+                        {% endif %}
 
                         <div class="wa-confirm-notice" id="timeSelectedNotice">
                             <i class="fab fa-whatsapp me-2"></i>
@@ -698,7 +708,6 @@
         deep_tissue:      [90, 120],
         sports:           [90, 120],
         hot_stone:        [90, 120],
-        thai:             [90, 120],
         monthly_wellness: [90],
         vip_wellness:     [90],
     };
@@ -709,7 +718,6 @@
         deep_tissue:      {90: 370, 120: 450},
         sports:           {90: 380, 120: 470},
         hot_stone:        {90: 380, 120: 470},
-        thai:             {90: 320, 120: 400},
         monthly_wellness: {90: 1500},
         vip_wellness:     {90: 2400},
     };
@@ -840,6 +848,37 @@
         details.style.display = isOpen ? 'none' : 'block';
         toggle.classList.toggle('open', !isOpen);
         toggle.querySelector('span').textContent = isOpen ? "See what's included" : 'Hide details';
+    }
+
+    const savedService = '{{ form_data.service|default:"" }}';
+    if (savedService) {
+        const savedCard = document.querySelector(`.service-card[data-service="${savedService}"]`);
+        if (savedCard) {
+            selectService(savedService, savedCard);
+            const savedDuration = '{{ form_data.duration|default:"" }}';
+            const durationSelect = document.getElementById('durationSelect');
+            if (savedDuration && durationSelect) {
+                durationSelect.value = savedDuration;
+            }
+        }
+    }
+
+    const savedDate = '{{ form_data.preferred_date|default:"" }}';
+    if (savedDate) {
+        document.getElementById('dateInput').value = savedDate;
+        renderTimeSlots();
+        const savedTime = '{{ form_data.preferred_time|default:"" }}';
+        if (savedTime) {
+            setTimeout(() => {
+                document.querySelectorAll('.time-slot:not(.booked):not(.pending)').forEach(slot => {
+                    if (slot.textContent.trim() === formatTime(savedTime)) {
+                        slot.classList.add('selected');
+                        document.getElementById('selectedTime').value = savedTime;
+                        document.getElementById('timeSelectedNotice').style.display = 'block';
+                    }
+                });
+            }, 50);
+        }
     }
 </script>
 {% endblock %}

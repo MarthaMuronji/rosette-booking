@@ -158,6 +158,38 @@
         background-color: #1e1e1e;
     }
 
+    .rw-form-control.is-invalid,
+    .pin-input.is-invalid,
+    .zone-card.is-invalid,
+    .service-card.is-invalid,
+    #phoneInputWrapper.is-invalid,
+    #timeSlots.is-invalid {
+        border-color: #dc3545 !important;
+        box-shadow: none;
+    }
+
+    #timeSlots.is-invalid {
+        border: 1px solid #dc3545;
+        border-radius: 8px;
+        padding: 12px;
+    }
+
+    .invalid-feedback {
+        color: #ef4444;
+        font-size: 12px;
+        margin-top: 6px;
+    }
+
+    .rw-form-alert {
+        background: rgba(239, 68, 68, 0.1);
+        border: 1px solid rgba(239, 68, 68, 0.3);
+        border-radius: 8px;
+        color: #ef4444;
+        font-size: 13px;
+        padding: 12px 14px;
+        margin-bottom: 18px;
+    }
+
     .rw-form-control::placeholder {
         color: rgba(255,255,255,0.3);
     }
