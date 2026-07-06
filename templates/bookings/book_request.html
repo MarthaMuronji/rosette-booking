@@ -273,6 +273,8 @@
         border-color: var(--primary);
     }
 
+
+
     .country-dropdown-wrapper {
         position: relative;
         flex-shrink: 0;
@@ -373,6 +375,17 @@
         font-size: 18px;
         margin-right: 10px;
     }
+
+    .country-group-label {
+    padding: 8px 14px 4px;
+    font-size: 10px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.3);
+    background: #1a1a1a;
+    position: sticky;
+    top: 0;
+}
 
     .phone-input-wrapper {
         flex: 1;
@@ -722,6 +735,7 @@
 </div>
 {% endblock %}
 
+
 {% block extra_js %}
 <script>
     const bookedSlots = {{ booked_slots|safe }};
@@ -914,19 +928,19 @@
     const phoneInput = document.getElementById('clientPhone');
     let selectedCode = countrySearch.value || '971';
 
-    // Render country options
-    function renderCountries(filter = '') {
-        const filtered = countries.filter(c => 
-            c.code.includes(filter) || 
-            c.name.toLowerCase().includes(filter.toLowerCase())
-        );
-        
-        if (filtered.length === 0) {
-            countryOptions.innerHTML = `<div class="country-option" style="color:rgba(255,255,255,0.3); justify-content:center;">No countries found</div>`;
-            return;
-        }
-        
-        countryOptions.innerHTML = filtered.map(c => `
+    // Codes to pin at the top — UAE first (home base), then common tourist/expat nationalities
+    const popularCodes = ['971', '254', '234', '44', '91', '1', '966', '20', '27'];
+
+    const popular = countries.filter(c => popularCodes.includes(c.code))
+        .sort((a, b) => popularCodes.indexOf(a.code) - popularCodes.indexOf(b.code));
+
+    const rest = countries.filter(c => !popularCodes.includes(c.code))
+        .sort((a, b) => a.name.localeCompare(b.name));
+
+    const orderedCountries = [...popular, ...rest];
+
+    function countryOptionHTML(c) {
+        return `
             <div class="country-option" data-code="${c.code}" onclick="selectCountry('${c.code}')">
                 <span>
                     <span class="flag">${c.flag}</span>
@@ -934,7 +948,32 @@
                 </span>
                 <span class="code">+${c.code}</span>
             </div>
-        `).join('');
+        `;
+    }
+
+    // Render country options — grouped (Popular / All) when no filter, flat list when searching
+    function renderCountries(filter = '') {
+        const filtered = orderedCountries.filter(c =>
+            c.code.includes(filter) ||
+            c.name.toLowerCase().includes(filter.toLowerCase())
+        );
+
+        if (filtered.length === 0) {
+            countryOptions.innerHTML = `<div class="country-option" style="color:rgba(255,255,255,0.3); justify-content:center;">No countries found</div>`;
+            return;
+        }
+
+        let html = '';
+        if (!filter) {
+            html += `<div class="country-group-label">Popular</div>`;
+            popular.forEach(c => html += countryOptionHTML(c));
+            html += `<div class="country-group-label">All Countries</div>`;
+            rest.forEach(c => html += countryOptionHTML(c));
+        } else {
+            filtered.forEach(c => html += countryOptionHTML(c));
+        }
+
+        countryOptions.innerHTML = html;
     }
 
     // Select a country
@@ -945,25 +984,26 @@
             selectedCode = code;
             countrySearch.style.borderColor = 'var(--primary)';
             countryOptions.classList.remove('show');
-            // Focus the phone input for the user to type their number
             phoneInput.focus();
         }
     }
 
-    // Filter on input
+    // Digits-only typing, filters the list as they type
     countrySearch.addEventListener('input', function() {
+        this.value = this.value.replace(/[^0-9]/g, '');
         const value = this.value.trim();
         renderCountries(value);
-        if (value.length > 0) {
-            countryOptions.classList.add('show');
-        } else {
-            renderCountries('');
-            countryOptions.classList.add('show');
-        }
+        countryOptions.classList.add('show');
     });
 
-    // Show dropdown on focus
+    // Tapping/focusing opens the full grouped list immediately — no typing required
     countrySearch.addEventListener('focus', function() {
+        renderCountries(this.value.trim());
+        countryOptions.classList.add('show');
+    });
+
+    // Also open reliably on click (helps on some mobile browsers where focus/click order varies)
+    countrySearch.addEventListener('click', function() {
         renderCountries(this.value.trim());
         countryOptions.classList.add('show');
     });
@@ -993,7 +1033,7 @@
         }, 200);
     });
 
-    // Keyboard navigation: Enter selects the first option
+    // Keyboard navigation: Enter selects the first visible option
     countrySearch.addEventListener('keydown', function(e) {
         if (e.key === 'Enter') {
             const value = this.value.trim();
@@ -1005,14 +1045,6 @@
                 setTimeout(() => {
                     this.style.borderColor = '';
                 }, 2000);
-            } else if (exists) {
-                const firstOption = countryOptions.querySelector('.country-option');
-                if (firstOption) {
-                    const code = firstOption.dataset.code;
-                    if (code) {
-                        selectCountry(code);
-                    }
-                }
             } else {
                 const firstOption = countryOptions.querySelector('.country-option');
                 if (firstOption) {
@@ -1025,14 +1057,36 @@
         }
     });
 
-    // On form submit, use the selected code
+    // ===== SPLIT ANY PRE-FILLED FULL NUMBER (e.g. "+254712345678") INTO CODE + LOCAL NUMBER =====
+    // Fixes the bug where a returning client's saved number, or a re-shown form after a
+    // validation error, dumped the WHOLE "+254712345678" into the local-number box while
+    // the country box stayed at its default (971).
+    (function splitPrefilledPhone() {
+        const raw = phoneInput.value.trim();
+        if (!raw.startsWith('+')) return; // nothing to split, leave as-is
+
+        const digits = raw.slice(1).replace(/[^0-9]/g, '');
+
+        // Match the LONGEST possible country code first (some codes are 1-3 digits,
+        // e.g. '1' for US/Canada vs '256' for Uganda — longest match avoids picking '2'
+        // out of a Ugandan number by mistake).
+        const sortedByLength = [...countries].sort((a, b) => b.code.length - a.code.length);
+        const match = sortedByLength.find(c => digits.startsWith(c.code));
+
+        if (match) {
+            countrySearch.value = match.code;
+            selectedCode = match.code;
+            phoneInput.value = digits.slice(match.code.length);
+        }
+        // If no match found, leave the raw value in place rather than guessing wrong.
+    })();
+
+    // ===== SUBMIT: COMBINE COUNTRY CODE + LOCAL NUMBER INTO ONE FULL NUMBER =====
     document.getElementById('requestForm').addEventListener('submit', function(e) {
-        const code = countrySearch.value.trim() || '971';
         let phoneNumber = phoneInput.value.trim();
-        
-        // If user already typed +, keep it as-is (they typed their own country code)
+
+        // If the client already typed a full "+..." number themselves, keep it as-is
         if (phoneNumber.startsWith('+')) {
-            // Just validate that it has a number after the +
             const digits = phoneNumber.replace(/[^0-9]/g, '');
             if (digits.length < 7) {
                 e.preventDefault();
@@ -1042,26 +1096,24 @@
             }
             return;
         }
-        
-        // Remove any non-digit characters
-        phoneNumber = phoneNumber.replace(/[^0-9]/g, '');
-        
-        if (!phoneNumber) {
+
+        const code = countrySearch.value.trim() || '971';
+        const phoneNumberClean = phoneNumber.replace(/[^0-9]/g, '');
+
+        if (!phoneNumberClean) {
             e.preventDefault();
             phoneInput.style.borderColor = '#ef4444';
             alert('Please enter your phone number.');
             return;
         }
-        
-        // Check if code exists
+
         const exists = countries.some(c => c.code === code);
         const finalCode = exists ? code : '971';
-        
-        // Combine: + + code + number
-        phoneInput.value = '+' + finalCode + phoneNumber;
+
+        phoneInput.value = '+' + finalCode + phoneNumberClean;
     });
 
-    // Initial render
+    // Initial render (only call this once)
     renderCountries('');
 
     const durations = {
@@ -1226,7 +1278,7 @@
             }, 50);
         }
     }
-    
+
     function togglePackageDetails(event, detailsId) {
         event.stopPropagation();
         const details = document.getElementById(detailsId);

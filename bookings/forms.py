@@ -60,6 +60,7 @@ class BootstrapFormMixin:
                 field.widget.attrs['class'] = f'{css_class} {base_class}'.strip()
 
     def as_error_dict(self):
+        
         return {field: errors[0] for field, errors in self.errors.items() if field != '__all__'}
 
 

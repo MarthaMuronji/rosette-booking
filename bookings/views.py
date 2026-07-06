@@ -518,7 +518,8 @@ def reschedule_appointment(request, pk):
             f"at {appointment.appointment_time.strftime('%I:%M %p')} "
             f"({appointment.get_service_display()}). Can we arrange a different time today?"
         )
-        owner_wa_url = f"https://wa.me/{settings.OWNER_PHONE}?text={urllib.parse.quote(msg)}"
+        owner_phone_clean = settings.OWNER_PHONE.replace('+', '').replace(' ', '')
+        owner_wa_url = f"https://wa.me/{owner_phone_clean}?text={urllib.parse.quote(msg)}"
 
         return render(request, 'bookings/reschedule.html', {
             'appointment': appointment,
@@ -1022,7 +1023,8 @@ def therapist_cancel_appointment(request, pk):
             f"welcoming you another time."
         )
         encoded_message = urllib.parse.quote(message)
-        client_whatsapp = f"https://wa.me/{appointment.client_phone}?text={encoded_message}"
+        client_phone_clean = appointment.client_phone.replace('+', '').replace(' ', '')
+        client_whatsapp = f"https://wa.me/{client_phone_clean}?text={encoded_message}"
 
         return render(request, 'bookings/whatsapp_response.html', {
             'appointment': appointment,

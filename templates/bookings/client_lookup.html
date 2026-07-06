@@ -551,21 +551,27 @@
 
     // On form submit, use the selected code
     document.getElementById('lookupForm').addEventListener('submit', function(e) {
-        const code = countrySearch.value.trim() || '971';
-        let phoneNumber = phoneInput.value.trim();
-        
-        // If user already typed +, keep it as-is
-        if (phoneNumber.startsWith('+')) {
+    let phoneNumber = phoneInput.value.trim();
+    
+    // If user already typed +, keep it as-is
+    if (phoneNumber.startsWith('+')) {
+        const digits = phoneNumber.replace(/[^0-9]/g, '');
+        if (digits.length < 7) {
+            e.preventDefault();
+            phoneInput.style.borderColor = '#ef4444';
+            alert('Please enter a valid phone number with country code.');
             return;
         }
-        
-        // Remove any non-digit characters
-        phoneNumber = phoneNumber.replace(/[^0-9]/g, '');
-        
-        if (phoneNumber) {
-            phoneInput.value = '+' + code + phoneNumber;
-        }
-    });
+        return;
+    }
+    
+    const code = countrySearch.value.trim() || '971';
+    const phoneNumberClean = phoneNumber.replace(/[^0-9]/g, '');
+    
+    if (phoneNumberClean) {
+        phoneInput.value = '+' + code + phoneNumberClean;
+    }
+});
 
     // Initial render
     renderCountries('');
