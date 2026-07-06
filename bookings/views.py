@@ -29,15 +29,7 @@ ZONE_FEES = {'zone1': 0, 'zone2': 25, 'zone3': 50, 'zone4': 75, 'zone5': 0}
 ADDON_PRICES = {'none': 0, 'foot_30': 120, 'hns_30': 100, 'hns_60': 180}
 
 
-def get_phone_suffix(phone):
-    if not phone:
-        return ''
-    cleaned = re.sub(r'\D', '', phone)
-    if cleaned.startswith('971'):
-        return cleaned[3:]
-    if cleaned.startswith('0'):
-        return cleaned[1:]
-    return cleaned[-9:]
+
 
 
 def get_booking_context(request, form=None):
@@ -45,14 +37,13 @@ def get_booking_context(request, form=None):
     booked_slots, pending_slots = get_booked_slots()
     today = timezone.now().date()
     form_data = form.data if form and form.is_bound else {}
-    phone_value = form_data.get('client_phone') or request.session.get('prefill_phone', '')
+
 
     return {
         'form': form,
         'errors': form.as_error_dict() if form and form.is_bound else {},
         'non_field_errors': form.non_field_errors() if form and form.is_bound else [],
         'form_data': form_data,
-        'phone_suffix': get_phone_suffix(phone_value),
         'slots': slots,
         'booked_slots': json.dumps(booked_slots),
         'pending_slots': json.dumps(pending_slots),

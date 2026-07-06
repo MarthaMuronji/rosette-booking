@@ -20,14 +20,24 @@ VALID_DURATIONS = {
 }
 
 
-def normalize_uae_phone(phone):
+def normalize_phone(phone):
     if re.search(r'[a-zA-Z]', phone or ''):
         raise ValidationError("Phone number cannot contain letters.")
     cleaned = re.sub(r'[\s\-\(\)\.]', '', phone or '')
-    match = re.match(r'^(\+971|00971|0)([0-9]{9})$', cleaned)
-    if not match:
-        raise ValidationError("Please enter a valid UAE number (e.g. +971 50 000 0000).")
-    return f'+971{match.group(2)}'
+
+    # UAE-specific formats (00971 or leading 0) normalize to +971
+    uae_match = re.match(r'^(00971|0)([0-9]{9})$', cleaned)
+    if uae_match:
+        return f'+971{uae_match.group(2)}'
+
+    # Any other international number: must start with + and have 8-15 digits total
+    intl_match = re.match(r'^\+([0-9]{8,15})$', cleaned)
+    if intl_match:
+        return cleaned
+
+    raise ValidationError(
+        "Please enter a valid WhatsApp number with country code (e.g. +971 50 000 0000 or +44 7911 123456)."
+    )
 
 
 class BootstrapFormMixin:
@@ -84,7 +94,7 @@ class BookingRequestForm(BootstrapFormMixin, forms.Form):
         ]
 
     def clean_client_phone(self):
-        return normalize_uae_phone(self.cleaned_data['client_phone'])
+        return normalize_phone(self.cleaned_data['client_phone'])
 
     def clean_preferred_date(self):
         preferred_date = self.cleaned_data['preferred_date']
@@ -178,7 +188,7 @@ class ClientLookupForm(BootstrapFormMixin, forms.Form):
     phone = forms.CharField(error_messages={'required': 'Please enter your WhatsApp number.'})
 
     def clean_phone(self):
-        phone = normalize_uae_phone(self.cleaned_data['phone'])
+        phone = normalize_phone(self.cleaned_data['phone'])
         if not Appointment.objects.filter(client_phone=phone).exists():
             raise ValidationError('No bookings found for this number. Please check and try again.')
         return phone
