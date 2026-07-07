@@ -254,22 +254,6 @@
                         </div>
                     </div>
 
-                    <div class="zone-card{% if errors.zone %} is-invalid{% endif %}" onclick="selectZone('zone5', this)">
-                        <div class="d-flex align-items-center">
-                            <input type="radio" name="zone" value="zone5" class="me-3{% if errors.zone %} is-invalid{% endif %}" {% if prefill.zone == 'zone5' %}checked{% endif %}>
-                            <div>
-                                <strong>Zone 5 — Custom Quote</strong><br>
-                                <small>The Oasis, Al Qudra, Dubai Parks & Resorts, Dubai Industrial City, Al Awir, Hatta</small>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div id="zone5Notice" style="display:none; margin-top:12px; background:rgba(232,137,14,0.06);
-                         border:1px solid rgba(232,137,14,0.2); border-radius:8px; padding:12px 16px;
-                         font-size:13px; color:var(--foreground-muted);">
-                        <i class="fas fa-info-circle me-2" style="color:var(--primary);"></i>
-                        Travel fee for this area will be confirmed directly by your therapist via WhatsApp.
-                    </div>
 
                     {% if errors.zone %}
                     <div class="invalid-feedback d-block">
@@ -419,8 +403,8 @@
     <div style="background:rgba(232,137,14,0.06); border:1px solid rgba(232,137,14,0.25); border-radius:10px; padding:18px 22px; margin-bottom:24px;">
         <div style="margin-bottom:16px; padding-bottom:16px; border-bottom:1px solid var(--border);">
             <div style="display:flex; justify-content:space-between; font-size:14px; color:var(--foreground-muted); margin-bottom:8px;">
-                <span>{% if appointment.service == 'monthly_wellness' %}Monthly Wellness (5 sessions){% else %}VIP Wellness (8 sessions){% endif %}</span>
-                <span style="color:var(--foreground);">{% if appointment.service == 'monthly_wellness' %}1,500{% else %}2,400{% endif %} AED</span>
+                <span>{% if appointment.service == 'monthly_wellness' %}Rosette Wellness Membership (5 sessions){% else %}Rosette Signature Membership (10 sessions){% endif %}</span>
+<span style="color:var(--foreground);">{% if appointment.service == 'monthly_wellness' %}1,500{% else %}2,800{% endif %} AED</span>
             </div>
             <div style="display:flex; justify-content:space-between; font-size:14px; color:var(--foreground-muted); margin-bottom:8px;">
                 <span>Zone fee</span><span id="zoneFeeDisplay" style="color:var(--foreground);">—</span>
@@ -473,11 +457,11 @@
 
 const packageBasePrices = {
     'monthly_wellness': 1500,
-    'vip_wellness': 2400,
+    'vip_wellness': 2800,
 };
 
 const addonPrices = { none: 0, foot_30: 120, hns_30: 100, hns_60: 180 };
-const zoneFees = { zone1: 0, zone2: 25, zone3: 50, zone4: 75, zone5: 0 };
+const zoneFees = { zone1: 0, zone2: 25, zone3: 50, zone4: 75,};
 
 const service = '{{ appointment.service }}';
 const duration = {{ appointment.duration }};
@@ -492,9 +476,6 @@ function selectZone(value, card) {
     card.classList.add('selected');
     document.querySelector(`input[name="zone"][value="${value}"]`).checked = true;
     selectedZone = value;
-
-    const notice = document.getElementById('zone5Notice');
-    if (notice) notice.style.display = (value === 'zone5') ? 'block' : 'none';
 
     updateTotal();
 }

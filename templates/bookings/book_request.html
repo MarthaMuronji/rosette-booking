@@ -507,14 +507,13 @@
                                     <i class="fas fa-chevron-down chevron"></i>
                                 </button>
                                 <div class="package-details" id="details_monthly_wellness">
-                                    <div>✓ 5 × 90-minute treatments</div>
-                                    <div>✓ Priority booking</div>
-                                    <div>✓ Personalized treatment plan</div>
-                                    <div>✓ Progress tracking</div>
-                                    <div>✓ Flexible choice of massage styles</div>
-                                    <div style="margin-top:6px;"><span class="highlight">1,500 AED total</span></div>
-                                    <div>Valid for 30 days from first session</div>
-                                </div>
+    <div>✓ 5 × 90-minute treatments</div>
+    <div>✓ Priority booking</div>
+    <div>✓ Personalized treatment plan</div>
+    <div style="margin-top:6px;"><span class="highlight">1,500 AED total</span></div>
+    <div>Valid for 45 days from first session</div>
+</div>
+
                                 {% elif value == 'vip_wellness' %}
                                 <div class="package-badge mt-1" style="background: rgba(232,137,14,0.25); border-color: var(--primary); color: #fff;">VIP</div>
                                 <button type="button" class="package-toggle" onclick="togglePackageDetails(event, 'details_vip_wellness')">
@@ -522,20 +521,31 @@
                                     <i class="fas fa-chevron-down chevron"></i>
                                 </button>
                                 <div class="package-details" id="details_vip_wellness">
-                                    <div>✓ 8 × 90-minute treatments</div>
-                                    <div>✓ Priority booking</div>
-                                    <div>✓ Personalized treatment plan</div>
-                                    <div>✓ Progress tracking</div>
-                                    <div>✓ Flexible choice of massage styles</div>
-                                    <div style="margin-top:6px;"><span class="highlight">2,400 AED total</span></div>
-                                    <div>No expiry — use at your own pace</div>
-                                </div>
+    <div>✓ 10 × 90-minute treatments</div>
+    <div>✓ Priority access to peak-time appointments</div>
+    <div>✓ Personalized treatment plan</div>
+    <div>✓ Flexible mix of treatment styles</div>
+    <div>✓ One complimentary treatment enhancement (e.g. hot stones, aromatherapy, or an extended scalp massage)</div>
+    <div style="margin-top:6px;"><span class="highlight">2,800 AED total</span></div>
+    <div>Valid for 90 days from first session</div>
+</div>
                                 {% endif %}
 
                             </div>
                         </div>
                     </div>
                     {% endfor %}
+
+                    <div class="package-fee-notice" style="display:block; margin-top:16px;">
+                        <strong>Membership Terms</strong>
+                        <div style="margin-top:8px; line-height:1.8;">
+                            <div>• Sessions are non-transferable.</div>
+                            <div>• Memberships are non-refundable once activated.</div>
+                            <div>• A minimum of 24 hours' notice is required for cancellations or rescheduling.</div>
+                            <div>• Missed appointments or cancellations with less than 24 hours' notice may be deducted from the membership.</div>
+                            <div>• Extended service area fees may apply for selected locations.</div>
+                        </div>
+                    </div>
 
                     {% if errors.service %}
                     <div class="invalid-feedback d-block">
@@ -569,11 +579,11 @@
 
                     <!-- Zone + add-on fee notice — shown only for packages -->
                     <div class="package-fee-notice" id="packageFeeNotice">
-                        <i class="fas fa-info-circle me-2" style="color:var(--primary);"></i>
-                        <strong>What's included:</strong> Your membership covers all sessions at a flat rate.
-                        Zone travel fees (<strong>+25 AED</strong> Zone 2 / <strong>+50 AED</strong> Zone 3)
-                        and any add-ons are charged separately at each session and collected on the day.
-                    </div>
+    <i class="fas fa-info-circle me-2" style="color:var(--primary);"></i>
+    <strong>What's included:</strong> Your membership covers all sessions at a flat rate.
+    Zone travel fees (<strong>+25 AED</strong> Zone 2 / <strong>+50 AED</strong> Zone 3 / <strong>+75 AED</strong> Zone 4)
+    and any add-ons are charged separately at each session and collected on the day.
+</div>
 
                 </div>
 
@@ -1057,19 +1067,13 @@
         }
     });
 
-    // ===== SPLIT ANY PRE-FILLED FULL NUMBER (e.g. "+254712345678") INTO CODE + LOCAL NUMBER =====
-    // Fixes the bug where a returning client's saved number, or a re-shown form after a
-    // validation error, dumped the WHOLE "+254712345678" into the local-number box while
-    // the country box stayed at its default (971).
+
     (function splitPrefilledPhone() {
         const raw = phoneInput.value.trim();
         if (!raw.startsWith('+')) return; // nothing to split, leave as-is
 
         const digits = raw.slice(1).replace(/[^0-9]/g, '');
 
-        // Match the LONGEST possible country code first (some codes are 1-3 digits,
-        // e.g. '1' for US/Canada vs '256' for Uganda — longest match avoids picking '2'
-        // out of a Ugandan number by mistake).
         const sortedByLength = [...countries].sort((a, b) => b.code.length - a.code.length);
         const match = sortedByLength.find(c => digits.startsWith(c.code));
 
@@ -1133,13 +1137,13 @@
         sports:            {90: 380, 120: 470},
         hot_stone:         {90: 380, 120: 470},
         monthly_wellness:  {90: 1500},
-        vip_wellness:      {90: 2400},
+        vip_wellness:      {90: 2800},
     };
 
     // Custom labels for packages (shown in duration dropdown)
     const packageLabels = {
         monthly_wellness: {90: '5 sessions × 90 min — 1,500 AED'},
-        vip_wellness:     {90: '8 sessions × 90 min — 2,400 AED'},
+        vip_wellness:     {90: '10 sessions × 90 min — 2,800 AED'},
     };
 
     let selectedService = null;

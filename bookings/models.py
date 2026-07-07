@@ -4,7 +4,7 @@ from django.db import models
 class ClientPackage(models.Model):
     PACKAGE_TYPE_CHOICES = [
         ('monthly_wellness', 'Rosette Wellness Membership'),
-        ('vip_wellness', 'Rosette Wellness Membership - VIP'),
+        ('vip_wellness', 'Rosette Signature Membership'),
     ]
 
     client_name = models.CharField(max_length=100)
@@ -48,8 +48,8 @@ class Appointment(models.Model):
         ('deep_tissue', 'Deep Tissue Massage'),
         ('sports', 'Sports Massage'),
         ('hot_stone', 'Hot Stone Massage'),
-        ('monthly_wellness', 'Monthly Wellness Membership'),
-        ('vip_wellness', 'Rosette Wellness Membership - VIP'),
+        ('monthly_wellness', 'Rosette Wellness Membership'),
+        ('vip_wellness', 'Rosette Signature Membership'),
     ]
 
     DURATION_CHOICES = [
@@ -63,7 +63,6 @@ class Appointment(models.Model):
         ('zone2', 'Zone 2 — Dubai Hills Estate, Al Barsha, JVC, Arjan, Motor City, Dubai Science Park, Meydan, Nad Al Sheba, Jumeirah Islands, JLT'),
         ('zone3', 'Zone 3 — Dubai Marina, JBR, Palm Jumeirah, Bluewaters Island, Emirates Hills, Jumeirah Golf Estates, Dubai Sports City, Arabian Ranches, Damac Hills, Tilal Al Ghaf, The Springs, The Meadows, The Lakes'),
         ('zone4', 'Zone 4 — Dubai South, Expo City, Al Furjan, Jebel Ali, Dubai Investment Park (DIP), The Villa, Mudon, Town Square, Arabian Ranches 2 & 3'),
-        ('zone5', 'Zone 5 — Custom Quote (The Oasis, Al Qudra, Dubai Parks & Resorts, Dubai Industrial City, Al Awir, Hatta)'),
     ]
 
     ADDON_CHOICES = [
@@ -132,6 +131,7 @@ class Appointment(models.Model):
 
     class Meta:
         ordering = ['appointment_date', 'appointment_time']
+
 
 class BlockedDate(models.Model):
     date = models.DateField(unique=True)

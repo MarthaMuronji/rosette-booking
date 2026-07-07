@@ -529,14 +529,12 @@
                                         <i class="fas fa-chevron-down chevron"></i>
                                     </button>
                                     <div class="package-details" id="details_monthly_wellness">
-                                        <div>✓ 5 × 90-minute treatments</div>
-                                        <div>✓ Priority booking</div>
-                                        <div>✓ Personalized treatment plan</div>
-                                        <div>✓ Progress tracking</div>
-                                        <div>✓ Flexible choice of massage styles</div>
-                                        <div style="margin-top:6px;"><span class="highlight">1,500 AED total</span></div>
-                                        <div>Valid for 30 days from first session</div>
-                                    </div>
+    <div>✓ 5 × 90-minute treatments</div>
+    <div>✓ Priority booking</div>
+    <div>✓ Personalized treatment plan</div>
+    <div style="margin-top:6px;"><span class="highlight">1,500 AED total</span></div>
+    <div>Valid for 45 days from first session</div>
+</div>
                                     {% elif value == 'vip_wellness' %}
                                     <div class="package-badge mt-1" style="background: rgba(232,137,14,0.25); border-color: var(--primary); color: #fff;">VIP</div>
                                     <button type="button" class="package-toggle" onclick="togglePackageDetails(event, 'details_vip_wellness')">
@@ -544,14 +542,14 @@
                                         <i class="fas fa-chevron-down chevron"></i>
                                     </button>
                                     <div class="package-details" id="details_vip_wellness">
-                                        <div>✓ 8 × 90-minute treatments</div>
-                                        <div>✓ Priority booking</div>
-                                        <div>✓ Personalized treatment plan</div>
-                                        <div>✓ Progress tracking</div>
-                                        <div>✓ Flexible choice of massage styles</div>
-                                        <div style="margin-top:6px;"><span class="highlight">2,400 AED total</span></div>
-                                        <div>No expiry — use at your own pace</div>
-                                    </div>
+    <div>✓ 10 × 90-minute treatments</div>
+    <div>✓ Priority access to peak-time appointments</div>
+    <div>✓ Personalized treatment plan</div>
+    <div>✓ Flexible mix of treatment styles</div>
+    <div>✓ One complimentary treatment enhancement (e.g. hot stones, aromatherapy, or an extended scalp massage)</div>
+    <div style="margin-top:6px;"><span class="highlight">2,800 AED total</span></div>
+    <div>Valid for 90 days from first session</div>
+</div>
                                     {% endif %}
 
                                 </div>
@@ -597,11 +595,11 @@
 
                         {% if has_active_package %}
                         <div class="package-fee-notice mt-3" style="display:block;">
-                            <i class="fas fa-info-circle me-2" style="color:var(--primary);"></i>
-                            <strong>Reminder:</strong> Your membership covers all sessions.
-Zone travel fees (<strong>+25 AED</strong> Zone 2 / <strong>+50 AED</strong> Zone 3)
+    <i class="fas fa-info-circle me-2" style="color:var(--primary);"></i>
+    <strong>Reminder:</strong> Your membership covers all sessions.
+Zone travel fees (<strong>+25 AED</strong> Zone 2 / <strong>+50 AED</strong> Zone 3 / <strong>+75 AED</strong> Zone 4)
 and any add-ons are charged separately per session and collected on the day.
-                        </div>
+</div>
                         {% endif %}
                     </div>
 
@@ -725,12 +723,12 @@ and any add-ons are charged separately per session and collected on the day.
         sports:           {90: 380, 120: 470},
         hot_stone:        {90: 380, 120: 470},
         monthly_wellness: {90: 1500},
-        vip_wellness:     {90: 2400},
+        vip_wellness:     {90: 2800},
     };
 
     const packageLabels = {
         monthly_wellness: {90: '5 sessions × 90 min — 1,500 AED'},
-        vip_wellness:     {90: '8 sessions × 90 min — 2,400 AED'},
+        vip_wellness:     {90: '10 sessions × 90 min — 2,800 AED'},
     };
 
     let selectedService = null;
