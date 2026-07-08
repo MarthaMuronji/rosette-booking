@@ -21,15 +21,12 @@ import logging
 logger = logging.getLogger(__name__)
 
 PACKAGE_CONFIGS = {
-    'monthly_wellness': {'total_sessions': 5, 'validity_days': 45, 'base_price': 1500},
-    'vip_wellness': {'total_sessions': 10, 'validity_days': 90, 'base_price': 2800},
+    'monthly_wellness': {'name': 'Rosette Wellness Membership', 'total_sessions': 5, 'validity_days': 45, 'base_price': 1500},
+    'vip_wellness': {'name': 'Rosette Signature Membership', 'total_sessions': 10, 'validity_days': 90, 'base_price': 2800},
 }
 
 ZONE_FEES = {'zone1': 0, 'zone2': 25, 'zone3': 50, 'zone4': 75,}
 ADDON_PRICES = {'none': 0, 'foot_30': 120, 'hns_30': 100, 'hns_60': 180}
-
-
-
 
 
 def get_booking_context(request, form=None):
@@ -37,7 +34,6 @@ def get_booking_context(request, form=None):
     booked_slots, pending_slots = get_booked_slots()
     today = timezone.now().date()
     form_data = form.data if form and form.is_bound else {}
-
 
     return {
         'form': form,
@@ -52,6 +48,9 @@ def get_booking_context(request, form=None):
         'services': Appointment.SERVICE_CHOICES,
         'prefill_name': request.session.get('prefill_name', ''),
         'prefill_phone': request.session.get('prefill_phone', ''),
+        'zone_fees_json': json.dumps(ZONE_FEES),
+        'addon_prices_json': json.dumps(ADDON_PRICES),
+        'package_configs_json': json.dumps(PACKAGE_CONFIGS),
     }
 
 
@@ -619,7 +618,11 @@ def book_confirm(request, pk):
                 'form': form,
                 'errors': form.as_error_dict(),
                 'non_field_errors': form.non_field_errors(),
+                'zone_fees_json': json.dumps(ZONE_FEES),
+                'addon_prices_json': json.dumps(ADDON_PRICES),
+                'package_configs_json': json.dumps(PACKAGE_CONFIGS),
             })
+        
 
         addon = form.cleaned_data['addon']
         zone = form.cleaned_data['zone']
@@ -679,6 +682,9 @@ def book_confirm(request, pk):
         'form': form,
         'errors': {},
         'non_field_errors': [],
+        'zone_fees_json': json.dumps(ZONE_FEES),
+        'addon_prices_json': json.dumps(ADDON_PRICES),
+        'package_configs_json': json.dumps(PACKAGE_CONFIGS),
     })
 
 
@@ -986,6 +992,9 @@ def client_dashboard(request):
         'booking_errors': booking_errors,
         'booking_non_field_errors': booking_non_field_errors,
         'form_data': booking_form_data,
+        'zone_fees_json': json.dumps(ZONE_FEES),
+        'addon_prices_json': json.dumps(ADDON_PRICES),
+        'package_configs_json': json.dumps(PACKAGE_CONFIGS),
     })
 
 

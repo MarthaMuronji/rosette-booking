@@ -403,8 +403,8 @@
     <div style="background:rgba(232,137,14,0.06); border:1px solid rgba(232,137,14,0.25); border-radius:10px; padding:18px 22px; margin-bottom:24px;">
         <div style="margin-bottom:16px; padding-bottom:16px; border-bottom:1px solid var(--border);">
             <div style="display:flex; justify-content:space-between; font-size:14px; color:var(--foreground-muted); margin-bottom:8px;">
-                <span>{% if appointment.service == 'monthly_wellness' %}Rosette Wellness Membership (5 sessions){% else %}Rosette Signature Membership (10 sessions){% endif %}</span>
-<span style="color:var(--foreground);">{% if appointment.service == 'monthly_wellness' %}1,500{% else %}2,800{% endif %} AED</span>
+                <span id="packageSummaryLabel">—</span>
+                <span style="color:var(--foreground);" id="packageSummaryPrice">— AED</span>
             </div>
             <div style="display:flex; justify-content:space-between; font-size:14px; color:var(--foreground-muted); margin-bottom:8px;">
                 <span>Zone fee</span><span id="zoneFeeDisplay" style="color:var(--foreground);">—</span>
@@ -455,13 +455,24 @@
     'hot_stone':   { 90: 380, 120: 470 },
 };
 
-const packageBasePrices = {
-    'monthly_wellness': 1500,
-    'vip_wellness': 2800,
-};
+const packageConfigs = {{ package_configs_json|safe }};
 
-const addonPrices = { none: 0, foot_30: 120, hns_30: 100, hns_60: 180 };
-const zoneFees = { zone1: 0, zone2: 25, zone3: 50, zone4: 75,};
+const packageBasePrices = {};
+Object.keys(packageConfigs).forEach(key => {
+    packageBasePrices[key] = packageConfigs[key].base_price;
+});
+
+const addonPrices = {{ addon_prices_json|safe }};
+const zoneFees = {{ zone_fees_json|safe }};
+
+// Fill in the package summary label/price dynamically (only relevant on first-session, no-existing-package view)
+const summaryLabelEl = document.getElementById('packageSummaryLabel');
+const summaryPriceEl = document.getElementById('packageSummaryPrice');
+if (summaryLabelEl && packageConfigs[service]) {
+    const cfg = packageConfigs[service];
+    summaryLabelEl.textContent = `${cfg.name} (${cfg.total_sessions} sessions)`;
+    summaryPriceEl.textContent = `${cfg.base_price.toLocaleString()} AED`;
+}
 
 const service = '{{ appointment.service }}';
 const duration = {{ appointment.duration }};

@@ -604,14 +604,14 @@
                             </select>
                         </div>
 
-                        {% if has_active_package %}
-                        <div class="package-fee-notice mt-3" style="display:block;">
+                       {% if has_active_package %}
+<div class="package-fee-notice mt-3" style="display:block;">
     <i class="fas fa-info-circle me-2" style="color:var(--primary);"></i>
     <strong>Reminder:</strong> Your membership covers all sessions.
-Zone travel fees (<strong>+25 AED</strong> Zone 2 / <strong>+50 AED</strong> Zone 3 / <strong>+75 AED</strong> Zone 4)
-and any add-ons are charged separately per session and collected on the day.
+    Zone travel fees (<span id="zoneFeeSummary"></span>)
+    and any add-ons are charged separately per session and collected on the day.
 </div>
-                        {% endif %}
+{% endif %}
                     </div>
 
                     <!-- Date -->
@@ -718,29 +718,43 @@ and any add-ons are charged separately per session and collected on the day.
     const blockedDates = {{ blocked_dates|safe }};
 
     const durations = {
-        signature:        [90, 120],
-        swedish:          [60, 90, 120],
-        deep_tissue:      [90, 120],
-        sports:           [90, 120],
-        hot_stone:        [90, 120],
-        monthly_wellness: [90],
-        vip_wellness:     [90],
-    };
+    signature:        [90, 120],
+    swedish:          [60, 90, 120],
+    deep_tissue:      [90, 120],
+    sports:           [90, 120],
+    hot_stone:        [90, 120],
+    monthly_wellness: [90],
+    vip_wellness:     [90],
+};
 
-    const prices = {
-        signature:        {90: 320, 120: 400},
-        swedish:          {60: 250, 90: 320, 120: 400},
-        deep_tissue:      {90: 370, 120: 450},
-        sports:           {90: 380, 120: 470},
-        hot_stone:        {90: 380, 120: 470},
-        monthly_wellness: {90: 1500},
-        vip_wellness:     {90: 2800},
-    };
+const prices = {
+    signature:        {90: 320, 120: 400},
+    swedish:          {60: 250, 90: 320, 120: 400},
+    deep_tissue:      {90: 370, 120: 450},
+    sports:           {90: 380, 120: 470},
+    hot_stone:        {90: 380, 120: 470},
+};
 
-    const packageLabels = {
-        monthly_wellness: {90: '5 sessions × 90 min — 1,500 AED'},
-        vip_wellness:     {90: '10 sessions × 90 min — 2,800 AED'},
+const packageConfigs = {{ package_configs_json|safe }};
+
+Object.keys(packageConfigs).forEach(key => {
+    prices[key] = { 90: packageConfigs[key].base_price };
+});
+
+const packageLabels = {};
+Object.keys(packageConfigs).forEach(key => {
+    packageLabels[key] = {
+        90: `${packageConfigs[key].total_sessions} sessions × 90 min — ${packageConfigs[key].base_price.toLocaleString()} AED`
     };
+});
+
+const zoneFees = {{ zone_fees_json|safe }};
+const zoneLabels = { zone1: 'Zone 1', zone2: 'Zone 2', zone3: 'Zone 3', zone4: 'Zone 4' };
+const zoneSummaryParts = Object.keys(zoneFees)
+    .filter(z => zoneFees[z] > 0)
+    .map(z => `<strong>+${zoneFees[z]} AED</strong> ${zoneLabels[z] || z}`);
+const zoneFeeSummaryEl = document.getElementById('zoneFeeSummary');
+if (zoneFeeSummaryEl) zoneFeeSummaryEl.innerHTML = zoneSummaryParts.join(' / ');
 
     let selectedService = null;
 
