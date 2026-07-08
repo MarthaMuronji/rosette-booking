@@ -558,6 +558,17 @@
                         {% endif %}
                         {% endfor %}
 
+                         <div class="package-fee-notice" style="display:block; margin-top:16px;">
+                            <strong>Membership Terms</strong>
+                            <div style="margin-top:8px; line-height:1.8;">
+                                <div>• Sessions are non-transferable.</div>
+                                <div>• Memberships are non-refundable once activated.</div>
+                                <div>• A minimum of 24 hours' notice is required for cancellations or rescheduling.</div>
+                                <div>• Missed appointments or cancellations with less than 24 hours' notice may be deducted from the membership.</div>
+                                <div>• Extended service area fees may apply for selected locations.</div>
+                            </div>
+                        </div>
+
                         {% if booking_errors.service %}
                         <div class="invalid-feedback d-block">
                             <i class="fas fa-exclamation-circle"></i> {{ booking_errors.service }}
