@@ -91,6 +91,9 @@ BASE_URL = os.environ.get('BASE_URL', 'https://rosettewellness.up.railway.app')
 OWNER_PHONE = os.environ.get('OWNER_PHONE', '971505389174')
 OWNER_NAME = os.environ.get('OWNER_NAME', 'Rosette Wellness')
 MASSEUSE_PIN = os.environ.get('MASSEUSE_PIN', '1234')
+VAPID_PUBLIC_KEY = os.environ.get('VAPID_PUBLIC_KEY')
+VAPID_PRIVATE_KEY = os.environ.get('VAPID_PRIVATE_KEY')
+VAPID_CLAIM_EMAIL = os.environ.get('VAPID_CLAIM_EMAIL')
 
 # Logging
 LOGGING = {

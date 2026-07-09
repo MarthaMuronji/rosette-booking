@@ -1,8 +1,10 @@
+from django.http import JsonResponse
 from django.shortcuts import render, redirect, get_object_or_404
 from django.utils import timezone
 from django.conf import settings
-from .models import Appointment, ClientPackage
+from .models import Appointment, ClientPackage, PushSubscription
 from django.utils import timezone as tz
+from pywebpush import webpush, WebPushException
 from .models import BlockedDate
 from .forms import (
     BlockDateForm,
@@ -12,11 +14,15 @@ from .forms import (
     MasseuseLoginForm,
     RescheduleForm,
 )
+from django.http import HttpResponse
+from django.conf import settings as django_settings
+import os
 import datetime
 import json
 import re
 import urllib.parse
 import logging
+from django.views.decorators.csrf import csrf_exempt
 
 logger = logging.getLogger(__name__)
 
@@ -132,6 +138,27 @@ def get_booked_slots(exclude_pk=None):
 def get_blocked_dates():
     return [d.date.isoformat() for d in BlockedDate.objects.all()]
 
+def send_push_to_masseuse(title, body, url='/masseuse/'):
+    subscriptions = PushSubscription.objects.all()
+    payload = json.dumps({'title': title, 'body': body, 'url': url})
+
+    for sub in subscriptions:
+        try:
+            webpush(
+                subscription_info={
+                    'endpoint': sub.endpoint,
+                    'keys': {'p256dh': sub.p256dh, 'auth': sub.auth},
+                },
+                data=payload,
+                vapid_private_key=settings.VAPID_PRIVATE_KEY,
+                vapid_claims={'sub': settings.VAPID_CLAIM_EMAIL},
+            )
+        except WebPushException as e:
+            logger.error(f"Push notification failed: {e}")
+            if e.response is not None and e.response.status_code in (404, 410):
+                sub.delete()
+                logger.info("Removed expired push subscription")
+
 def auto_complete_past_sessions():
     now = timezone.now()
 
@@ -231,6 +258,10 @@ def book_request(request):
         owner_whatsapp_url = f"https://wa.me/{owner_phone_clean}?text={urllib.parse.quote(raw_message)}"
 
         logger.info(f"New booking created: {appointment.pk} - {client_name}")
+        send_push_to_masseuse(
+            title='New Booking Request',
+            body=f"{client_name} — {service_display} on {preferred_date}",
+        )
         return render(request, 'bookings/request_sent.html', {
             'appointment': appointment,
             'owner_whatsapp_url': owner_whatsapp_url,
@@ -368,6 +399,10 @@ def request_cancellation(request, pk):
     appointment.status = 'cancellation_requested'
     appointment.save()
     logger.info(f"Cancellation requested for appointment {appointment.pk} by {appointment.client_name}")
+    send_push_to_masseuse(
+        title='Cancellation Request',
+        body=f"{appointment.client_name} wants to cancel their {appointment.get_service_display()} appointment",
+    )
 
     service_display = appointment.get_service_display()
     time_formatted = appointment.appointment_time.strftime('%I:%M %p')
@@ -555,6 +590,10 @@ def reschedule_appointment(request, pk):
         appointment.appointment_time = time_obj
         appointment.status = 'pending'
         appointment.save()
+        send_push_to_masseuse(
+            title='Reschedule Request',
+            body=f"{appointment.client_name} wants to reschedule their {appointment.get_service_display()} appointment",
+        )
 
         service_display = appointment.get_service_display()
         time_formatted = datetime.datetime.strptime(new_time, '%H:%M').strftime('%I:%M %p')
@@ -756,6 +795,7 @@ def masseuse_dashboard(request):
     block_date_form_data = request.session.pop('block_date_form_data', None)
     block_date_errors = request.session.pop('block_date_errors', {})
     block_date_non_field_errors = request.session.pop('block_date_non_field_errors', [])
+    'vapid_public_key': settings.VAPID_PUBLIC_KEY,
     if block_date_form_data:
         block_date_form = BlockDateForm(block_date_form_data)
         block_date_form.is_valid()
@@ -865,6 +905,34 @@ def approve_appointment(request, pk):
         'client_phone': appointment.client_phone,
         'message_preview': raw_message,
     })
+
+@csrf_exempt
+def save_push_subscription(request):
+    if not request.session.get('masseuse_authenticated'):
+        return JsonResponse({'error': 'Not authenticated'}, status=403)
+
+    if request.method != 'POST':
+        return JsonResponse({'error': 'Invalid method'}, status=405)
+
+    try:
+        data = json.loads(request.body)
+        endpoint = data.get('endpoint')
+        keys = data.get('keys', {})
+        p256dh = keys.get('p256dh')
+        auth = keys.get('auth')
+
+        if not endpoint or not p256dh or not auth:
+            return JsonResponse({'error': 'Missing subscription data'}, status=400)
+
+        PushSubscription.objects.update_or_create(
+            endpoint=endpoint,
+            defaults={'p256dh': p256dh, 'auth': auth},
+        )
+        logger.info("Push subscription saved for masseuse")
+        return JsonResponse({'status': 'ok'})
+    except Exception as e:
+        logger.error(f"Failed to save push subscription: {e}")
+        return JsonResponse({'error': 'Invalid request'}, status=400)
 
 
 def decline_appointment(request, pk):
@@ -1045,3 +1113,11 @@ def therapist_cancel_appointment(request, pk):
         })
 
     return redirect('masseuse_dashboard')
+
+
+
+def service_worker(request):
+    sw_path = os.path.join(django_settings.BASE_DIR, 'static', 'js', 'sw.js')
+    with open(sw_path, 'r') as f:
+        content = f.read()
+    return HttpResponse(content, content_type='application/javascript')

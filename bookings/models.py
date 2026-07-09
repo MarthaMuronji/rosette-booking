@@ -143,3 +143,12 @@ class BlockedDate(models.Model):
 
     def __str__(self):
         return f"{self.date} - {self.reason or 'Blocked'}"
+    
+class PushSubscription(models.Model):
+    endpoint = models.URLField(max_length=500, unique=True)
+    p256dh = models.CharField(max_length=255)
+    auth = models.CharField(max_length=255)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Push subscription created {self.created_at.strftime('%Y-%m-%d')}"    
