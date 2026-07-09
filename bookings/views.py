@@ -795,7 +795,6 @@ def masseuse_dashboard(request):
     block_date_form_data = request.session.pop('block_date_form_data', None)
     block_date_errors = request.session.pop('block_date_errors', {})
     block_date_non_field_errors = request.session.pop('block_date_non_field_errors', [])
-    'vapid_public_key': settings.VAPID_PUBLIC_KEY,
     if block_date_form_data:
         block_date_form = BlockDateForm(block_date_form_data)
         block_date_form.is_valid()
@@ -821,6 +820,7 @@ def masseuse_dashboard(request):
         'block_date_form': block_date_form,
         'block_date_errors': block_date_errors,
         'block_date_non_field_errors': block_date_non_field_errors,
+        'vapid_public_key': settings.VAPID_PUBLIC_KEY,
     })
 
 
