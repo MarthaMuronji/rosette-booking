@@ -256,6 +256,14 @@
 {% block content %}
 <div class="dashboard-hero">
     <div class="container">
+        <div class="d-flex justify-content-end mb-2">
+    <button id="enableNotificationsBtn" onclick="setupPushNotifications()"
+            style="background: rgba(232,137,14,0.15); color: var(--primary);
+                   border: 1px solid rgba(232,137,14,0.3); border-radius: 6px;
+                   padding: 8px 16px; font-size: 13px; cursor: pointer;">
+        <i class="fas fa-bell me-1"></i> Enable Notifications
+    </button>
+</div>
         <div class="d-flex justify-content-end mb-3">
             <a href="{% url 'masseuse_logout' %}"
                style="color:rgba(255,255,255,0.5); font-size:13px;
@@ -905,6 +913,12 @@ async function setupPushNotifications() {
         });
 
         console.log('Push notifications enabled.');
+        const btn = document.getElementById('enableNotificationsBtn');
+        if (btn) {
+            btn.innerHTML = '<i class="fas fa-check me-1"></i> Notifications Enabled';
+            btn.disabled = true;
+            btn.style.opacity = '0.6';
+        }
     } catch (err) {
         console.error('Push notification setup failed:', err);
     }
@@ -920,8 +934,6 @@ function urlBase64ToUint8Array(base64String) {
     }
     return outputArray;
 }
-
-document.addEventListener('DOMContentLoaded', setupPushNotifications);
 </script>
 {% endblock %}
 {% endblock %}
