@@ -43,20 +43,23 @@ class Appointment(models.Model):
     ]
 
     SERVICE_CHOICES = [
-        ('signature', 'Signature Full Body Reset'),
-        ('swedish', 'Swedish Massage'),
-        ('deep_tissue', 'Deep Tissue Massage'),
-        ('sports', 'Sports Massage'),
-        ('hot_stone', 'Hot Stone Massage'),
-        ('monthly_wellness', 'Rosette Wellness Membership'),
-        ('vip_wellness', 'Rosette Signature Membership'),
-    ]
+    ('signature', 'Signature Full Body Reset'),
+    ('swedish', 'Swedish Massage'),
+    ('deep_tissue', 'Deep Tissue Massage'),
+    ('sports', 'Sports Massage'),
+    ('hot_stone', 'Hot Stone Massage'),
+    ('foot_massage', 'Foot Massage'),
+    ('head_neck_shoulders', 'Head, Neck & Shoulders'),
+    ('monthly_wellness', 'Rosette Wellness Membership'),
+    ('vip_wellness', 'Rosette Signature Membership'),
+]
 
     DURATION_CHOICES = [
-        (60, '60 minutes'),
-        (90, '90 minutes'),
-        (120, '120 minutes'),
-    ]
+    (30, '30 minutes'),
+    (60, '60 minutes'),
+    (90, '90 minutes'),
+    (120, '120 minutes'),
+]
 
     ZONE_CHOICES = [
         ('zone1', 'Zone 1 — Business Bay, Downtown Dubai, DIFC, City Walk, Al Wasl, Jumeirah 1, Jumeirah 2, Al Satwa, Dubai Canal area'),
@@ -66,11 +69,11 @@ class Appointment(models.Model):
     ]
 
     ADDON_CHOICES = [
-        ('none', 'No Add-On'),
-        ('foot_30', 'Foot Massage — 30 min (120 AED)'),
-        ('hns_30', 'Head, Neck & Shoulders — 30 min (100 AED)'),
-        ('hns_60', 'Head, Neck & Shoulders — 60 min (180 AED)'),
-    ]
+    ('none', 'No Add-On'),
+    ('foot_30', 'Foot Massage — 30 min (120 AED)'),
+    ('hns_30', 'Head, Neck & Shoulders — 30 min (100 AED)'),
+    ('hns_60', 'Head, Neck & Shoulders — 60 min (180 AED)'),
+]
 
     PRESSURE_CHOICES = [
         ('light', 'Light'),

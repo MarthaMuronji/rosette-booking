@@ -718,21 +718,25 @@
     const blockedDates = {{ blocked_dates|safe }};
 
     const durations = {
-    signature:        [90, 120],
-    swedish:          [60, 90, 120],
-    deep_tissue:      [90, 120],
-    sports:           [90, 120],
-    hot_stone:        [90, 120],
-    monthly_wellness: [90],
-    vip_wellness:     [90],
+    signature:           [90, 120],
+    swedish:             [60, 90, 120],
+    deep_tissue:         [90, 120],
+    sports:              [90, 120],
+    hot_stone:           [90, 120],
+    foot_massage:        [30, 60],
+    head_neck_shoulders: [30, 60],
+    monthly_wellness:    [90],
+    vip_wellness:        [90],
 };
 
 const prices = {
-    signature:        {90: 320, 120: 400},
-    swedish:          {60: 250, 90: 320, 120: 400},
-    deep_tissue:      {90: 370, 120: 450},
-    sports:           {90: 380, 120: 470},
-    hot_stone:        {90: 380, 120: 470},
+    signature:           {90: 320, 120: 400},
+    swedish:             {60: 250, 90: 320, 120: 400},
+    deep_tissue:         {90: 370, 120: 450},
+    sports:              {90: 380, 120: 470},
+    hot_stone:           {90: 380, 120: 470},
+    foot_massage:        {30: 180, 60: 240},
+    head_neck_shoulders: {30: 150, 60: 200},
 };
 
 const packageConfigs = {{ package_configs_json|safe }};

@@ -15,6 +15,8 @@ VALID_DURATIONS = {
     'deep_tissue': [90, 120],
     'sports': [90, 120],
     'hot_stone': [90, 120],
+    'foot_massage': [30, 60],
+    'head_neck_shoulders': [30, 60],
     'monthly_wellness': [90],
     'vip_wellness': [90],
 }

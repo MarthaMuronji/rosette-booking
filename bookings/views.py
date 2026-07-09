@@ -26,7 +26,7 @@ PACKAGE_CONFIGS = {
 }
 
 ZONE_FEES = {'zone1': 0, 'zone2': 25, 'zone3': 50, 'zone4': 75,}
-ADDON_PRICES = {'none': 0, 'foot_30': 120, 'hns_30': 100, 'hns_60': 180}
+ADDON_PRICES = {'none': 0, 'foot_30': 140, 'extra_30': 120}
 
 
 def get_booking_context(request, form=None):
@@ -61,6 +61,8 @@ def calculate_price(service, duration, addon, zone):
         'deep_tissue': {90: 370, 120: 450},
         'sports': {90: 380, 120: 470},
         'hot_stone': {90: 380, 120: 470},
+        'foot_massage': {30: 180, 60: 240},
+        'head_neck_shoulders': {30: 150, 60: 200},
     }
     base = base_prices.get(service, {}).get(int(duration), 0)
     addon_fee = ADDON_PRICES.get(addon, 0)
@@ -95,7 +97,7 @@ def get_booked_slots(exclude_pk=None):
         approved_qs = approved_qs.exclude(pk=exclude_pk)
         pending_qs = pending_qs.exclude(pk=exclude_pk)
 
-    addon_durations = {'none': 0, 'foot_30': 30, 'hns_30': 30, 'hns_60': 60}
+    addon_durations = {'none': 0, 'foot_30': 30, 'extra_30': 30}
     booked_slots = {}
     pending_slots = {}
 
@@ -556,8 +558,6 @@ def reschedule_appointment(request, pk):
 
         service_display = appointment.get_service_display()
         time_formatted = datetime.datetime.strptime(new_time, '%H:%M').strftime('%I:%M %p')
-        approve_url = f"{settings.BASE_URL}/masseuse/approve/{appointment.pk}/"
-        decline_url = f"{settings.BASE_URL}/masseuse/decline/{appointment.pk}/"
 
         raw_message = (
             f"🔄 *Reschedule Request!*\n"
