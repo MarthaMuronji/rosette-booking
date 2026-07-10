@@ -139,7 +139,12 @@ def get_blocked_dates():
     return [d.date.isoformat() for d in BlockedDate.objects.all()]
 
 def send_push_to_masseuse(title, body, url='/masseuse/'):
-    subscriptions = PushSubscription.objects.all()
+    try:
+        subscriptions = PushSubscription.objects.all()
+    except Exception as e:
+        logger.error(f"Could not fetch push subscriptions: {e}")
+        return
+
     payload = json.dumps({'title': title, 'body': body, 'url': url})
 
     for sub in subscriptions:
@@ -158,7 +163,9 @@ def send_push_to_masseuse(title, body, url='/masseuse/'):
             if e.response is not None and e.response.status_code in (404, 410):
                 sub.delete()
                 logger.info("Removed expired push subscription")
-
+        except Exception as e:
+            logger.error(f"Unexpected error sending push notification: {e}")
+            
 def auto_complete_past_sessions():
     now = timezone.now()
 
