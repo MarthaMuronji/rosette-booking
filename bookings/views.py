@@ -62,7 +62,7 @@ def get_booking_context(request, form=None):
 
 def calculate_price(service, duration, addon, zone):
     base_prices = {
-        'signature': {90: 320, 120: 400},
+        'signature': {90: 340, 120: 420},
         'swedish': {60: 250, 90: 320, 120: 400},
         'deep_tissue': {90: 370, 120: 450},
         'sports': {90: 380, 120: 470},
@@ -192,6 +192,14 @@ def auto_complete_past_sessions():
 
     seven_days_ago = timezone.now().date() - datetime.timedelta(days=7)
     Appointment.objects.filter(status='declined', appointment_date__lt=seven_days_ago).delete()
+
+    for apt in Appointment.objects.filter(status='approved'):
+        apt_dt = timezone.make_aware(
+            datetime.datetime.combine(apt.appointment_date, apt.appointment_time)
+        )
+        if now > apt_dt:
+            apt.status = 'declined'
+            apt.save()
 
 
 def book_request(request):
