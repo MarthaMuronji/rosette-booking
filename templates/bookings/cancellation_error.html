@@ -1,0 +1,38 @@
+{% extends 'bookings/base.html' %}
+
+{% block title %}Cancellation Error — Rosette Wellness{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-6 text-center">
+
+            <div style="width:80px; height:80px;
+                        background-color:rgba(239,68,68,0.15);
+                        border:1px solid rgba(239,68,68,0.3);
+                        border-radius:50%; display:flex; align-items:center;
+                        justify-content:center; margin: 0 auto 24px;">
+                <i class="fas fa-exclamation-circle" style="font-size:32px; color:#ef4444;"></i>
+            </div>
+
+            <h1 class="rw-section-title mb-2">Cannot Cancel Booking</h1>
+            <div class="rw-divider mx-auto"></div>
+
+            <p style="color:var(--foreground-muted); font-size:15px;
+                      line-height:1.8; margin: 20px 0 32px;">
+                {{ message }}
+            </p>
+
+            <div class="d-flex gap-3 justify-content-center flex-wrap">
+                <a href="/client/dashboard/" class="btn-primary-rw">
+                    <i class="fas fa-calendar-alt me-2"></i> View My Bookings
+                </a>
+                <a href="/" class="btn-outline-rw">
+                    <i class="fas fa-home me-2"></i> Homepage
+                </a>
+            </div>
+
+        </div>
+    </div>
+</div>
+{% endblock %}
