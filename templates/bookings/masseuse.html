@@ -646,6 +646,74 @@
         {% endif %}
     </div>
 
+    <!-- Awaiting Client Confirmation -->
+<div class="mb-5">
+    <div class="section-header">
+        <i class="fas fa-hourglass-half"></i> Awaiting Client Confirmation
+        {% if approved %}
+        <span style="font-size:14px; background:rgba(232,137,14,0.12); color:var(--primary); padding:2px 12px; border-radius:20px; border:1px solid rgba(232,137,14,0.3);">
+            {{ approved.count }}
+        </span>
+        {% endif %}
+    </div>
+
+    {% if approved %}
+        {% for apt in approved %}
+        <div class="appointment-card" style="border-color: rgba(232,137,14,0.25);">
+            <div class="row align-items-center">
+                <div class="col-md-7">
+                    <div class="client-name">{{ apt.client_name }}</div>
+                    <div class="appointment-meta">
+                        <i class="fas fa-spa"></i>
+                        {{ apt.get_service_display }} — {{ apt.duration }} min
+                    </div>
+                    <div class="appointment-meta">
+                        <i class="fas fa-calendar"></i>
+                        {{ apt.appointment_date|date:"l, F j, Y" }}
+                    </div>
+                    <div class="appointment-meta">
+                        <i class="fas fa-clock"></i>
+                        {{ apt.appointment_time|time:"g:i A" }}
+                    </div>
+                    <div class="appointment-meta">
+                        <i class="fas fa-phone"></i>
+                        {{ apt.client_phone }}
+                    </div>
+                    <div style="background:rgba(232,137,14,0.08);
+                                border-left:3px solid rgba(232,137,14,0.4);
+                                padding:10px 14px; border-radius:4px;
+                                font-size:13px; color:var(--primary);
+                                margin-top:12px;">
+                        <i class="fas fa-info-circle me-2"></i>
+                        Approved, but client hasn't completed their booking details yet. This slot is still held for them.
+                    </div>
+                </div>
+                <div class="col-md-5 mt-3 mt-md-0">
+                    <div class="d-flex flex-column gap-2 align-items-md-end">
+                        <a href="https://wa.me/{{ apt.client_phone|cut:'+' }}?text=Hi%20{{ apt.client_name }}%2C%20just%20a%20reminder%20to%20complete%20your%20Rosette%20Wellness%20booking%20details%20so%20we%20can%20confirm%20your%20appointment.%20🌿"
+                           class="btn-whatsapp-rw" target="_blank" style="width:100%; text-align:center;">
+                            <i class="fab fa-whatsapp me-1"></i> Remind Client
+                        </a>
+                        <form method="POST" action="{% url 'therapist_cancel_appointment' apt.pk %}">
+                            {% csrf_token %}
+                            <button type="submit" class="btn-decline-rw" style="width:100%;"
+                                    onclick="return confirm('Cancel this approved-but-unconfirmed booking for {{ apt.client_name }}? This will free up the slot.')">
+                                <i class="fas fa-ban me-1"></i> Cancel & Free Slot
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    {% else %}
+        <div class="empty-state">
+            <i class="fas fa-check-circle" style="font-size:36px;"></i>
+            No approved bookings waiting on client confirmation.
+        </div>
+    {% endif %}
+</div>
+
     <!-- Upcoming Sessions -->
     <div class="mb-5">
         <div class="section-header">
