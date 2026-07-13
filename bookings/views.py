@@ -140,7 +140,7 @@ def get_blocked_dates():
 
 def send_push_to_masseuse(title, body, url='/masseuse/'):
     try:
-        subscriptions = PushSubscription.objects.all()
+        subscriptions = list(PushSubscription.objects.all())
     except Exception as e:
         logger.error(f"Could not fetch push subscriptions: {e}")
         return
@@ -165,7 +165,7 @@ def send_push_to_masseuse(title, body, url='/masseuse/'):
                 logger.info("Removed expired push subscription")
         except Exception as e:
             logger.error(f"Unexpected error sending push notification: {e}")
-            
+
 def auto_complete_past_sessions():
     now = timezone.now()
 
