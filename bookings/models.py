@@ -70,10 +70,9 @@ class Appointment(models.Model):
 
     ADDON_CHOICES = [
     ('none', 'No Add-On'),
-    ('foot_30', 'Foot Massage — 30 min (120 AED)'),
-    ('hns_30', 'Head, Neck & Shoulders — 30 min (100 AED)'),
-    ('hns_60', 'Head, Neck & Shoulders — 60 min (180 AED)'),
-]
+    ('foot_30', 'Foot Massage — 30 min (140 AED)'),
+    ('extra_30', '30 Minutes Extra (120 AED)'),
+    ]
 
     PRESSURE_CHOICES = [
         ('light', 'Light'),
