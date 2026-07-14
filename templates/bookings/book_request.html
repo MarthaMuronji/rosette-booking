@@ -523,6 +523,10 @@
                 style="background:#1a1a1a; border:1px solid var(--border); border-radius:8px; padding:14px 10px; cursor:pointer; color:var(--foreground); font-size:13px; transition: all 0.2s;">
             <i class="fas fa-running me-1" style="color:var(--primary);"></i> Sports Recovery
         </button>
+        <button type="button" class="goal-btn" data-goal="reset" onclick="selectGoal('reset')"
+                style="background:#1a1a1a; border:1px solid var(--border); border-radius:8px; padding:14px 10px; cursor:pointer; color:var(--foreground); font-size:13px; transition: all 0.2s;">
+            <i class="fas fa-fire me-1" style="color:var(--primary);"></i> Full Body Reset
+        </button>
         <button type="button" class="goal-btn" data-goal="unsure" onclick="selectGoal('unsure')"
                 style="background:#1a1a1a; border:1px solid var(--border); border-radius:8px; padding:14px 10px; cursor:pointer; color:var(--foreground); font-size:13px; transition: all 0.2s;">
             <i class="fas fa-magic me-1" style="color:var(--primary);"></i> Not Sure? Recommend One
@@ -843,7 +847,10 @@ function selectGoal(goal) {
 
     const note = document.getElementById('goalRecommendNote');
 
-    if (goal === 'unsure') {
+    if (goal === 'unsure' || goal === 'reset') {
+        note.innerHTML = goal === 'reset'
+            ? '<i class="fas fa-star me-1"></i> Great choice — the Signature Full Body Reset is selected below.'
+            : '<i class="fas fa-star me-1"></i> Based on what you told us, we recommend the Signature Full Body Reset below — it\'s designed to work for almost everyone.';
         note.style.display = 'block';
         const heroCard = document.querySelector('.service-card[data-service="signature"]');
         if (heroCard) selectService('signature', heroCard);
