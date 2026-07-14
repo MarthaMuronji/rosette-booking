@@ -510,8 +510,40 @@
                     <!-- Service -->
                     <div class="mb-4">
                         <label class="rw-form-label mb-2">Choose Your Treatment</label>
+
+                        <!-- Signature Hero -->
+                        <div class="service-card" data-service="signature" onclick="selectService('signature', this)"
+                             style="border-color: var(--primary); background: linear-gradient(135deg, rgba(232,137,14,0.1), rgba(232,137,14,0.03)); position: relative; padding: 20px;">
+                            <div style="position: absolute; top: -10px; left: 16px; background: var(--primary); color: #000;
+                                        font-size: 10px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase;
+                                        padding: 3px 10px; border-radius: 20px;">
+                                <i class="fas fa-star me-1"></i> Most Booked
+                            </div>
+                            <div class="d-flex align-items-center mt-2">
+                                <input type="radio" name="service" value="signature"
+                                       id="ds_signature" class="me-3"
+                                       {% if form_data.service == 'signature' %}checked{% endif %}>
+                                <div>
+                                    <div class="service-name" style="font-size: 18px;">Signature Full Body Reset</div>
+                                    <p style="color: var(--foreground-muted); font-size: 13px; margin: 4px 0 0; line-height: 1.5;">
+                                        Designed to relieve stress, improve recovery and restore balance.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <p style="text-align:center; margin: 4px 0 16px;">
+                            <a href="#allTreatmentsDash" style="color: var(--foreground-muted); font-size: 13px; text-decoration: underline;"
+                               onclick="document.getElementById('allTreatmentsDash').style.display='block'; this.style.display='none'; return false;">
+                                Or browse all treatments
+                            </a>
+                        </p>
+
+                        <div id="allTreatmentsDash" style="display:none;">
                         {% for value, label in services %}
-                        {% if has_active_package and value in 'monthly_wellness,vip_wellness' %}
+                        {% if value == 'signature' %}
+                        {% comment %}Skip — already shown as hero above{% endcomment %}
+                        {% elif has_active_package and value in 'monthly_wellness,vip_wellness' %}
                         {% comment %}Skip package options — client already has an active package{% endcomment %}
                         {% else %}
                         <div class="service-card{% if booking_errors.service %} is-invalid{% endif %}" data-service="{{ value }}" onclick="selectService('{{ value }}', this)">
@@ -557,6 +589,7 @@
                         </div>
                         {% endif %}
                         {% endfor %}
+                        </div>
 
                          <div class="package-fee-notice" style="display:block; margin-top:16px;">
                             <strong>Membership Terms</strong>
@@ -798,10 +831,18 @@ if (zoneFeeSummaryEl) zoneFeeSummaryEl.innerHTML = zoneSummaryParts.join(' / ');
 
     // Called by package card "Book Next Session" button
     function scrollToBookService(serviceValue) {
-        const card = document.querySelector(`.service-card[data-service="${serviceValue}"]`);
-        if (card) selectService(serviceValue, card);
-        document.getElementById('bookingSection').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    const card = document.querySelector(`.service-card[data-service="${serviceValue}"]`);
+    if (card) {
+        const allTreatments = document.getElementById('allTreatmentsDash');
+        const browseLink = document.querySelector('a[href="#allTreatmentsDash"]');
+        if (allTreatments && allTreatments.style.display === 'none') {
+            allTreatments.style.display = 'block';
+            if (browseLink) browseLink.style.display = 'none';
+        }
+        selectService(serviceValue, card);
     }
+    document.getElementById('bookingSection').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
 
     document.getElementById('dateInput').addEventListener('change', function () {
         if (blockedDates.includes(this.value)) {
