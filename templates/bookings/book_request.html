@@ -490,7 +490,8 @@
                 <div class="form-section">
                     <div class="form-section-title">1. Choose Your Treatment</div>
                     {% for value, label in services %}
-                    <div class="service-card{% if errors.service %} is-invalid{% endif %}" onclick="selectService('{{ value }}', this)">
+{% if value != 'monthly_wellness' and value != 'vip_wellness' %}
+<div class="service-card{% if errors.service %} is-invalid{% endif %}" onclick="selectService('{{ value }}', this)">
                         <div class="d-flex align-items-center">
                             <input type="radio" name="service" value="{{ value }}"
                                    id="service_{{ value }}" class="me-3{% if errors.service %} is-invalid{% endif %}"
@@ -532,18 +533,14 @@
                             </div>
                         </div>
                     </div>
+                    {% endif %}
                     {% endfor %}
 
-                    <div class="package-fee-notice" style="display:block; margin-top:16px;">
-                        <strong>Membership Terms</strong>
-                        <div style="margin-top:8px; line-height:1.8;">
-                            <div>• Sessions are non-transferable.</div>
-                            <div>• Memberships are non-refundable once activated.</div>
-                            <div>• A minimum of 24 hours' notice is required for cancellations or rescheduling.</div>
-                            <div>• Missed appointments or cancellations with less than 24 hours' notice may be deducted from the membership.</div>
-                            <div>• Extended service area fees may apply for selected locations.</div>
-                        </div>
-                    </div>
+                    <p style="font-size:13px; color:var(--foreground-muted); margin-top:16px;">
+        <i class="fas fa-star me-1" style="color:var(--primary);"></i>
+        Already had your first session? Ask about our membership plans for regular visits on your
+        <a href="/client/" style="color:var(--primary); text-decoration:underline;">client dashboard</a>.
+    </p>
 
                     {% if errors.service %}
                     <div class="invalid-feedback d-block">
