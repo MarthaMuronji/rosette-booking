@@ -1433,5 +1433,11 @@ Object.keys(packageConfigs).forEach(key => {
         toggle.classList.toggle('open', !isOpen);
         toggle.querySelector('span').textContent = isOpen ? 'See what\'s included' : 'Hide details';
     }
+    // Auto-trigger goal filter if arriving from homepage with a goal parameter
+    const urlParams = new URLSearchParams(window.location.search);
+    const goalParam = urlParams.get('goal');
+    if (goalParam && ['relax', 'pain', 'sports', 'reset', 'unsure'].includes(goalParam)) {
+        selectGoal(goalParam);
+    }
 </script>
 {% endblock %}
