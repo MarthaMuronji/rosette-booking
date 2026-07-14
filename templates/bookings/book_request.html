@@ -476,6 +476,22 @@
                 <i class="fab fa-whatsapp me-2" style="color:#25d366;"></i>
                 <strong style="color:white;">Your appointment will be confirmed via WhatsApp</strong> after reviewing availability.
             </div>
+            <div class="progress-indicator" style="display:flex; align-items:center; justify-content:center; gap:8px; margin-bottom:28px;">
+    <div class="progress-step active" id="stepIndicator1" style="display:flex; align-items:center; gap:8px;">
+        <div class="step-circle" style="width:28px; height:28px; border-radius:50%; background:var(--primary); color:#000; display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:700;">1</div>
+        <span style="font-size:13px; color:var(--foreground);">Treatment</span>
+    </div>
+    <div style="width:30px; height:1px; background:var(--border);"></div>
+    <div class="progress-step" id="stepIndicator2" style="display:flex; align-items:center; gap:8px;">
+        <div class="step-circle" style="width:28px; height:28px; border-radius:50%; background:#1a1a1a; border:1px solid var(--border); color:var(--foreground-muted); display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:700;">2</div>
+        <span style="font-size:13px; color:var(--foreground-muted);">Date & Time</span>
+    </div>
+    <div style="width:30px; height:1px; background:var(--border);"></div>
+    <div class="progress-step" id="stepIndicator3" style="display:flex; align-items:center; gap:8px;">
+        <div class="step-circle" style="width:28px; height:28px; border-radius:50%; background:#1a1a1a; border:1px solid var(--border); color:var(--foreground-muted); display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:700;">3</div>
+        <span style="font-size:13px; color:var(--foreground-muted);">Details</span>
+    </div>
+</div>
             <form method="POST" id="requestForm">
                 {% csrf_token %}
                 {% if non_field_errors %}
@@ -764,6 +780,24 @@
     const pendingSlots = {{ pending_slots|safe }};
     const allSlots = {{ slots|safe }};
     const blockedDates = {{ blocked_dates|safe }};
+
+    function updateStepIndicator(step) {
+    for (let i = 1; i <= 3; i++) {
+        const circle = document.querySelector(`#stepIndicator${i} .step-circle`);
+        const label = document.querySelector(`#stepIndicator${i} span`);
+        if (i <= step) {
+            circle.style.background = 'var(--primary)';
+            circle.style.color = '#000';
+            circle.style.border = 'none';
+            label.style.color = 'var(--foreground)';
+        } else {
+            circle.style.background = '#1a1a1a';
+            circle.style.color = 'var(--foreground-muted)';
+            circle.style.border = '1px solid var(--border)';
+            label.style.color = 'var(--foreground-muted)';
+        }
+    }
+}
 
     // ===== SEARCHABLE COUNTRY CODE DROPDOWN =====
     const countries = [
@@ -1183,6 +1217,7 @@ Object.keys(packageConfigs).forEach(key => {
         card.classList.add('selected');
         document.getElementById('service_' + value).checked = true;
         selectedService = value;
+        updateStepIndicator(2);
 
         const durationSection = document.getElementById('durationSection');
         const durationSelect  = document.getElementById('durationSelect');
@@ -1271,6 +1306,7 @@ Object.keys(packageConfigs).forEach(key => {
         el.classList.add('selected');
         document.getElementById('selectedTime').value = slot;
         document.getElementById('timeSelectedNotice').style.display = 'block';
+        updateStepIndicator(3);
     }
 
     function formatTime(slot) {
