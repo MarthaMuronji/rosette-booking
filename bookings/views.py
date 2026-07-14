@@ -718,6 +718,10 @@ def book_confirm(request, pk):
         request.session['prefill_phone'] = appointment.client_phone
 
         logger.info(f"Booking confirmed: {appointment.pk} - {appointment.client_name}")
+        send_push_to_masseuse(
+            title='Booking Confirmed',
+            body=f"{appointment.client_name} completed their booking — {appointment.get_service_display()} on {appointment.appointment_date}",
+        )
 
         if payment_method == 'card':
             return redirect(f'https://pay.ziina.com/rosettestella?amount={total_price}&source=app')
