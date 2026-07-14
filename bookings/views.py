@@ -886,6 +886,7 @@ def approve_appointment(request, pk):
             f"Date: {appointment.appointment_date}\n"
             f"Time: {time_formatted}\n\n"
             f"Please confirm your session details here: {confirm_url}\n\n"
+            f"📍 A quick note to prepare: please ensure your room is spacious enough for the massage table (a clear area of at least 2.5 × 2 metres is ideal), remove fragile items, and ensure good ventilation.\n\n"
             f"See you soon! 🌸"
         )
     elif appointment.service in PACKAGE_CONFIGS:
@@ -897,8 +898,10 @@ def approve_appointment(request, pk):
             f"Date of first session: {appointment.appointment_date}\n"
             f"Time: {time_formatted}\n\n"
             f"Please complete your package purchase here: {confirm_url}\n\n"
+            f"📍 A quick note to prepare: please ensure your room is spacious enough for the massage table (a clear area of at least 2.5 × 2 metres is ideal), remove fragile items, and ensure good ventilation.\n\n"
             f"We look forward to your wellness journey! 🌸"
         )
+        
     else:
         raw_message = (
             f"🌿 Hi {appointment.client_name}! Your Rosette Wellness request has been approved!\n\n"
@@ -906,6 +909,7 @@ def approve_appointment(request, pk):
             f"Date: {appointment.appointment_date}\n"
             f"Time: {time_formatted}\n\n"
             f"Please complete your booking here: {confirm_url}\n\n"
+            f"📍 A quick note to prepare: please ensure your room is spacious enough for the massage table (a clear area of at least 2.5 × 2 metres is ideal), remove fragile items, and ensure good ventilation.\n\n"
             f"We look forward to seeing you! 🌸"
         )
 
