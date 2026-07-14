@@ -993,6 +993,27 @@ async function setupPushNotifications() {
         alert('Something went wrong: ' + err.message);
     }
 }
+async function checkExistingSubscription() {
+    if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
+        return;
+    }
+    try {
+        const registration = await navigator.serviceWorker.getRegistration('/sw.js');
+        if (!registration) return;
+
+        const existingSubscription = await registration.pushManager.getSubscription();
+        const btn = document.getElementById('enableNotificationsBtn');
+        if (existingSubscription && btn) {
+            btn.innerHTML = '<i class="fas fa-check me-1"></i> Notifications Enabled';
+            btn.disabled = true;
+            btn.style.opacity = '0.6';
+        }
+    } catch (err) {
+        console.error('Could not check existing subscription:', err);
+    }
+}
+
+checkExistingSubscription();
 
 function urlBase64ToUint8Array(base64String) {
     const padding = '='.repeat((4 - base64String.length % 4) % 4);
