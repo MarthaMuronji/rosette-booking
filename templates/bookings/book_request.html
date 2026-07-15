@@ -550,10 +550,16 @@
                id="service_signature" class="me-3"
                {% if form_data.service == 'signature' %}checked{% endif %}>
         <div>
+            <div>
             <div class="service-name" style="font-size: 20px;">Signature Full Body Reset</div>
             <p style="color: var(--foreground-muted); font-size: 13px; margin: 6px 0 0; line-height: 1.6;">
                 Perfect for first-time clients. Designed to relieve stress, improve recovery and restore balance.
             </p>
+            <div style="margin-top: 10px; font-size: 13px; color: var(--foreground-muted); line-height: 1.9;">
+                <div><i class="fas fa-check" style="color: var(--primary); width: 16px;"></i> 90 minutes</div>
+                <div><i class="fas fa-check" style="color: var(--primary); width: 16px;"></i> Swedish + Cupping + Recovery Blend</div>
+                <div><i class="fas fa-check" style="color: var(--primary); width: 16px;"></i> Most Recommended</div>
+            </div>
         </div>
     </div>
 </div>
@@ -614,11 +620,6 @@
                     {% endfor %}
 
 </div>
-                    <p style="font-size:13px; color:var(--foreground-muted); margin-top:16px;">
-        <i class="fas fa-star me-1" style="color:var(--primary);"></i>
-        Already had your first session? Ask about our membership plans for regular visits on your
-        <a href="/client/" style="color:var(--primary); text-decoration:underline;">client dashboard</a>.
-    </p>
 
                     {% if errors.service %}
                     <div class="invalid-feedback d-block">
