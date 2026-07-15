@@ -31,6 +31,17 @@ PACKAGE_CONFIGS = {
     'vip_wellness': {'name': 'Rosette Signature Membership', 'total_sessions': 10, 'validity_days': 90, 'base_price': 2800},
 }
 
+
+SERVICE_PRICES = {
+    'signature': {90: 340, 120: 420},
+    'swedish': {60: 250, 90: 320, 120: 400},
+    'deep_tissue': {90: 370, 120: 450},
+    'sports': {90: 380, 120: 470},
+    'hot_stone': {90: 380, 120: 470},
+    'foot_massage': {30: 180, 60: 240},
+    'head_neck_shoulders': {30: 150, 60: 200},
+}
+
 ZONE_FEES = {'zone1': 0, 'zone2': 25, 'zone3': 50, 'zone4': 75,}
 ADDON_PRICES = {'none': 0, 'foot_30': 140, 'extra_30': 120}
 
@@ -57,20 +68,12 @@ def get_booking_context(request, form=None):
         'zone_fees_json': json.dumps(ZONE_FEES),
         'addon_prices_json': json.dumps(ADDON_PRICES),
         'package_configs_json': json.dumps(PACKAGE_CONFIGS),
+        'service_prices_json': json.dumps(SERVICE_PRICES),
     }
 
 
 def calculate_price(service, duration, addon, zone):
-    base_prices = {
-        'signature': {90: 340, 120: 420},
-        'swedish': {60: 250, 90: 320, 120: 400},
-        'deep_tissue': {90: 370, 120: 450},
-        'sports': {90: 380, 120: 470},
-        'hot_stone': {90: 380, 120: 470},
-        'foot_massage': {30: 180, 60: 240},
-        'head_neck_shoulders': {30: 150, 60: 200},
-    }
-    base = base_prices.get(service, {}).get(int(duration), 0)
+    base = SERVICE_PRICES.get(service, {}).get(int(duration), 0)
     addon_fee = ADDON_PRICES.get(addon, 0)
     zone_fee = ZONE_FEES.get(zone, 0)
     return base + addon_fee + zone_fee
@@ -675,6 +678,7 @@ def book_confirm(request, pk):
                 'zone_fees_json': json.dumps(ZONE_FEES),
                 'addon_prices_json': json.dumps(ADDON_PRICES),
                 'package_configs_json': json.dumps(PACKAGE_CONFIGS),
+                'service_prices_json': json.dumps(SERVICE_PRICES),
             })
         
 
@@ -743,6 +747,7 @@ def book_confirm(request, pk):
         'zone_fees_json': json.dumps(ZONE_FEES),
         'addon_prices_json': json.dumps(ADDON_PRICES),
         'package_configs_json': json.dumps(PACKAGE_CONFIGS),
+        'service_prices_json': json.dumps(SERVICE_PRICES),
     })
 
 
@@ -1086,6 +1091,7 @@ def client_dashboard(request):
         'zone_fees_json': json.dumps(ZONE_FEES),
         'addon_prices_json': json.dumps(ADDON_PRICES),
         'package_configs_json': json.dumps(PACKAGE_CONFIGS),
+        'service_prices_json': json.dumps(SERVICE_PRICES),
     })
 
 
