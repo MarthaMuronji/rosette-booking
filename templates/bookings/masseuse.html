@@ -464,11 +464,10 @@
                     </span>
                     <form method="POST" action="{% url 'unblock_date' bd.pk %}" style="margin:0;">
                         {% csrf_token %}
-                        <button type="submit" class="btn-whatsapp-rw"
-                                style="background:rgba(239,68,68,0.1); color:#ef4444; border-color:rgba(239,68,68,0.3); border:1px solid rgba(239,68,68,0.3); cursor:pointer;"
-                                onclick="return confirm('Unblock this date? Clients will be able to book it again.')">
-                            Unblock
-                        </button>
+                        <button type="button" onclick="confirmAction(this, 'Unblock this date? Clients will be able to book it again.')"
+        class="btn-whatsapp-rw" style="background:rgba(239,68,68,0.1); color:#ef4444; border-color:rgba(239,68,68,0.3); border:1px solid rgba(239,68,68,0.3); cursor:pointer;">
+    Unblock
+</button>
                     </form>
                 </div>
                 {% endfor %}
@@ -542,15 +541,13 @@
                         <div class="d-flex flex-column gap-2 align-items-md-end">
                             <form method="POST" action="{% url 'whatsapp_approve_cancellation' apt.pk %}">
                                 {% csrf_token %}
-                                <button type="submit" class="btn-approve-cancel-rw"
-                                        onclick="return confirm('Approve this cancellation?')">
-                                    <i class="fas fa-check me-1"></i> Approve Cancellation
-                                </button>
+                                <button type="button" class="btn-approve-cancel-rw" onclick="confirmAction(this, 'Approve this cancellation?')">
+    <i class="fas fa-check me-1"></i> Approve Cancellation
+</button>
                             </form>
                             <form method="POST" action="{% url 'whatsapp_decline_cancellation' apt.pk %}">
                                 {% csrf_token %}
-                                <button type="submit" class="btn-decline-cancel-rw"
-                                        onclick="return confirm('Decline this cancellation?')">
+                                <button type="button" class="btn-decline-cancel-rw" onclick="confirmAction(this, 'Decline this cancellation?')">
                                     <i class="fas fa-times me-1"></i> Decline Cancellation
                                 </button>
                             </form>
@@ -696,10 +693,9 @@
                         </a>
                         <form method="POST" action="{% url 'therapist_cancel_appointment' apt.pk %}">
                             {% csrf_token %}
-                            <button type="submit" class="btn-decline-rw" style="width:100%;"
-                                    onclick="return confirm('Cancel this approved-but-unconfirmed booking for {{ apt.client_name }}? This will free up the slot.')">
-                                <i class="fas fa-ban me-1"></i> Cancel & Free Slot
-                            </button>
+                            <button type="button" class="btn-decline-rw" style="width:100%;" onclick="confirmAction(this, 'Cancel this approved-but-unconfirmed booking for {{ apt.client_name }}? This will free up the slot.')">
+    <i class="fas fa-ban me-1"></i> Cancel & Free Slot
+</button>
                         </form>
                     </div>
                 </div>
@@ -797,15 +793,14 @@
                             </a>
                             <form method="POST" action="{% url 'complete_appointment' apt.pk %}">
     {% csrf_token %}
-    <button type="submit" class="btn-complete-rw"
-            onclick="return confirm('Mark this session as completed?')">
-        <i class="fas fa-check-double me-1"></i> Mark as Complete
-    </button>
+    <button type="button" class="btn-complete-rw" onclick="confirmAction(this, 'Mark this session as completed?')">
+    <i class="fas fa-check-double me-1"></i> Mark as Complete
+</button>
 </form>
 <form method="POST" action="{% url 'therapist_cancel_appointment' apt.pk %}">
     {% csrf_token %}
-    <button type="submit" class="btn-decline-rw" style="width:100%;"
-            onclick="return confirm('Cancel this appointment for {{ apt.client_name }}? The client will be notified.')">
+    <button type="button" class="btn-decline-rw" style="width:100%;"
+            onclick="confirmAction(this, 'Cancel this appointment for {{ apt.client_name }}? The client will be notified.')">
         <i class="fas fa-ban me-1"></i> Cancel Appointment
     </button>
 </form>

@@ -468,9 +468,8 @@
                     <a href="/book/reschedule/{{ apt.pk }}/" class="btn-reschedule">Reschedule</a>
                     {% endif %}
                     {% if apt.status == 'confirmed' %}
-                    <a href="/client/cancel/{{ apt.pk }}/"
-                       class="btn-cancel-rw"
-                       onclick="return confirm('Are you sure you want to request cancellation? This will be sent to the therapist for approval.')">
+                    <a href="#" onclick="confirmNavigate(event, '/client/cancel/{{ apt.pk }}/', 'Are you sure you want to request cancellation? This will be sent to the therapist for approval.')"
+   class="btn-cancel-rw">
                         <i class="fas fa-times me-1"></i> Request Cancellation
                     </a>
                     {% endif %}
