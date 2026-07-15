@@ -450,7 +450,20 @@
         if (confirmed && pendingConfirmForm) {
             pendingConfirmForm.submit();
         }
+        if (confirmed && pendingConfirmUrl) {
+            window.location.href = pendingConfirmUrl;
+        }
         pendingConfirmForm = null;
+        pendingConfirmUrl = null;
+    }
+
+    let pendingConfirmUrl = null;
+
+    function confirmNavigate(event, url, message) {
+        event.preventDefault();
+        pendingConfirmUrl = url;
+        document.getElementById('confirmModalMessage').textContent = message;
+        document.getElementById('confirmModalOverlay').style.display = 'flex';
     }
 </script>
 </body>
