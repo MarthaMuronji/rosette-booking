@@ -20,6 +20,7 @@
     }
 
     .hero-card {
+    border-color: var(--primary) !important;
     background: linear-gradient(135deg, rgba(232,137,14,0.1), rgba(232,137,14,0.03));
     position: relative;
     padding: 20px;
@@ -88,6 +89,16 @@
         padding: 2px 8px;
         margin-top: 4px;
     }
+
+    .goal-btn:hover {
+    border-color: var(--primary) !important;
+    background-color: var(--primary-light) !important;
+    color: var(--primary) !important;
+}
+
+a[href="#allTreatments"]:hover {
+    color: var(--primary) !important;
+}
 
     .time-slot {
         display: inline-block;
@@ -500,6 +511,7 @@
 </div>
             <form method="POST" id="requestForm">
                 {% csrf_token %}
+                <input type="hidden" name="service" id="selectedService" value="{{ form_data.service|default:'' }}">
                 {% if non_field_errors %}
                 <div class="rw-form-alert">
                     {% for error in non_field_errors %}
@@ -551,10 +563,10 @@
         <i class="fas fa-star me-1"></i> Most Booked
     </div>
     <div class="d-flex align-items-center mt-2">
-        <input type="radio" name="service" value="signature"
+        <input type="radio" name="service_radio" value="signature"
                id="service_signature" class="me-3"
                {% if form_data.service == 'signature' %}checked{% endif %}>
-        <div>
+        
             <div>
             <div class="service-name" style="font-size: 20px;">Signature Full Body Reset</div>
             <p style="color: var(--primary); font-size: 12px; font-weight: 600; letter-spacing: 0.5px; margin: 4px 0 0;">
@@ -574,7 +586,7 @@
 
 <p style="text-align:center; margin: 4px 0 20px;">
     <a href="#allTreatments" style="color: var(--foreground-muted); font-size: 13px; text-decoration: underline;"
-       onclick="document.getElementById('allTreatments').style.display='block'; this.style.display='none'; return false;">
+       onclick="showAllTreatments(); return false;">
         Or browse all treatments
     </a>
 </p>
@@ -584,7 +596,7 @@
 {% if value != 'monthly_wellness' and value != 'vip_wellness' and value != 'signature' %}
 <div class="service-card{% if errors.service %} is-invalid{% endif %}" data-service="{{ value }}" onclick="selectService('{{ value }}', this)">
                         <div class="d-flex align-items-center">
-                            <input type="radio" name="service" value="{{ value }}"
+                            <input type="radio" name="service_radio" value="{{ value }}"
                                    id="service_{{ value }}" class="me-3{% if errors.service %} is-invalid{% endif %}"
                                    {% if form_data.service == value %}checked{% endif %}>
                             <div>
@@ -867,17 +879,24 @@ function selectGoal(goal) {
 
     const note = document.getElementById('goalRecommendNote');
 
+    const durationSection = document.getElementById('durationSection');
+    if (durationSection) {
+        durationSection.style.display = 'none';
+    }
+
+    document.querySelectorAll('.service-card').forEach(card => {
+        card.classList.remove('selected');
+    });
+    document.querySelectorAll('input[name="service_radio"]').forEach(input => {
+        input.checked = false;
+    });
+    selectedService = null;
+
     if (goal === 'unsure' || goal === 'reset') {
         note.innerHTML = goal === 'reset'
             ? '<i class="fas fa-star me-1"></i> Great choice — the Signature Full Body Reset is our top recommendation.'
             : '<i class="fas fa-star me-1"></i> Based on what you told us, we recommend the Signature Full Body Reset below — it\'s designed to work for almost everyone.';
         note.style.display = 'block';
-        const heroCard = document.querySelector('.service-card[data-service="signature"]');
-        if (heroCard) {
-            heroCard.classList.add('selected');
-            const radio = document.getElementById('service_signature');
-            if (radio) radio.checked = true;
-        }
         return;
     }
     note.style.display = 'none';
@@ -888,13 +907,17 @@ function selectGoal(goal) {
     const allTreatments = document.getElementById('allTreatments');
     const browseLink = document.querySelector('a[href="#allTreatments"]');
 
+    console.log('[booking] selectGoal', { goal });
+
     document.querySelectorAll('#allTreatments .service-card').forEach(card => {
-        const input = card.querySelector('input[name="service"]');
+        const input = card.querySelector('input[name="service_radio"]');
         const value = input ? input.value : null;
         card.style.display = allowedServices.includes(value) ? 'block' : 'none';
     });
 
-    allTreatments.style.display = 'block';
+    if (allTreatments) {
+        allTreatments.style.display = 'block';
+    }
     if (browseLink) browseLink.style.display = 'none';
 }
 
@@ -1314,20 +1337,31 @@ Object.keys(packageConfigs).forEach(key => {
     let selectedService = null;
 
     function selectService(value, card) {
+        console.log('[booking] selectService called', { value, card });
         if (!card) {
             card = document.querySelector(`.service-card[data-service="${value}"]`);
         }
         if (!card) return;
 
-        document.querySelectorAll('.service-card').forEach(c => c.classList.remove('selected'));
-        card.classList.add('selected');
+        document.querySelectorAll('.service-card').forEach(c => {
+            c.classList.remove('selected');
+        });
+        document.querySelectorAll('input[name="service_radio"]').forEach(input => {
+            input.checked = false;
+        });
 
-        const radio = document.getElementById('service_' + value);
+        card.classList.add('selected');
+        const radio = card.querySelector('input[name="service_radio"]') || document.getElementById('service_' + value);
         if (radio) {
             radio.checked = true;
         }
+        const selectedServiceInput = document.getElementById('selectedService');
+        if (selectedServiceInput) {
+            selectedServiceInput.value = value;
+        }
         selectedService = value;
         updateStepIndicator(2);
+        console.log('[booking] selectService result', { selectedService, radioChecked: !!(radio && radio.checked) });
 
         const durationSection = document.getElementById('durationSection');
         const durationSelect  = document.getElementById('durationSelect');
@@ -1351,6 +1385,32 @@ Object.keys(packageConfigs).forEach(key => {
         if (value === initialSavedService && initialSavedDuration) {
             durationSelect.value = initialSavedDuration;
         }
+    }
+
+    function showAllTreatments() {
+        const allTreatments = document.getElementById('allTreatments');
+        const browseLink = document.querySelector('a[href="#allTreatments"]');
+        const heroCard = document.querySelector('.service-card[data-service="signature"]');
+        if (allTreatments) {
+            allTreatments.style.display = 'block';
+        }
+        if (browseLink) {
+            browseLink.style.display = 'none';
+        }
+        if (heroCard) {
+            heroCard.style.display = 'block';
+        }
+        console.log('[booking] showAllTreatments');
+        document.querySelectorAll('.service-card').forEach(c => {
+            c.classList.remove('selected');
+        });
+        document.querySelectorAll('input[name="service_radio"]').forEach(input => {
+            input.checked = false;
+        });
+        document.querySelectorAll('#allTreatments .service-card').forEach(c => {
+            c.style.display = 'block';
+        });
+        selectedService = null;
     }
 
     document.getElementById('dateInput').addEventListener('change', function() {
@@ -1481,5 +1541,13 @@ Object.keys(packageConfigs).forEach(key => {
     if (goalParam && ['relax', 'pain', 'sports', 'reset', 'unsure'].includes(goalParam)) {
         selectGoal(goalParam);
     }
+
+    // Global click trace to help debug selection issues
+    document.addEventListener('click', function(e) {
+        const svc = e.target.closest('.service-card');
+        if (svc) {
+            console.log('[booking] click on service-card', { service: svc.dataset.service, target: e.target.tagName });
+        }
+    });
 </script>
 {% endblock %}
