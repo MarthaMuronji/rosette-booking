@@ -582,7 +582,7 @@
 <div id="allTreatments" style="display:none;">
                     {% for value, label in services %}
 {% if value != 'monthly_wellness' and value != 'vip_wellness' and value != 'signature' %}
-<div class="service-card{% if errors.service %} is-invalid{% endif %}" onclick="selectService('{{ value }}', this)">
+<div class="service-card{% if errors.service %} is-invalid{% endif %}" data-service="{{ value }}" onclick="selectService('{{ value }}', this)">
                         <div class="d-flex align-items-center">
                             <input type="radio" name="service" value="{{ value }}"
                                    id="service_{{ value }}" class="me-3{% if errors.service %} is-invalid{% endif %}"
@@ -869,11 +869,15 @@ function selectGoal(goal) {
 
     if (goal === 'unsure' || goal === 'reset') {
         note.innerHTML = goal === 'reset'
-            ? '<i class="fas fa-star me-1"></i> Great choice — the Signature Full Body Reset is selected below.'
+            ? '<i class="fas fa-star me-1"></i> Great choice — the Signature Full Body Reset is our top recommendation.'
             : '<i class="fas fa-star me-1"></i> Based on what you told us, we recommend the Signature Full Body Reset below — it\'s designed to work for almost everyone.';
         note.style.display = 'block';
         const heroCard = document.querySelector('.service-card[data-service="signature"]');
-        if (heroCard) selectService('signature', heroCard);
+        if (heroCard) {
+            heroCard.classList.add('selected');
+            const radio = document.getElementById('service_signature');
+            if (radio) radio.checked = true;
+        }
         return;
     }
     note.style.display = 'none';
