@@ -815,6 +815,7 @@
     const bookedSlots = {{ booked_slots|safe }};
     const pendingSlots = {{ pending_slots|safe }};
     const allSlots = {{ slots|safe }};
+
     const blockedDates = {{ blocked_dates|safe }};
     const serviceSubtitles = {{ service_subtitles_json|safe }};
 document.querySelectorAll('.service-subtitle').forEach(el => {
@@ -1264,7 +1265,17 @@ function selectGoal(goal) {
     vip_wellness:        [90],
 };
 
-const prices = {{ service_prices_json|safe }};
+const prices = {
+    signature:           {90: 320, 120: 400},
+    swedish:             {60: 250, 90: 320, 120: 400},
+    deep_tissue:         {90: 370, 120: 450},
+    sports:              {90: 380, 120: 470},
+    hot_stone:           {90: 380, 120: 470},
+    foot_massage:        {30: 180, 60: 280},
+    head_neck_shoulders: {30: 150, 60: 250},
+    monthly_wellness:    {90: 1500},
+    vip_wellness:        {90: 2400},
+};
 const packageConfigs = {{ package_configs_json|safe }};
 
 // Build package prices/labels dynamically from server-side config
