@@ -584,6 +584,7 @@
                                    {% if form_data.service == value %}checked{% endif %}>
                             <div>
                                 <div class="service-name">{{ label }}</div>
+                                <p class="service-subtitle" data-service="{{ value }}" style="color: var(--primary); font-size: 11px; font-weight: 600; letter-spacing: 0.3px; margin: 3px 0 0;"></p>
                               
                                 {% if value == 'monthly_wellness' %}
                                 <div class="package-badge mt-1">Membership</div>
@@ -815,6 +816,12 @@
     const pendingSlots = {{ pending_slots|safe }};
     const allSlots = {{ slots|safe }};
     const blockedDates = {{ blocked_dates|safe }};
+    const serviceSubtitles = {{ service_subtitles_json|safe }};
+document.querySelectorAll('.service-subtitle').forEach(el => {
+    const val = el.dataset.service;
+    if (serviceSubtitles[val]) el.textContent = serviceSubtitles[val];
+});
+
 
     function updateStepIndicator(step) {
     for (let i = 1; i <= 3; i++) {

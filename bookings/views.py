@@ -42,6 +42,28 @@ SERVICE_PRICES = {
     'head_neck_shoulders': {30: 150, 60: 200},
 }
 
+SERVICE_TAGLINES = {
+    'swedish': 'Classic Relaxation',
+    'deep_tissue': 'Targeted Muscle Relief',
+    'sports': 'Sports Recovery',
+    'hot_stone': 'Deep Heat Therapy',
+    'foot_massage': 'Foot Reflexology',
+    'head_neck_shoulders': 'Upper Body Tension Relief',
+}
+
+def build_service_subtitles():
+    subtitles = {}
+    for key, tagline in SERVICE_TAGLINES.items():
+        durs = sorted(SERVICE_PRICES.get(key, {}).keys())
+        if len(durs) == 1:
+            dur_str = f"{durs[0]} minutes"
+        else:
+            dur_str = " or ".join(str(d) for d in durs) + " minutes"
+        subtitles[key] = f"{dur_str} • {tagline}"
+    return subtitles
+
+SERVICE_SUBTITLES = build_service_subtitles()
+
 ZONE_FEES = {'zone1': 0, 'zone2': 25, 'zone3': 50, 'zone4': 75,}
 ADDON_PRICES = {'none': 0, 'foot_30': 140, 'extra_30': 120}
 
@@ -69,6 +91,7 @@ def get_booking_context(request, form=None):
         'addon_prices_json': json.dumps(ADDON_PRICES),
         'package_configs_json': json.dumps(PACKAGE_CONFIGS),
         'service_prices_json': json.dumps(SERVICE_PRICES),
+        'service_subtitles_json': json.dumps(SERVICE_SUBTITLES),
     }
 
 
@@ -1092,6 +1115,7 @@ def client_dashboard(request):
         'addon_prices_json': json.dumps(ADDON_PRICES),
         'package_configs_json': json.dumps(PACKAGE_CONFIGS),
         'service_prices_json': json.dumps(SERVICE_PRICES),
+        'service_subtitles_json': json.dumps(SERVICE_SUBTITLES),
     })
 
 
