@@ -823,10 +823,13 @@
 
     const blockedDates = {{ blocked_dates|safe }};
     const serviceSubtitles = {{ service_subtitles_json|safe }};
-document.querySelectorAll('.service-subtitle').forEach(el => {
-    const val = el.dataset.service;
-    if (serviceSubtitles[val]) el.textContent = serviceSubtitles[val];
-});
+    const initialSavedService = '{{ form_data.service|default:"" }}';
+    const initialSavedDuration = '{{ form_data.duration|default:"" }}';
+
+    document.querySelectorAll('.service-subtitle').forEach(el => {
+        const val = el.dataset.service;
+        if (serviceSubtitles[val]) el.textContent = serviceSubtitles[val];
+    });
 
 
     function updateStepIndicator(step) {
@@ -1307,9 +1310,18 @@ Object.keys(packageConfigs).forEach(key => {
     let selectedService = null;
 
     function selectService(value, card) {
+        if (!card) {
+            card = document.querySelector(`.service-card[data-service="${value}"]`);
+        }
+        if (!card) return;
+
         document.querySelectorAll('.service-card').forEach(c => c.classList.remove('selected'));
         card.classList.add('selected');
-        document.getElementById('service_' + value).checked = true;
+
+        const radio = document.getElementById('service_' + value);
+        if (radio) {
+            radio.checked = true;
+        }
         selectedService = value;
         updateStepIndicator(2);
 
@@ -1331,6 +1343,10 @@ Object.keys(packageConfigs).forEach(key => {
             }
             durationSelect.innerHTML += `<option value="${d}">${label}</option>`;
         });
+
+        if (value === initialSavedService && initialSavedDuration) {
+            durationSelect.value = initialSavedDuration;
+        }
     }
 
     document.getElementById('dateInput').addEventListener('change', function() {
@@ -1411,12 +1427,15 @@ Object.keys(packageConfigs).forEach(key => {
     }
 
     // Restore selected service after a validation error (form re-render)
-    const savedService = '{{ form_data.service|default:"" }}';
+    const savedService = initialSavedService;
     if (savedService) {
-        const card = document.querySelector(`[onclick="selectService('${savedService}', this)"]`);
+                    let card = document.querySelector(`[onclick="selectService('${savedService}', this)"]`);
+        if (!card) {
+            card = document.querySelector(`.service-card[data-service="${savedService}"]`);
+        }
         if (card) {
             selectService(savedService, card);
-            const savedDuration = '{{ form_data.duration|default:"" }}';
+            const savedDuration = initialSavedDuration;
             if (savedDuration) {
                 document.getElementById('durationSelect').value = savedDuration;
             }
