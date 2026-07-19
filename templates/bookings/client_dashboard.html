@@ -496,6 +496,13 @@
             <div class="form-section" id="bookingSection">
                 <div class="form-section-title">Book a Session</div>
 
+                <div class="wa-confirm-notice" style="display:block; background-color: rgba(232,137,14,0.06); border-left: 3px solid var(--primary); color: var(--foreground-muted);">
+                    <i class="fas fa-map-marker-alt me-2" style="color:var(--primary);"></i>
+                    <strong style="color:var(--foreground);">Travel fees may apply</strong> depending on your area —
+                    <span id="dashZoneFeeSummary"></span>
+                    You'll confirm your exact location and total after your request is approved.
+                </div>
+
                 {% if booking_non_field_errors %}
                 <div class="rw-form-alert">
                     {% for msg in booking_non_field_errors %}
@@ -797,6 +804,13 @@ const zoneSummaryParts = Object.keys(zoneFees)
     .map(z => `<strong>+${zoneFees[z]} AED</strong> ${zoneLabels[z] || z}`);
 const zoneFeeSummaryEl = document.getElementById('zoneFeeSummary');
 if (zoneFeeSummaryEl) zoneFeeSummaryEl.innerHTML = zoneSummaryParts.join(' / ');
+const dashZoneSummaryEl = document.getElementById('dashZoneFeeSummary');
+if (dashZoneSummaryEl) {
+    const plainParts = Object.keys(zoneFees)
+        .filter(z => zoneFees[z] > 0)
+        .map(z => `+${zoneFees[z]} AED (${zoneLabels[z] || z})`);
+    dashZoneSummaryEl.textContent = plainParts.length ? plainParts.join(', ') + '. ' : 'Central Dubai is included at no extra cost. ';
+}
 
     let selectedService = null;
 
