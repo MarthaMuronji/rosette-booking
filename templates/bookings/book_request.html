@@ -628,7 +628,7 @@ a[href="#allTreatments"]:hover {
     <div>✓ Priority access to peak-time appointments</div>
     <div>✓ Personalized treatment plan</div>
     <div>✓ Flexible mix of treatment styles</div>
-    <div>✓ One complimentary treatment enhancement (e.g. hot stones, aromatherapy, or an extended scalp massage)</div>
+    <div>✓ One complimentary treatment enhancement (e.g. hot stones or an extended scalp massage)</div>
     <div style="margin-top:6px;"><span class="highlight">2,800 AED total</span></div>
     <div>Valid for 90 days from first session</div>
 </div>
@@ -1300,17 +1300,7 @@ function selectGoal(goal) {
     vip_wellness:        [90],
 };
 
-const prices = {
-    signature:           {90: 320, 120: 400},
-    swedish:             {60: 250, 90: 320, 120: 400},
-    deep_tissue:         {90: 370, 120: 450},
-    sports:              {90: 380, 120: 470},
-    hot_stone:           {90: 380, 120: 470},
-    foot_massage:        {30: 180, 60: 280},
-    head_neck_shoulders: {30: 150, 60: 250},
-    monthly_wellness:    {90: 1500},
-    vip_wellness:        {90: 2400},
-};
+const prices = {{ service_prices_json|safe }};
 const packageConfigs = {{ package_configs_json|safe }};
 
 // Build package prices/labels dynamically from server-side config
@@ -1320,7 +1310,7 @@ Object.keys(packageConfigs).forEach(key => {
 
 const zoneFees = {{ zone_fees_json|safe }};
 
-// Build the zone fee summary text dynamically, e.g. "+25 AED Zone 2 / +50 AED Zone 3 / +75 AED Zone 4"
+// Build the zone fee summary text dynamically
 const zoneLabels = { zone1: 'Zone 1', zone2: 'Zone 2', zone3: 'Zone 3', zone4: 'Zone 4' };
 const zoneSummaryParts = Object.keys(zoneFees)
     .filter(z => zoneFees[z] > 0)
