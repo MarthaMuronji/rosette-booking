@@ -503,6 +503,11 @@ Object.keys(packageConfigs).forEach(key => {
 const addonPrices = {{ addon_prices_json|safe }};
 const zoneFees = {{ zone_fees_json|safe }};
 
+const service = '{{ appointment.service }}';
+const duration = {{ appointment.duration }};
+const isPackage = {{ is_package|yesno:"true,false" }};
+const hasExistingPackage = {{ appointment.client_package|yesno:"true,false" }};
+
 // Fill in the package summary label/price dynamically (only relevant on first-session, no-existing-package view)
 const summaryLabelEl = document.getElementById('packageSummaryLabel');
 const summaryPriceEl = document.getElementById('packageSummaryPrice');
@@ -511,11 +516,6 @@ if (summaryLabelEl && packageConfigs[service]) {
     summaryLabelEl.textContent = `${cfg.name} (${cfg.total_sessions} sessions)`;
     summaryPriceEl.textContent = `${cfg.base_price.toLocaleString()} AED`;
 }
-
-const service = '{{ appointment.service }}';
-const duration = {{ appointment.duration }};
-const isPackage = {{ is_package|yesno:"true,false" }};
-const hasExistingPackage = {{ appointment.client_package|yesno:"true,false" }};
 
 let selectedZone = null;
 let selectedAddon = 'none';
