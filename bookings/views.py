@@ -1,5 +1,6 @@
 from django.http import JsonResponse
 from django.shortcuts import render, redirect, get_object_or_404
+from django.core.cache import cache
 from django.utils import timezone
 from django.conf import settings
 from .models import Appointment, ClientPackage, PushSubscription
@@ -779,18 +780,39 @@ def book_success(request, pk):
     return render(request, 'bookings/success.html', {'appointment': appointment})
 
 
+LOGIN_MAX_ATTEMPTS = 5
+LOGIN_LOCKOUT_SECONDS = 15 * 60  # 15 minutes
+
 def masseuse_login(request):
+    ip = request.META.get('REMOTE_ADDR', 'unknown')
+    cache_key = f'masseuse_login_attempts_{ip}'
+    attempts = cache.get(cache_key, 0)
+
+    locked_out = attempts >= LOGIN_MAX_ATTEMPTS
     form = MasseuseLoginForm()
+
     if request.method == 'POST':
-        form = MasseuseLoginForm(request.POST)
-        if form.is_valid():
-            request.session['masseuse_authenticated'] = True
-            logger.info("Masseuse logged in successfully")
-            return redirect('masseuse_dashboard')
-        logger.warning(f"Failed login attempt from {request.META.get('REMOTE_ADDR')}")
+        if locked_out:
+            logger.warning(f"Blocked login attempt from {ip} — too many failed attempts")
+        else:
+            form = MasseuseLoginForm(request.POST)
+            if form.is_valid():
+                cache.delete(cache_key)
+                request.session['masseuse_authenticated'] = True
+                request.session.set_expiry(0)  # expires when browser/app is closed
+                logger.info(f"Masseuse logged in successfully from {ip}")
+                return redirect('masseuse_dashboard')
+            else:
+                attempts += 1
+                cache.set(cache_key, attempts, LOGIN_LOCKOUT_SECONDS)
+                logger.warning(f"Failed login attempt {attempts}/{LOGIN_MAX_ATTEMPTS} from {ip}")
+                locked_out = attempts >= LOGIN_MAX_ATTEMPTS
+
     return render(request, 'bookings/masseuse_login.html', {
         'form': form,
         'errors': form.as_error_dict() if form.is_bound else {},
+        'locked_out': locked_out,
+        'lockout_minutes': LOGIN_LOCKOUT_SECONDS // 60,
     })
 
 

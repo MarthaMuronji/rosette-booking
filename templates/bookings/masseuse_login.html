@@ -77,8 +77,22 @@
         <h2 class="rw-section-title mb-1" style="font-size:28px;">Therapist Access</h2>
         <div class="rw-divider mx-auto"></div>
         <p style="color:var(--foreground-muted); font-size:14px; margin: 16px 0 28px;">
-            Enter your PIN to access the dashboard
+            {% if locked_out %}
+                Too many incorrect attempts
+            {% else %}
+                Enter your PIN to access the dashboard
+            {% endif %}
         </p>
+
+        {% if locked_out %}
+        <div style="background: rgba(239,68,68,0.08); border: 1px solid rgba(239,68,68,0.3);
+                    border-radius: 8px; padding: 16px 20px; margin-bottom: 20px; color: #ef4444;
+                    font-size: 13px; line-height: 1.6;">
+            <i class="fas fa-exclamation-triangle me-2"></i>
+            For security, access has been temporarily locked after several incorrect attempts.
+            Please try again in about {{ lockout_minutes }} minutes.
+        </div>
+        {% endif %}
 
         <form method="POST">
             {% csrf_token %}
@@ -89,6 +103,7 @@
                 placeholder="• • • •"
                 maxlength="4"
                 autofocus
+                {% if locked_out %}disabled{% endif %}
             >
             {% if errors.pin %}
             <div class="invalid-feedback d-block" style="margin-top:-12px; margin-bottom:16px;">
@@ -96,7 +111,8 @@
             </div>
             {% endif %}
             <button type="submit" class="btn-primary-rw w-100 py-3"
-                    style="font-size:15px; letter-spacing:1px; border-radius:8px;">
+                    style="font-size:15px; letter-spacing:1px; border-radius:8px;"
+                    {% if locked_out %}disabled style="opacity:0.5; cursor:not-allowed;"{% endif %}>
                 <i class="fas fa-unlock me-2"></i> ACCESS DASHBOARD
             </button>
         </form>

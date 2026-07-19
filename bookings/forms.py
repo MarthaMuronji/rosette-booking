@@ -21,7 +21,6 @@ VALID_DURATIONS = {
     'vip_wellness': [90],
 }
 
-
 def normalize_phone(phone):
     if re.search(r'[a-zA-Z]', phone or ''):
         raise ValidationError("Phone number cannot contain letters.")
