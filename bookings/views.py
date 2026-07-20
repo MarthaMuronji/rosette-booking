@@ -113,6 +113,8 @@ def get_time_slots():
     return slots
 
 
+TRAVEL_BUFFER_MINUTES = 30  # time reserved after each confirmed session for travel to the next appointment
+
 def get_booked_slots(exclude_pk=None):
     """Get all booked and pending slots with proper timezone handling"""
     today = timezone.now().date()
@@ -134,20 +136,20 @@ def get_booked_slots(exclude_pk=None):
     booked_slots = {}
     pending_slots = {}
 
-    # Process approved and confirmed bookings
+    # Process approved and confirmed bookings — includes travel buffer
     for b in approved_qs.values('appointment_date', 'appointment_time', 'duration', 'addon'):
         date_str = str(b['appointment_date'])
         if date_str not in booked_slots:
             booked_slots[date_str] = []
 
-        total = b['duration'] + addon_durations.get(b['addon'], 0)
+        total = b['duration'] + addon_durations.get(b['addon'], 0) + TRAVEL_BUFFER_MINUTES
         t = datetime.datetime.combine(b['appointment_date'], b['appointment_time'])
 
         for i in range(0, total, 30):
             slot_time = (t + datetime.timedelta(minutes=i)).strftime('%H:%M')
             booked_slots[date_str].append(slot_time)
 
-    # Process pending bookings
+    # Process pending bookings — no travel buffer yet, since not yet approved
     for p in pending_qs.values('appointment_date', 'appointment_time', 'duration', 'addon'):
         date_str = str(p['appointment_date'])
         if date_str not in pending_slots:
