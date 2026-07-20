@@ -783,7 +783,7 @@ def book_success(request, pk):
 
 
 LOGIN_MAX_ATTEMPTS = 5
-LOGIN_LOCKOUT_SECONDS = 15 * 60  # 15 minutes
+LOGIN_LOCKOUT_SECONDS = 30  # 30 seconds
 
 def masseuse_login(request):
     ip = request.META.get('REMOTE_ADDR', 'unknown')
@@ -814,7 +814,7 @@ def masseuse_login(request):
         'form': form,
         'errors': form.as_error_dict() if form.is_bound else {},
         'locked_out': locked_out,
-        'lockout_minutes': LOGIN_LOCKOUT_SECONDS // 60,
+        'lockout_seconds': LOGIN_LOCKOUT_SECONDS,
     })
 
 
