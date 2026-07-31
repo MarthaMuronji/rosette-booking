@@ -106,11 +106,14 @@ class BookingRequestForm(BootstrapFormMixin, forms.Form):
             raise ValidationError('This date is unavailable. Please choose another day.')
         return preferred_date
 
+    MIN_LEAD_MINUTES = 60  # require at least 1 hour's notice for same-day bookings
+
     def clean(self):
         cleaned = super().clean()
         service = cleaned.get('service')
         duration = cleaned.get('duration')
         preferred_date = cleaned.get('preferred_date')
+        preferred_time = cleaned.get('preferred_time')
         client_phone = cleaned.get('client_phone')
 
         if service and service not in dict(Appointment.SERVICE_CHOICES):
@@ -118,6 +121,22 @@ class BookingRequestForm(BootstrapFormMixin, forms.Form):
 
         if service and duration and duration not in VALID_DURATIONS.get(service, []):
             self.add_error('duration', 'Invalid duration for this service.')
+
+        if preferred_date and preferred_time:
+            try:
+                time_obj = datetime.datetime.strptime(preferred_time, '%H:%M').time()
+                requested_dt = timezone.make_aware(
+                    datetime.datetime.combine(preferred_date, time_obj)
+                )
+                min_allowed_dt = timezone.now() + datetime.timedelta(minutes=self.MIN_LEAD_MINUTES)
+                if requested_dt < min_allowed_dt:
+                    self.add_error(
+                        'preferred_time',
+                        f'Please choose a time at least {self.MIN_LEAD_MINUTES} minutes from now, '
+                        'to allow time to organize your session.'
+                    )
+            except ValueError:
+                pass  # invalid time format already caught by field validation
 
         if client_phone and preferred_date:
             exists = Appointment.objects.filter(

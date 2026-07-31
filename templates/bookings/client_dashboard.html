@@ -892,10 +892,10 @@ if (dashZoneSummaryEl) {
         allSlots.forEach(slot => {
             const [slotH, slotM] = slot.split(':').map(Number);
 
-            const isPast = isToday && (
-                slotH < now.getHours() ||
-                (slotH === now.getHours() && slotM <= now.getMinutes())
-            );
+            const MIN_LEAD_MINUTES = 60; // require at least 1 hour's notice
+        const slotTotalMinutes = slotH * 60 + slotM;
+        const currentTotalMinutes = now.getHours() * 60 + now.getMinutes();
+        const isPast = isToday && (slotTotalMinutes < currentTotalMinutes + MIN_LEAD_MINUTES);
 
             const isBooked      = booked.includes(slot);
             const isPending     = pending.includes(slot);

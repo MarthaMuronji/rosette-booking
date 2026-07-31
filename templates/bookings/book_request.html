@@ -1454,7 +1454,8 @@ Object.keys(packageConfigs).forEach(key => {
                 if (!isToday) return false;
                 const slotTotalMinutes = slotH * 60 + slotM;
                 const currentTotalMinutes = currentHour * 60 + currentMin;
-                return slotTotalMinutes < (currentTotalMinutes - 15);
+                const MIN_LEAD_MINUTES = 60; // require at least 1 hour's notice
+                return slotTotalMinutes < (currentTotalMinutes + MIN_LEAD_MINUTES);
             }
 
             const isPast = isTimePast(slotH, slotM, isToday, currentHour, currentMin);
