@@ -1,12 +1,16 @@
 import datetime
 import re
+from typing import ClassVar
 
 from django import forms
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.utils import timezone
 
-from .models import Appointment, BlockedDate
+from .models import (
+    Appointment,
+    BlockedDate,
+)
 
 
 VALID_DURATIONS = {
@@ -49,11 +53,7 @@ class BootstrapFormMixin:
         super().__init__(*args, **kwargs)
         for field in self.fields.values():
             css_class = field.widget.attrs.get('class', '')
-            if isinstance(field.widget, forms.Select):
-                base_class = 'rw-form-control'
-            elif isinstance(field.widget, forms.Textarea):
-                base_class = 'rw-form-control'
-            elif not isinstance(field.widget, (forms.RadioSelect, forms.HiddenInput)):
+            if isinstance(field.widget, (forms.Select, forms.Textarea)) or not isinstance(field.widget, (forms.RadioSelect, forms.HiddenInput)):
                 base_class = 'rw-form-control'
             else:
                 base_class = ''
@@ -179,7 +179,7 @@ class RescheduleForm(BootstrapFormMixin, forms.Form):
 class ConfirmBookingForm(BootstrapFormMixin, forms.ModelForm):
     class Meta:
         model = Appointment
-        fields = [
+        fields: ClassVar[list[str]] = [
             'addon',
             'zone',
             'client_email',
@@ -188,11 +188,11 @@ class ConfirmBookingForm(BootstrapFormMixin, forms.ModelForm):
             'preferred_pressure',
             'payment_method',
         ]
-        widgets = {
+        widgets: ClassVar[dict[str, object]] = {
             'client_address': forms.Textarea(attrs={'rows': 3}),
             'notes': forms.Textarea(attrs={'rows': 2}),
         }
-        error_messages = {
+        error_messages: ClassVar[dict[str, dict[str, str]]] = {
             'client_email': {'invalid': 'Please enter a valid email address.'},
         }
 
