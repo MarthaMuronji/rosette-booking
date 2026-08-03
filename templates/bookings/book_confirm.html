@@ -205,7 +205,10 @@
                 {% endif %}
             </div>
 
-            <form method="POST" id="confirmForm">
+            <form method="POST" id="confirmForm"
+                  data-is-package="{{ is_package|yesno:'true,false' }}"
+                  data-has-existing-package="{{ appointment.client_package|yesno:'true,false' }}"
+                  data-duration="{{ appointment.duration }}">
                 {% csrf_token %}
                 {% if non_field_errors %}
                 <div class="rw-form-alert">
@@ -254,7 +257,18 @@
                     </div>
                 </div>
 
-             <!-- 2. Zone -->
+                <!-- Professional Notice -->
+                <div class="form-section" style="background: rgba(239,68,68,0.04); border-color: rgba(239,68,68,0.2);">
+                    <div style="display:flex; align-items:flex-start; gap:12px;">
+                        <i class="fas fa-shield-alt" style="color:#ef4444; font-size:18px; margin-top:2px; flex-shrink:0;"></i>
+                        <p style="color: var(--foreground-muted); font-size:13px; line-height:1.7; margin:0;">
+                            <strong style="color: var(--foreground);">Professional Notice:</strong>
+                            Rosette Wellness is a licensed therapeutic massage service. Any request for inappropriate or sexual services — whether during booking, via WhatsApp, or in person — will result in the appointment being immediately declined, without further communication.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- 2. Zone -->
                 <div class="form-section">
                     <div class="form-section-title">2. Your Location Zone</div>
 
