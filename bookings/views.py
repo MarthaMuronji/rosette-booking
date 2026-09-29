@@ -710,7 +710,6 @@ def book_confirm(request, pk):
 
         addon = form.cleaned_data['addon']
         zone = form.cleaned_data['zone']
-        client_email = form.cleaned_data['client_email']
         client_address = form.cleaned_data['client_address']
         notes = form.cleaned_data['notes']
         preferred_pressure = form.cleaned_data['preferred_pressure']
@@ -1053,7 +1052,31 @@ def complete_appointment(request, pk):
             appointment.client_package.is_active = False
         appointment.client_package.save()
 
-    return redirect('masseuse_dashboard')
+    # NOTE: client's wording says "Rosette Wellness" (with an "a") —
+    # everywhere else in the app it's "Rosette Wellness". Confirm which is correct
+    # before this goes live, since it'll go out on every completed booking.
+    raw_message = (
+        "Booking Confirmed\n\n"
+        "Thank you for choosing Rosette Wellness at Home. Your appointment has been "
+        "successfully confirmed. 🤍\n\n"
+        "We look forward to bringing a refined wellness experience to you in the "
+        "comfort of your home.\n\n"
+        "See you soon. 🌿\n"
+        "— Rosette Wellness at Home"
+    )
+
+    phone = appointment.client_phone.replace('+', '').replace(' ', '')
+    whatsapp_url = f"https://wa.me/{phone}?text={urllib.parse.quote(raw_message)}"
+
+    return render(request, 'bookings/whatsapp_response.html', {
+    'appointment': appointment,
+    'message': '✅ Session marked as complete!',
+    'status': 'success',
+    'client_whatsapp': whatsapp_url,
+    'client_phone': appointment.client_phone,
+    'message_preview': raw_message,
+    'subtitle': 'Session marked as complete. Send the confirmation to the client below.',
+    })
 
 
 def client_lookup(request):

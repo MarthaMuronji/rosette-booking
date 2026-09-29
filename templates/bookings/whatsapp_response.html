@@ -102,11 +102,11 @@
         <div class="rw-divider mx-auto"></div>
         <p class="rw-section-subtitle mt-3">
             {% if status == 'success' %}
-            The appointment has been approved. Send the confirmation to the client below.
+            {{ subtitle|default:"The appointment has been approved. Send the confirmation message to the client below." }}
             {% elif status == 'declined' %}
-            The appointment has been declined. Send the apology message to the client below.
+            {{ subtitle|default:"The appointment has been declined. Send the apology message to the client below." }}
             {% else %}
-            This request has already been processed.
+            {{ subtitle|default:"This request has already been processed." }}
             {% endif %}
         </p>
     </div>
