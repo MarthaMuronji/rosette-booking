@@ -334,6 +334,14 @@
             Welcome back{% if client_name %}, {{ client_name }}{% endif %}
         </h1>
         <div class="rw-divider mx-auto"></div>
+        <a href="{% url 'client_logout' %}"
+           style="display:inline-block; margin-top:14px; color:rgba(255,255,255,0.4); font-size:12px;
+                  text-decoration:none; letter-spacing:1px; border-bottom:1px solid rgba(255,255,255,0.15);
+                  padding-bottom:2px; transition: all 0.2s;"
+           onmouseover="this.style.color='var(--primary)'; this.style.borderBottomColor='rgba(232,137,14,0.4)'"
+           onmouseout="this.style.color='rgba(255,255,255,0.4)'; this.style.borderBottomColor='rgba(255,255,255,0.15)'">
+            <i class="fas fa-sign-out-alt me-1"></i> Logout
+        </a>
     </div>
 </div>
 

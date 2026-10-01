@@ -1092,6 +1092,12 @@ def client_lookup(request):
     })
 
 
+def client_logout(request):
+    request.session.pop('client_phone', None)
+    logger.info("Client logged out")
+    return redirect('client_lookup')
+
+
 def client_dashboard(request):
     phone = request.session.get('client_phone')
     if not phone:
