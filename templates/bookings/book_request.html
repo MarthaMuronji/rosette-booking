@@ -1124,6 +1124,20 @@ function selectGoal(goal) {
     const phoneInput = document.getElementById('clientPhone');
     let selectedCode = countrySearch.value || '971';
 
+
+    // Digits-only typing, filters the list as they type
+countrySearch.addEventListener('input', function() {
+    this.value = this.value.replace(/[^0-9]/g, '');
+    const value = this.value.trim();
+    renderCountries(value);
+    countryOptions.classList.add('show');
+});
+
+// ADD THIS — digits-only typing on the phone number field itself
+phoneInput.addEventListener('input', function() {
+    this.value = this.value.replace(/[^0-9]/g, '').slice(0, 12);
+});
+
     // Codes to pin at the top — UAE first (home base), then common tourist/expat nationalities
     const popularCodes = ['971', '254', '234', '44', '91', '1', '966', '20', '27'];
 
@@ -1288,14 +1302,14 @@ function selectGoal(goal) {
         }
 
         const code = countrySearch.value.trim() || '971';
-        const phoneNumberClean = phoneNumber.replace(/[^0-9]/g, '');
+const phoneNumberClean = phoneNumber.replace(/[^0-9]/g, '');
 
-        if (!phoneNumberClean) {
-            e.preventDefault();
-            phoneInput.style.borderColor = '#ef4444';
-            alert('Please enter your phone number.');
-            return;
-        }
+if (!phoneNumberClean || phoneNumberClean.length < 5) {
+    e.preventDefault();
+    phoneInput.style.borderColor = '#ef4444';
+    alert('Please enter a valid phone number.');
+    return;
+}
 
         const exists = countries.some(c => c.code === code);
         const finalCode = exists ? code : '971';
