@@ -571,6 +571,16 @@ a[href="#allTreatments"]:hover {
     <p id="goalRecommendNote" style="display:none; font-size:13px; color:var(--primary); text-align:center; margin-top:12px; background:rgba(232,137,14,0.08); border:1px solid rgba(232,137,14,0.2); border-radius:8px; padding:10px 14px;">
         <i class="fas fa-star me-1"></i> Based on what you told us, we recommend the Signature Full Body Reset below — it's designed to work for almost everyone.
     </p>
+
+        <div id="focusAreaWrap" style="display:none; margin-top:12px;">
+        <label for="focusAreaInput" style="font-size:13px; color:var(--foreground); display:block; margin-bottom:6px;">
+            Tell us where you feel pain or tension, in your own words <span style="opacity:0.6;">(optional)</span>
+        </label>
+        <textarea id="focusAreaInput" name="client_focus_area" rows="3" maxlength="500"
+                  placeholder="e.g. tight shoulders from desk work, lower back ache after long drives"
+                  class="rw-form-control" style="width:100%;"></textarea>
+    </div>
+
 </div>
                     
 <!-- Signature Hero -->
@@ -896,6 +906,11 @@ function selectGoal(goal) {
     clicked.style.background = 'rgba(232,137,14,0.1)';
 
     const note = document.getElementById('goalRecommendNote');
+        const focusWrap = document.getElementById('focusAreaWrap');
+    if (focusWrap) {
+        focusWrap.style.display = goal === 'unsure' ? 'block' : 'none';
+        if (goal !== 'unsure') document.getElementById('focusAreaInput').value = '';
+    }
 
     const durationSection = document.getElementById('durationSection');
     if (durationSection) {
