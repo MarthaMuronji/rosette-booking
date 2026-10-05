@@ -250,6 +250,7 @@ def book_request(request):
         client_name = form.cleaned_data['client_name']
         client_phone = form.cleaned_data['client_phone']
         preferred_service = form.cleaned_data['preferred_service']
+        client_focus_area = request.POST.get('client_focus_area', '').strip()[:500] or None
         time_obj = datetime.datetime.strptime(preferred_time, '%H:%M').time()
 
         appointment_datetime = datetime.datetime.combine(
@@ -269,6 +270,7 @@ def book_request(request):
             masseuse_departure_time=departure_time,
             status='pending',
             preferred_service=preferred_service,
+            client_focus_area=client_focus_area,
         )
 
         existing_pkg = ClientPackage.objects.filter(
