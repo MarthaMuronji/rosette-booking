@@ -574,15 +574,11 @@ a[href="#allTreatments"]:hover {
 
         <div id="focusAreaWrap" style="display:none; margin-top:12px;">
         <label for="focusAreaInput" style="font-size:13px; color:var(--foreground); display:block; margin-bottom:6px;">
-            Tell us where you feel pain or tension, in your own words <span style="opacity:0.6;">(optional)</span>
+            Anything your therapist should know? (optional)
         </label>
         <textarea id="focusAreaInput" name="client_focus_area" rows="3" maxlength="500"
                   placeholder="e.g. tight shoulders from desk work, lower back ache after long drives"
                   class="rw-form-control" style="width:100%;"></textarea>
-        <button type="button" id="recommendTreatmentBtn" onclick="recommendTreatment()"
-                style="margin-top:8px; background:#1a1a1a; border:1px solid var(--border); border-radius:8px; padding:10px 14px; cursor:pointer; color:var(--foreground); font-size:13px; transition: all 0.2s;">
-            <i class="fas fa-wand-magic-sparkles me-1" style="color:var(--primary);"></i> Recommend a treatment
-        </button>
     </div>
 
 </div>
@@ -912,8 +908,7 @@ function selectGoal(goal) {
     const note = document.getElementById('goalRecommendNote');
         const focusWrap = document.getElementById('focusAreaWrap');
     if (focusWrap) {
-        focusWrap.style.display = goal === 'unsure' ? 'block' : 'none';
-        if (goal !== 'unsure') document.getElementById('focusAreaInput').value = '';
+        focusWrap.style.display = 'block';
     }
 
     const durationSection = document.getElementById('durationSection');
@@ -1460,79 +1455,6 @@ Object.keys(packageConfigs).forEach(key => {
             c.style.display = 'block';
         });
         selectedService = null;
-    }
-
-    let recommendTreatmentInFlight = false;
-
-    function recommendTreatment() {
-        const input = document.getElementById('focusAreaInput');
-        const text = input ? input.value.trim() : '';
-        if (!text || recommendTreatmentInFlight) return;
-
-        const form = document.getElementById('requestForm');
-        const csrfInput = form ? form.querySelector('[name="csrfmiddlewaretoken"]') : null;
-        const csrfToken = csrfInput ? csrfInput.value : '';
-
-        const body = new URLSearchParams();
-        body.append('text', text);
-        body.append('csrfmiddlewaretoken', csrfToken);
-
-        recommendTreatmentInFlight = true;
-
-        fetch("{% url 'recommend_service' %}", {
-            method: 'POST',
-            credentials: 'same-origin',
-            headers: {
-                'X-CSRFToken': csrfToken,
-                'X-Requested-With': 'XMLHttpRequest'
-            },
-            body: body
-        })
-        .then(resp => {
-            if (!resp.ok) throw new Error('Request failed with status ' + resp.status);
-            return resp.json();
-        })
-        .then(data => {
-            const key = data ? data.service : null;
-            if (!key) return;
-
-            const card = document.querySelector(`.service-card[data-service="${key}"]`);
-            if (!card) return;
-
-            const allTreatments = document.getElementById('allTreatments');
-            if (allTreatments && allTreatments.style.display === 'none') {
-                allTreatments.style.display = 'block';
-            }
-            if (card.style.display === 'none') {
-                card.style.display = 'block';
-            }
-            const browseLink = document.querySelector('a[href="#allTreatments"]');
-            if (browseLink) browseLink.style.display = 'none';
-
-            selectService(key, card);
-
-            const nameEl = card.querySelector('.service-name');
-            const name = nameEl ? nameEl.textContent.trim() : key;
-            const note = document.getElementById('goalRecommendNote');
-            if (note) {
-                note.innerHTML = '';
-                const icon = document.createElement('i');
-                icon.className = 'fas fa-star me-1';
-                note.appendChild(icon);
-                note.appendChild(document.createTextNode(
-                    ' Based on what you wrote, we recommend ' + name + ' — it has been selected below.'
-                ));
-                note.style.display = 'block';
-            }
-            console.log('[booking] recommendTreatment', { key });
-        })
-        .catch(err => {
-            // Leave the existing Signature recommendation untouched on any error.
-            console.log('[booking] recommendTreatment failed', err);
-        })
-        .finally(() => {
-            recommendTreatmentInFlight = false;
-        });
     }
 
     document.getElementById('dateInput').addEventListener('change', function() {
