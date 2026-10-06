@@ -22,6 +22,7 @@ import datetime
 import json
 import re
 import urllib.parse
+import urllib.request
 import logging
 from django.views.decorators.csrf import csrf_exempt
 
@@ -1229,3 +1230,87 @@ def service_worker(request):
     with open(sw_path, 'r') as f:
         content = f.read()
     return HttpResponse(content, content_type='application/javascript')
+
+
+RECOMMEND_SERVICE_KEYS = ('signature', 'swedish', 'deep_tissue', 'sports', 'hot_stone',
+                          'foot_massage', 'head_neck_shoulders')
+RECOMMEND_RATE_LIMIT = 10          # max calls per IP...
+RECOMMEND_RATE_WINDOW_SECONDS = 600  # ...per 10 minutes
+
+
+def get_ai_recommendation(text):
+    """Return one of RECOMMEND_SERVICE_KEYS for the client's free-text description.
+
+    Never raises: returns 'signature' when the text is empty, the API key is
+    missing, the call fails, or the model replies with something unexpected.
+    """
+    text = (text or '').strip()
+    if not text:
+        return 'signature'
+
+    api_key = os.environ.get('OPENAI_API_KEY')
+    if not api_key:
+        return 'signature'
+
+    payload = {
+        'model': 'gpt-4o-mini',
+        'temperature': 0,
+        'messages': [
+            {
+                'role': 'system',
+                'content': (
+                    'Choose exactly one key from the list '
+                    '[signature, swedish, deep_tissue, sports, hot_stone, '
+                    'foot_massage, head_neck_shoulders] '
+                    "that best fits the client's description. "
+                    'Reply with only the key. '
+                    'foot_massage is for foot or leg tiredness only. '
+                    'head_neck_shoulders is for neck, shoulder or upper-back tension only. '
+                    'signature is the default when the description is vague or general.'
+                ),
+            },
+            {'role': 'user', 'content': text},
+        ],
+    }
+
+    try:
+        req = urllib.request.Request(
+            'https://api.openai.com/v1/chat/completions',
+            data=json.dumps(payload).encode('utf-8'),
+            headers={
+                'Authorization': 'Bearer ' + api_key,
+                'Content-Type': 'application/json',
+            },
+            method='POST',
+        )
+        with urllib.request.urlopen(req, timeout=8) as response:
+            body = json.loads(response.read().decode('utf-8'))
+        reply = body['choices'][0]['message']['content'].strip().strip('\'"`').lower()
+    except Exception as exc:
+        error_message = str(exc).replace(api_key, '[redacted]')
+        logger.error('AI recommendation failed: %s: %s', type(exc).__name__, error_message)
+        return 'signature'
+
+    if reply not in RECOMMEND_SERVICE_KEYS:
+        return 'signature'
+    return reply
+
+
+def recommend_service(request):
+    """JSON endpoint: POST the focus-area text, get back a service key."""
+    if request.method != 'POST':
+        return JsonResponse({'service': 'signature'}, status=405)
+
+    text = (request.POST.get('text') or '').strip()[:500]
+
+    client_ip = request.META.get('HTTP_X_FORWARDED_FOR', '').split(',')[0].strip()
+    if not client_ip:
+        client_ip = request.META.get('REMOTE_ADDR', 'unknown')
+    rate_key = f'recommend_service:{client_ip}'
+    calls = cache.get(rate_key, 0)
+    if calls >= RECOMMEND_RATE_LIMIT:
+        return JsonResponse({'service': 'signature'})
+    cache.set(rate_key, calls + 1, RECOMMEND_RATE_WINDOW_SECONDS)
+
+    service = get_ai_recommendation(text)
+    return JsonResponse({'service': service})

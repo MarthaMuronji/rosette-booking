@@ -602,6 +602,12 @@
                             <i class="fas fa-phone"></i>
                             {{ apt.client_phone }}
                         </div>
+                        {% if apt.client_focus_area %}
+                        <div class="appointment-meta">
+                            <i class="fas fa-comment"></i>
+                            "{{ apt.client_focus_area }}"
+                        </div>
+                        {% endif %}
                         {% if apt.notes %}
                         <div class="appointment-meta">
                             <i class="fas fa-sticky-note"></i>
@@ -747,6 +753,12 @@
                             <i class="fas fa-phone"></i>
                             {{ apt.client_phone }}
                         </div>
+                        {% if apt.client_focus_area %}
+                        <div class="appointment-meta">
+                            <i class="fas fa-comment"></i>
+                            "{{ apt.client_focus_area }}"
+                        </div>
+                        {% endif %}
                         <div class="appointment-meta">
                             <i class="fas fa-map-marker-alt"></i>
                             {{ apt.client_address }}
