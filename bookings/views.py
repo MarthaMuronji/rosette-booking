@@ -1229,3 +1229,12 @@ def service_worker(request):
     with open(sw_path, 'r') as f:
         content = f.read()
     return HttpResponse(content, content_type='application/javascript')
+
+
+def health_check(request):
+    try:
+        list(Appointment.objects.all()[:1])
+        return HttpResponse('ok', content_type='text/plain')
+    except Exception as exc:
+        logger.error('Health check failed: %s: %s', type(exc).__name__, exc)
+        return HttpResponse('database error', status=503, content_type='text/plain')
