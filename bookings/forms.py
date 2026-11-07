@@ -18,6 +18,7 @@ VALID_DURATIONS = {
     'hot_stone': [90, 120],
     'foot_massage': [30, 60],
     'head_neck_shoulders': [30, 60],
+    'body_renewal': [60, 90],
     'monthly_wellness': [90],
     'vip_wellness': [90],
 }

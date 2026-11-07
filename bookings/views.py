@@ -41,6 +41,7 @@ SERVICE_PRICES = {
     'hot_stone': {90: 380, 120: 470},
     'foot_massage': {30: 180, 60: 240},
     'head_neck_shoulders': {30: 150, 60: 200},
+    'body_renewal': {60: 350, 90: 420},
 }
 
 SERVICE_TAGLINES = {
@@ -64,9 +65,11 @@ def build_service_subtitles():
     return subtitles
 
 SERVICE_SUBTITLES = build_service_subtitles()
+SERVICE_SUBTITLES['body_renewal'] = '20 min exfoliation + 60 or 90 min Swedish'
 
 ZONE_FEES = {'zone1': 0, 'zone2': 25, 'zone3': 50, 'zone4': 75,}
-ADDON_PRICES = {'none': 0, 'foot_30': 140, 'extra_30': 120}
+ADDON_PRICES = {'none': 0, 'foot_30': 140, 'extra_30': 120, 'scrub_20': 100, 'stretch_15': 50}
+SERVICE_EXTRA_MINUTES = {'body_renewal': 35}
 
 
 def get_booking_context(request, form=None):
@@ -132,17 +135,17 @@ def get_booked_slots(exclude_pk=None):
         approved_qs = approved_qs.exclude(pk=exclude_pk)
         pending_qs = pending_qs.exclude(pk=exclude_pk)
 
-    addon_durations = {'none': 0, 'foot_30': 30, 'extra_30': 30}
+    addon_durations = {'none': 0, 'foot_30': 30, 'extra_30': 30, 'scrub_20': 20, 'stretch_15': 15}
     booked_slots = {}
     pending_slots = {}
 
     # Process approved and confirmed bookings — includes travel buffer
-    for b in approved_qs.values('appointment_date', 'appointment_time', 'duration', 'addon'):
+    for b in approved_qs.values('appointment_date', 'appointment_time', 'duration', 'addon', 'service'):
         date_str = str(b['appointment_date'])
         if date_str not in booked_slots:
             booked_slots[date_str] = []
 
-        total = b['duration'] + addon_durations.get(b['addon'], 0) + TRAVEL_BUFFER_MINUTES
+        total = b['duration'] + SERVICE_EXTRA_MINUTES.get(b['service'], 0) + addon_durations.get(b['addon'], 0) + TRAVEL_BUFFER_MINUTES
         t = datetime.datetime.combine(b['appointment_date'], b['appointment_time'])
 
         for i in range(0, total, 30):
@@ -150,12 +153,12 @@ def get_booked_slots(exclude_pk=None):
             booked_slots[date_str].append(slot_time)
 
     # Process pending bookings — no travel buffer yet, since not yet approved
-    for p in pending_qs.values('appointment_date', 'appointment_time', 'duration', 'addon'):
+    for p in pending_qs.values('appointment_date', 'appointment_time', 'duration', 'addon', 'service'):
         date_str = str(p['appointment_date'])
         if date_str not in pending_slots:
             pending_slots[date_str] = []
 
-        total = p['duration'] + addon_durations.get(p['addon'], 0)
+        total = p['duration'] + SERVICE_EXTRA_MINUTES.get(p['service'], 0) + addon_durations.get(p['addon'], 0)
         t = datetime.datetime.combine(p['appointment_date'], p['appointment_time'])
 
         for i in range(0, total, 30):
@@ -202,7 +205,7 @@ def auto_complete_past_sessions():
         apt_dt = timezone.make_aware(
             datetime.datetime.combine(apt.appointment_date, apt.appointment_time)
         )
-        if now > apt_dt + datetime.timedelta(minutes=apt.duration):
+        if now > apt_dt + datetime.timedelta(minutes=apt.duration + SERVICE_EXTRA_MINUTES.get(apt.service, 0)):
             apt.status = 'completed'
             apt.save()
             if apt.client_package:
@@ -716,6 +719,21 @@ def book_confirm(request, pk):
         notes = form.cleaned_data['notes']
         preferred_pressure = form.cleaned_data['preferred_pressure']
         payment_method = form.cleaned_data['payment_method']
+
+        if addon == 'scrub_20' and appointment.service in ('foot_massage', 'head_neck_shoulders', 'body_renewal'):
+            form.add_error('addon', 'Body Exfoliation is not available with this treatment.')
+            return render(request, 'bookings/book_confirm.html', {
+                'appointment': appointment,
+                'is_package': is_package,
+                'prefill': request.POST,
+                'form': form,
+                'errors': form.as_error_dict(),
+                'non_field_errors': form.non_field_errors(),
+                'zone_fees_json': json.dumps(ZONE_FEES),
+                'addon_prices_json': json.dumps(ADDON_PRICES),
+                'package_configs_json': json.dumps(PACKAGE_CONFIGS),
+                'service_prices_json': json.dumps(SERVICE_PRICES),
+            })
 
         if is_package:
             zone_fee = ZONE_FEES.get(zone, 0)

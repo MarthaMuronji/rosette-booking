@@ -55,6 +55,7 @@ class Appointment(models.Model):
     ('hot_stone', 'Hot Stone Massage'),
     ('foot_massage', 'Foot Massage'),
     ('head_neck_shoulders', 'Head, Neck & Shoulders'),
+    ('body_renewal', 'Rosette Body Renewal Ritual'),
     ('monthly_wellness', 'Rosette Wellness Membership'),
     ('vip_wellness', 'Rosette Signature Membership'),
 ]
@@ -77,6 +78,8 @@ class Appointment(models.Model):
     ('none', 'No Add-On'),
     ('foot_30', 'Foot Massage — 30 min (140 AED)'),
     ('extra_30', '30 Minutes Extra (120 AED)'),
+    ('scrub_20', 'Body Exfoliation — 20 min (100 AED)'),
+    ('stretch_15', 'Assisted Stretching — 15 min (50 AED)'),
     ]
 
     PRESSURE_CHOICES: ClassVar[list[tuple[str, str]]] = [
