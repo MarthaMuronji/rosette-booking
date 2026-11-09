@@ -480,6 +480,98 @@
         </div>
     </div>
 
+    <!-- Block Hours Section -->
+    <div class="mb-5">
+        <div class="section-header">
+            <i class="fas fa-user-clock"></i> Block Hours
+        </div>
+        <div class="rw-card">
+            {% if block_hours_non_field_errors %}
+            <div class="rw-form-alert mb-3">
+                {% for error in block_hours_non_field_errors %}
+                <div><i class="fas fa-exclamation-circle me-2"></i>{{ error }}</div>
+                {% endfor %}
+            </div>
+            {% endif %}
+            <form method="POST" action="{% url 'block_hours' %}" class="d-flex gap-3 flex-wrap align-items-end">
+                {% csrf_token %}
+                <div>
+                    <label class="rw-form-label mb-1" style="display:block; font-size:12px; color:var(--foreground-muted);">Date</label>
+                    <input type="date" name="block_date" class="rw-form-control{% if block_hours_errors.block_date %} is-invalid{% endif %}"
+                           value="{{ block_hours_form.block_date.value|default:'' }}">
+                    {% if block_hours_errors.block_date %}
+                    <div class="invalid-feedback d-block">
+                        <i class="fas fa-exclamation-circle"></i> {{ block_hours_errors.block_date }}
+                    </div>
+                    {% endif %}
+                </div>
+                <div>
+                    <label class="rw-form-label mb-1" style="display:block; font-size:12px; color:var(--foreground-muted);">From</label>
+                    <input type="time" name="start_time" step="1800" class="rw-form-control{% if block_hours_errors.start_time %} is-invalid{% endif %}"
+                           value="{{ block_hours_form.start_time.value|time:'H:i' }}">
+                    {% if block_hours_errors.start_time %}
+                    <div class="invalid-feedback d-block">
+                        <i class="fas fa-exclamation-circle"></i> {{ block_hours_errors.start_time }}
+                    </div>
+                    {% endif %}
+                </div>
+                <div>
+                    <label class="rw-form-label mb-1" style="display:block; font-size:12px; color:var(--foreground-muted);">To</label>
+                    <input type="time" name="end_time" step="1800" class="rw-form-control{% if block_hours_errors.end_time %} is-invalid{% endif %}"
+                           value="{{ block_hours_form.end_time.value|time:'H:i' }}">
+                    {% if block_hours_errors.end_time %}
+                    <div class="invalid-feedback d-block">
+                        <i class="fas fa-exclamation-circle"></i> {{ block_hours_errors.end_time }}
+                    </div>
+                    {% endif %}
+                </div>
+                <div>
+                    <label class="rw-form-label mb-1" style="display:block; font-size:12px; color:var(--foreground-muted);">Reason (optional)</label>
+                    <input type="text" name="reason" maxlength="100" class="rw-form-control{% if block_hours_errors.reason %} is-invalid{% endif %}"
+                           placeholder="e.g. Personal appointment" value="{{ block_hours_form.reason.value|default:'' }}">
+                    {% if block_hours_errors.reason %}
+                    <div class="invalid-feedback d-block">
+                        <i class="fas fa-exclamation-circle"></i> {{ block_hours_errors.reason }}
+                    </div>
+                    {% endif %}
+                </div>
+                <button type="submit" class="btn-decline-rw">
+                    <i class="fas fa-ban me-1"></i> Block Hours
+                </button>
+            </form>
+
+            {% if blocked_ranges %}
+            <div class="mt-4" style="border-top:1px solid var(--border); padding-top:16px;">
+                {% for item in blocked_ranges %}
+                <div class="d-flex justify-content-between align-items-center py-2" style="border-bottom:1px solid var(--border);">
+                    <span style="color:var(--foreground);">
+                        <i class="fas fa-calendar-times me-2" style="color:#ef4444;"></i>
+                        {{ item.range.date|date:"D j M" }}, {{ item.range.start_time|time:"H:i" }} - {{ item.range.end_time|time:"H:i" }}
+                        {% if item.range.reason %}<span style="color:var(--foreground-muted);"> — {{ item.range.reason }}</span>{% endif %}
+                        {% if item.clashes %}
+                        <small style="display:block; color:#f59e0b; font-size:12px; margin-top:4px;">
+                            <i class="fas fa-exclamation-triangle me-2"></i>Clashes with: {% for c in item.clashes %}{{ c.client_name }}, {{ c.appointment_time|time:"H:i" }}{% if not forloop.last %}; {% endif %}{% endfor %}
+                        </small>
+                        {% endif %}
+                    </span>
+                    <form method="POST" action="{% url 'unblock_hours' item.range.pk %}" style="margin:0;">
+                        {% csrf_token %}
+                        <button type="button" onclick="confirmAction(this, 'Unblock these hours? Clients will be able to book them again.')"
+        class="btn-whatsapp-rw" style="background:rgba(239,68,68,0.1); color:#ef4444; border-color:rgba(239,68,68,0.3); border:1px solid rgba(239,68,68,0.3); cursor:pointer;">
+    Unblock
+</button>
+                    </form>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <p style="color:var(--foreground-muted); font-size:13px; margin-top:12px; margin-bottom:0;">
+                No blocked hours currently.
+            </p>
+            {% endif %}
+        </div>
+    </div>
+
     <!-- Cancellation Requests Section -->
 
 

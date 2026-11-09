@@ -7,7 +7,7 @@ from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.utils import timezone
 
-from .models import Appointment, BlockedDate
+from .models import Appointment, BlockedDate, BlockedTimeRange
 
 
 VALID_DURATIONS = {
@@ -248,3 +248,50 @@ class BlockDateForm(BootstrapFormMixin, forms.ModelForm):
     def save(self, commit=True):
         self.instance.date = self.cleaned_data['block_date']
         return super().save(commit=commit)
+
+
+class BlockHoursForm(BootstrapFormMixin, forms.Form):
+    block_date = forms.DateField(
+        input_formats=['%Y-%m-%d'],
+        error_messages={'required': 'Please select today or a future date.'},
+    )
+    start_time = forms.TimeField(
+        input_formats=['%H:%M'],
+        error_messages={'required': 'Please select a start time.'},
+    )
+    end_time = forms.TimeField(
+        input_formats=['%H:%M'],
+        error_messages={'required': 'Please select an end time.'},
+    )
+    reason = forms.CharField(max_length=100, required=False)
+
+    def clean_block_date(self):
+        block_date = self.cleaned_data['block_date']
+        if block_date < timezone.now().date():
+            raise ValidationError('Please select today or a future date.')
+        return block_date
+
+    def clean(self):
+        cleaned = super().clean()
+        start_time = cleaned.get('start_time')
+        end_time = cleaned.get('end_time')
+
+        if start_time and start_time.minute % 30 != 0:
+            self.add_error('start_time', 'Start time must be on a 30-minute mark.')
+        if end_time and end_time.minute % 30 != 0:
+            self.add_error('end_time', 'End time must be on a 30-minute mark.')
+
+        if not self.has_error('start_time') and not self.has_error('end_time'):
+            if start_time and end_time and end_time <= start_time:
+                self.add_error('end_time', 'End time must be after start time.')
+
+            if not self.has_error('end_time'):
+                block_date = cleaned.get('block_date')
+                if block_date and BlockedTimeRange.objects.filter(
+                    date=block_date,
+                    start_time=start_time,
+                    end_time=end_time,
+                ).exists():
+                    self.add_error(None, 'This time range is already blocked.')
+
+        return cleaned

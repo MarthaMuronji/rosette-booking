@@ -33,6 +33,8 @@ urlpatterns = [
 
     path('masseuse/block-date/', views.block_date, name='block_date'),
     path('masseuse/unblock-date/<int:pk>/', views.unblock_date, name='unblock_date'),
+    path('masseuse/block-hours/', views.block_hours, name='block_hours'),
+    path('masseuse/unblock-hours/<int:pk>/', views.unblock_hours, name='unblock_hours'),
     path('masseuse/cancel/<int:pk>/', views.therapist_cancel_appointment, name='therapist_cancel_appointment'),
 ]
 

@@ -7,8 +7,10 @@ from .models import Appointment, ClientPackage, PushSubscription
 from django.utils import timezone as tz
 from pywebpush import webpush, WebPushException
 from .models import BlockedDate
+from .models import BlockedTimeRange
 from .forms import (
     BlockDateForm,
+    BlockHoursForm,
     BookingRequestForm,
     ClientLookupForm,
     ConfirmBookingForm,
@@ -165,6 +167,19 @@ def get_booked_slots(exclude_pk=None):
             slot_time = (t + datetime.timedelta(minutes=i)).strftime('%H:%M')
             pending_slots[date_str].append(slot_time)
 
+    # Blocked time ranges — every 30-minute slot from start up to (not including) end
+    for br in BlockedTimeRange.objects.filter(date__gte=today):
+        date_str = str(br.date)
+        if date_str not in booked_slots:
+            booked_slots[date_str] = []
+
+        t = datetime.datetime.combine(br.date, br.start_time)
+        total = int((datetime.datetime.combine(br.date, br.end_time) - t).total_seconds() // 60)
+        for i in range(0, total, 30):
+            slot_time = (t + datetime.timedelta(minutes=i)).strftime('%H:%M')
+            if slot_time not in booked_slots[date_str]:
+                booked_slots[date_str].append(slot_time)
+
     return booked_slots, pending_slots
 
 def get_blocked_dates():
@@ -255,6 +270,23 @@ def book_request(request):
         preferred_service = form.cleaned_data['preferred_service']
         client_focus_area = request.POST.get('client_focus_area', '').strip()[:500] or None
         time_obj = datetime.datetime.strptime(preferred_time, '%H:%M').time()
+
+        blocked_clash_start = datetime.datetime.combine(preferred_date, time_obj)
+        blocked_clash_end = blocked_clash_start + datetime.timedelta(
+            minutes=int(duration) + SERVICE_EXTRA_MINUTES.get(service, 0)
+        )
+        if BlockedTimeRange.objects.filter(
+            date=preferred_date,
+            start_time__lt=blocked_clash_end.time(),
+            end_time__gt=time_obj,
+        ).exists():
+            form.add_error('preferred_time', 'That time is unavailable. Please choose another.')
+            if request.POST.get('source') == 'dashboard':
+                request.session['booking_errors'] = form.as_error_dict()
+                request.session['booking_non_field_errors'] = list(form.non_field_errors())
+                request.session['booking_form_data'] = dict(request.POST.items())
+                return redirect('client_dashboard')
+            return render(request, 'bookings/book_request.html', get_booking_context(request, form))
 
         appointment_datetime = datetime.datetime.combine(
             preferred_date,
@@ -635,6 +667,31 @@ def reschedule_appointment(request, pk):
         new_date = form.cleaned_data['preferred_date']
         new_time = form.cleaned_data['preferred_time']
         time_obj = datetime.datetime.strptime(new_time, '%H:%M').time()
+
+        blocked_clash_start = datetime.datetime.combine(new_date, time_obj)
+        blocked_clash_end = blocked_clash_start + datetime.timedelta(
+            minutes=appointment.duration + SERVICE_EXTRA_MINUTES.get(appointment.service, 0)
+        )
+        if BlockedTimeRange.objects.filter(
+            date=new_date,
+            start_time__lt=blocked_clash_end.time(),
+            end_time__gt=time_obj,
+        ).exists():
+            form.add_error('preferred_time', 'That time is unavailable. Please choose another.')
+            booked_slots, pending_slots = get_booked_slots(exclude_pk=appointment.pk)
+            return render(request, 'bookings/reschedule.html', {
+                'appointment': appointment,
+                'slots': valid_slots,
+                'booked_slots': json.dumps(booked_slots),
+                'pending_slots': json.dumps(pending_slots),
+                'blocked_dates': json.dumps(get_blocked_dates()),
+                'today': today.isoformat(),
+                'form': form,
+                'errors': form.as_error_dict(),
+                'non_field_errors': form.non_field_errors(),
+                'form_data': form.data,
+            })
+
         appointment.appointment_date = new_date
         appointment.appointment_time = time_obj
         appointment.status = 'pending'
@@ -891,6 +948,37 @@ def masseuse_dashboard(request):
     else:
         block_date_form = BlockDateForm()
 
+    block_hours_form_data = request.session.pop('block_hours_form_data', None)
+    block_hours_errors = request.session.pop('block_hours_errors', {})
+    block_hours_non_field_errors = request.session.pop('block_hours_non_field_errors', [])
+    if block_hours_form_data:
+        block_hours_form = BlockHoursForm(block_hours_form_data)
+        block_hours_form.is_valid()
+    else:
+        block_hours_form = BlockHoursForm()
+
+    hours_addon_durations = {'none': 0, 'foot_30': 30, 'extra_30': 30, 'scrub_20': 20, 'stretch_15': 15}
+    blocked_ranges = []
+    for br in BlockedTimeRange.objects.filter(date__gte=today).order_by('date', 'start_time'):
+        br_start = datetime.datetime.combine(br.date, br.start_time)
+        br_end = datetime.datetime.combine(br.date, br.end_time)
+        clashes = []
+        for apt in Appointment.objects.filter(
+            appointment_date=br.date,
+            status__in=['pending', 'approved', 'confirmed'],
+        ):
+            apt_start = datetime.datetime.combine(apt.appointment_date, apt.appointment_time)
+            apt_end = apt_start + datetime.timedelta(
+                minutes=apt.duration + SERVICE_EXTRA_MINUTES.get(apt.service, 0)
+                + hours_addon_durations.get(apt.addon, 0)
+            )
+            if apt_start < br_end and apt_end > br_start:
+                clashes.append({
+                    'client_name': apt.client_name,
+                    'appointment_time': apt.appointment_time,
+                })
+        blocked_ranges.append({'range': br, 'clashes': clashes})
+
     logger.info(f"Dashboard viewed - Pending: {pending.count()}, Confirmed: {confirmed.count()}")
 
     return render(request, 'bookings/masseuse.html', {
@@ -910,6 +998,10 @@ def masseuse_dashboard(request):
         'block_date_form': block_date_form,
         'block_date_errors': block_date_errors,
         'block_date_non_field_errors': block_date_non_field_errors,
+        'blocked_ranges': blocked_ranges,
+        'block_hours_form': block_hours_form,
+        'block_hours_errors': block_hours_errors,
+        'block_hours_non_field_errors': block_hours_non_field_errors,
         'vapid_public_key': settings.VAPID_PUBLIC_KEY,
     })
 
@@ -936,6 +1028,36 @@ def unblock_date(request, pk):
         return redirect('masseuse_login')
 
     BlockedDate.objects.filter(pk=pk).delete()
+    return redirect('masseuse_dashboard')
+
+
+def block_hours(request):
+    if not request.session.get('masseuse_authenticated'):
+        return redirect('masseuse_login')
+
+    if request.method == 'POST':
+        form = BlockHoursForm(request.POST)
+        if form.is_valid():
+            blocked_range = BlockedTimeRange.objects.create(
+                date=form.cleaned_data['block_date'],
+                start_time=form.cleaned_data['start_time'],
+                end_time=form.cleaned_data['end_time'],
+                reason=form.cleaned_data['reason'],
+            )
+            logger.info(f"Time range blocked: {blocked_range.date} {blocked_range.start_time}-{blocked_range.end_time}")
+        else:
+            request.session['block_hours_errors'] = form.as_error_dict()
+            request.session['block_hours_non_field_errors'] = list(form.non_field_errors())
+            request.session['block_hours_form_data'] = dict(request.POST.items())
+
+    return redirect('masseuse_dashboard')
+
+
+def unblock_hours(request, pk):
+    if not request.session.get('masseuse_authenticated'):
+        return redirect('masseuse_login')
+
+    BlockedTimeRange.objects.filter(pk=pk).delete()
     return redirect('masseuse_dashboard')
 
 def approve_appointment(request, pk):
