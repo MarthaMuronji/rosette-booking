@@ -5,8 +5,8 @@ from django.db import models
 
 class ClientPackage(models.Model):
     PACKAGE_TYPE_CHOICES: ClassVar[list[tuple[str, str]]] = [
-        ('monthly_wellness', 'Rosette Wellness Membership'),
-        ('vip_wellness', 'Rosette Signature Membership'),
+        ('monthly_wellness', 'Blessed Hands Wellness Membership'),
+        ('vip_wellness', 'Blessed Hands Signature Membership'),
     ]
 
     client_name = models.CharField(max_length=100)
@@ -55,9 +55,9 @@ class Appointment(models.Model):
     ('hot_stone', 'Hot Stone Massage'),
     ('foot_massage', 'Foot Massage'),
     ('head_neck_shoulders', 'Head, Neck & Shoulders'),
-    ('body_renewal', 'Rosette Body Renewal Ritual'),
-    ('monthly_wellness', 'Rosette Wellness Membership'),
-    ('vip_wellness', 'Rosette Signature Membership'),
+    ('body_renewal', 'Body Renewal Ritual'),
+    ('monthly_wellness', 'Blessed Hands Wellness Membership'),
+    ('vip_wellness', 'Blessed Hands Signature Membership'),
 ]
 
     DURATION_CHOICES: ClassVar[list[tuple[int, str]]] = [
@@ -79,7 +79,6 @@ class Appointment(models.Model):
     ('foot_30', 'Foot Massage — 30 min (140 AED)'),
     ('extra_30', '30 Minutes Extra (120 AED)'),
     ('scrub_20', 'Body Exfoliation — 20 min (100 AED)'),
-    ('stretch_15', 'Assisted Stretching — 15 min (50 AED)'),
     ]
 
     PRESSURE_CHOICES: ClassVar[list[tuple[str, str]]] = [

@@ -1,6 +1,6 @@
 {% extends 'bookings/base.html' %}
 
-{% block title %}Request an Appointment — Rosette Wellness{% endblock %}
+{% block title %}Request an Appointment — Blessed Hands Wellness at Home{% endblock %}
 
 {% block extra_css %}
 <style>
@@ -21,7 +21,7 @@
 
     .hero-card {
     border-color: var(--primary) !important;
-    background: linear-gradient(135deg, rgba(232,137,14,0.1), rgba(232,137,14,0.03));
+    background: linear-gradient(135deg, rgba(212,164,55,0.1), rgba(212,164,55,0.03));
     position: relative;
     padding: 20px;
 }
@@ -79,9 +79,9 @@
 
     .package-badge {
         display: inline-block;
-        background: rgba(232, 137, 14, 0.15);
+        background: rgba(212, 164, 55, 0.15);
         color: var(--primary);
-        border: 1px solid rgba(232, 137, 14, 0.3);
+        border: 1px solid rgba(212, 164, 55, 0.3);
         border-radius: 4px;
         font-size: 11px;
         letter-spacing: 1px;
@@ -127,7 +127,7 @@ a[href="#allTreatments"]:hover {
     }
 
     .time-slot.pending {
-        background-color: rgba(232, 137, 14, 0.08);
+        background-color: rgba(212, 164, 55, 0.08);
         color: var(--primary);
         cursor: not-allowed;
         border-color: var(--border-orange);
@@ -189,7 +189,7 @@ a[href="#allTreatments"]:hover {
 
     .space-notice {
         background: var(--card-bg);
-        border: 1px solid rgba(232, 137, 14, 0.25);
+        border: 1px solid rgba(212, 164, 55, 0.25);
         border-radius: 12px;
         padding: 20px 24px;
         margin-bottom: 24px;
@@ -240,7 +240,7 @@ a[href="#allTreatments"]:hover {
         align-items: center;
         gap: 6px;
         font-size: 12px;
-        color: rgba(232,137,14,0.7);
+        color: rgba(212,164,55,0.7);
         margin-top: 8px;
         cursor: pointer;
         user-select: none;
@@ -259,8 +259,8 @@ a[href="#allTreatments"]:hover {
     .package-toggle.open .chevron { transform: rotate(180deg); }
 
     .package-fee-notice {
-        background: rgba(232,137,14,0.06);
-        border: 1px solid rgba(232,137,14,0.2);
+        background: rgba(212,164,55,0.06);
+        border: 1px solid rgba(212,164,55,0.2);
         border-radius: 8px;
         padding: 14px 18px;
         font-size: 13px;
@@ -373,7 +373,7 @@ a[href="#allTreatments"]:hover {
     }
 
     .country-option:hover {
-        background: rgba(232,137,14,0.12);
+        background: rgba(212,164,55,0.12);
     }
 
     .country-option .code {
@@ -484,6 +484,9 @@ a[href="#allTreatments"]:hover {
 <div class="booking-hero">
     <div class="container">
         <p class="tag">In-Home Wellness Therapy — Dubai</p>
+        <p style="color:var(--primary); font-size:12px; letter-spacing:3px; text-transform:uppercase; margin-bottom:8px;">
+            Blessed Hands Wellness at Home <span style="font-family:'Great Vibes', cursive; text-transform:none; letter-spacing:0.5px; font-size:22px; color:#f3d58a;">with Rosetta</span>
+        </p>
         <h1 class="rw-section-title">Begin Your Wellness Journey</h1>
         <div class="rw-divider mx-auto"></div>
         <p class="rw-section-subtitle mt-3">
@@ -502,10 +505,10 @@ a[href="#allTreatments"]:hover {
 
             <div class="whatsapp-notice" style="background-color: rgba(239,68,68,0.06); border: 1px solid rgba(239,68,68,0.2);">
                 <i class="fas fa-shield-alt me-2" style="color:#ef4444;"></i>
-                <span style="color: var(--foreground-muted);">Rosette Wellness is a licensed therapeutic service. Requests for inappropriate conduct will result in immediate decline.</span>
+                <span style="color: var(--foreground-muted);">Blessed Hands Wellness at Home is a licensed therapeutic service. Requests for inappropriate conduct will result in immediate decline.</span>
             </div>
 
-            <div class="whatsapp-notice" style="background-color: rgba(232,137,14,0.06); border: 1px solid rgba(232,137,14,0.2);">
+            <div class="whatsapp-notice" style="background-color: rgba(212,164,55,0.06); border: 1px solid rgba(212,164,55,0.2);">
                 <i class="fas fa-map-marker-alt me-2" style="color:var(--primary);"></i>
                 <strong style="color:white;">Travel fees may apply</strong> depending on your area —
                 <span id="requestZoneFeeSummary" style="color: var(--foreground-muted);"></span>
@@ -568,7 +571,13 @@ a[href="#allTreatments"]:hover {
             <i class="fas fa-magic me-1" style="color:var(--primary);"></i> Not Sure? Recommend One
         </button>
     </div>
-    <p id="goalRecommendNote" style="display:none; font-size:13px; color:var(--primary); text-align:center; margin-top:12px; background:rgba(232,137,14,0.08); border:1px solid rgba(232,137,14,0.2); border-radius:8px; padding:10px 14px;">
+    <p id="showAllTreatmentsWrap" style="display:none; text-align:center; margin-top:12px;">
+        <a href="#" style="color: var(--foreground-muted); font-size: 13px; text-decoration: underline;"
+           onclick="showAllTreatments(); return false;">
+            Show all treatments
+        </a>
+    </p>
+    <p id="goalRecommendNote" style="display:none; font-size:13px; color:var(--primary); text-align:center; margin-top:12px; background:rgba(212,164,55,0.08); border:1px solid rgba(212,164,55,0.2); border-radius:8px; padding:10px 14px;">
         <i class="fas fa-star me-1"></i> Based on what you told us, we recommend the Signature Full Body Reset below — it's designed to work for almost everyone.
     </p>
 
@@ -612,14 +621,10 @@ a[href="#allTreatments"]:hover {
     </div>
 </div>
 
-<p style="text-align:center; margin: 4px 0 20px;">
-    <a href="#allTreatments" style="color: var(--foreground-muted); font-size: 13px; text-decoration: underline;"
-       onclick="showAllTreatments(); return false;">
-        Or browse all treatments
-    </a>
-</p>
-
-<div id="allTreatments" style="display:none;">
+<div id="allTreatments">
+    <p style="font-size: 12px; font-weight: 600; letter-spacing: 1px; text-transform: uppercase; color: var(--foreground-muted); text-align: center; margin: 0 0 14px;">
+        All Treatments
+    </p>
                     {% for value, label in services %}
 {% if value != 'monthly_wellness' and value != 'vip_wellness' and value != 'signature' %}
 <div class="service-card{% if errors.service %} is-invalid{% endif %}" data-service="{{ value }}" onclick="selectService('{{ value }}', this)">
@@ -646,7 +651,7 @@ a[href="#allTreatments"]:hover {
 </div>
 
                                 {% elif value == 'vip_wellness' %}
-                                <div class="package-badge mt-1" style="background: rgba(232,137,14,0.25); border-color: var(--primary); color: #fff;">VIP</div>
+                                <div class="package-badge mt-1" style="background: rgba(212,164,55,0.25); border-color: var(--primary); color: #fff;">VIP</div>
                                 <button type="button" class="package-toggle" onclick="togglePackageDetails(event, 'details_vip_wellness')">
                                     <span>See what's included</span>
                                     <i class="fas fa-chevron-down chevron"></i>
@@ -733,7 +738,7 @@ a[href="#allTreatments"]:hover {
                             <span>Available</span>
                         </div>
                         <div class="legend-item">
-                            <div class="legend-dot" style="background:rgba(232,137,14,0.15); border:1px solid rgba(232,137,14,0.4);"></div>
+                            <div class="legend-dot" style="background:rgba(212,164,55,0.15); border:1px solid rgba(212,164,55,0.4);"></div>
                             <span>Pending</span>
                         </div>
                         <div class="legend-item">
@@ -835,7 +840,7 @@ a[href="#allTreatments"]:hover {
               letter-spacing:2px; text-transform:uppercase;
               border-bottom: 1px solid rgba(255,255,255,0.1);
               padding-bottom:2px; transition: all 0.3s;"
-       onmouseover="this.style.color='rgba(232,137,14,0.7)'; this.style.borderBottomColor='rgba(232,137,14,0.4)'"
+       onmouseover="this.style.color='rgba(212,164,55,0.7)'; this.style.borderBottomColor='rgba(212,164,55,0.4)'"
        onmouseout="this.style.color='rgba(255,255,255,0.25)'; this.style.borderBottomColor='rgba(255,255,255,0.1)'">
         Therapist Access
     </a>
@@ -847,7 +852,7 @@ a[href="#allTreatments"]:hover {
               letter-spacing:2px; text-transform:uppercase;
               border-bottom: 1px solid rgba(255,255,255,0.1);
               padding-bottom:2px; transition: all 0.3s;"
-       onmouseover="this.style.color='rgba(232,137,14,0.7)'; this.style.borderBottomColor='rgba(232,137,14,0.4)'"
+       onmouseover="this.style.color='rgba(212,164,55,0.7)'; this.style.borderBottomColor='rgba(212,164,55,0.4)'"
        onmouseout="this.style.color='rgba(255,255,255,0.25)'; this.style.borderBottomColor='rgba(255,255,255,0.1)'">
         My Bookings
     </a>
@@ -903,12 +908,17 @@ function selectGoal(goal) {
     });
     const clicked = document.querySelector(`.goal-btn[data-goal="${goal}"]`);
     clicked.style.borderColor = 'var(--primary)';
-    clicked.style.background = 'rgba(232,137,14,0.1)';
+    clicked.style.background = 'rgba(212,164,55,0.1)';
 
     const note = document.getElementById('goalRecommendNote');
         const focusWrap = document.getElementById('focusAreaWrap');
     if (focusWrap) {
         focusWrap.style.display = 'block';
+    }
+
+    const showAllWrap = document.getElementById('showAllTreatmentsWrap');
+    if (showAllWrap) {
+        showAllWrap.style.display = 'block';
     }
 
     const durationSection = document.getElementById('durationSection');
@@ -929,6 +939,13 @@ function selectGoal(goal) {
             ? '<i class="fas fa-star me-1"></i> Great choice — the Signature Full Body Reset is our top recommendation.'
             : '<i class="fas fa-star me-1"></i> Based on what you told us, we recommend the Signature Full Body Reset below — it\'s designed to work for almost everyone.';
         note.style.display = 'block';
+        const allTreatmentsEl = document.getElementById('allTreatments');
+        if (allTreatmentsEl) {
+            allTreatmentsEl.style.display = 'block';
+        }
+        document.querySelectorAll('#allTreatments .service-card').forEach(card => {
+            card.style.display = 'block';
+        });
         return;
     }
     note.style.display = 'none';
@@ -1436,6 +1453,14 @@ Object.keys(packageConfigs).forEach(key => {
         const allTreatments = document.getElementById('allTreatments');
         const browseLink = document.querySelector('a[href="#allTreatments"]');
         const heroCard = document.querySelector('.service-card[data-service="signature"]');
+        const showAllWrap = document.getElementById('showAllTreatmentsWrap');
+        if (showAllWrap) {
+            showAllWrap.style.display = 'none';
+        }
+        document.querySelectorAll('.goal-btn').forEach(b => {
+            b.style.borderColor = 'var(--border)';
+            b.style.background = '#1a1a1a';
+        });
         if (allTreatments) {
             allTreatments.style.display = 'block';
         }

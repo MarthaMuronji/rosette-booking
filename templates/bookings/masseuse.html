@@ -1,6 +1,6 @@
 {% extends 'bookings/base.html' %}
 
-{% block title %}Therapist Dashboard — Rosette Wellness{% endblock %}
+{% block title %}Therapist Dashboard — Blessed Hands Wellness at Home{% endblock %}
 
 {% block extra_css %}
 <style>
@@ -258,8 +258,8 @@
     <div class="container">
         <div class="d-flex justify-content-end mb-2">
     <button id="enableNotificationsBtn" onclick="setupPushNotifications()"
-            style="background: rgba(232,137,14,0.15); color: var(--primary);
-                   border: 1px solid rgba(232,137,14,0.3); border-radius: 6px;
+            style="background: rgba(212,164,55,0.15); color: var(--primary);
+                   border: 1px solid rgba(212,164,55,0.3); border-radius: 6px;
                    padding: 8px 16px; font-size: 13px; cursor: pointer;">
         <i class="fas fa-bell me-1"></i> Enable Notifications
     </button>
@@ -276,7 +276,7 @@
         </div>
         <p style="color:var(--primary); letter-spacing:3px; font-size:12px;
                   text-transform:uppercase; margin-bottom:12px;">
-            Rosette Wellness
+            Blessed Hands Wellness at Home
         </p>
         <h1 class="rw-section-title">Therapist Dashboard</h1>
         <div class="rw-divider mx-auto"></div>
@@ -516,9 +516,10 @@
                     {% endif %}
                 </div>
                 <div>
-                    <label class="rw-form-label mb-1" style="display:block; font-size:12px; color:var(--foreground-muted);">To</label>
+                    <label class="rw-form-label mb-1" style="display:block; font-size:12px; color:var(--foreground-muted);">Free again from</label>
                     <input type="time" name="end_time" step="1800" class="rw-form-control{% if block_hours_errors.end_time %} is-invalid{% endif %}"
                            value="{{ block_hours_form.end_time.value|time:'H:i' }}">
+                    <small style="display:block; font-size:11px; color:var(--foreground-muted); margin-top:4px;">Clients can book from this time</small>
                     {% if block_hours_errors.end_time %}
                     <div class="invalid-feedback d-block">
                         <i class="fas fa-exclamation-circle"></i> {{ block_hours_errors.end_time }}
@@ -746,7 +747,7 @@
     <div class="section-header">
         <i class="fas fa-hourglass-half"></i> Awaiting Client Confirmation
         {% if approved %}
-        <span style="font-size:14px; background:rgba(232,137,14,0.12); color:var(--primary); padding:2px 12px; border-radius:20px; border:1px solid rgba(232,137,14,0.3);">
+        <span style="font-size:14px; background:rgba(212,164,55,0.12); color:var(--primary); padding:2px 12px; border-radius:20px; border:1px solid rgba(212,164,55,0.3);">
             {{ approved.count }}
         </span>
         {% endif %}
@@ -754,7 +755,7 @@
 
     {% if approved %}
         {% for apt in approved %}
-        <div class="appointment-card" style="border-color: rgba(232,137,14,0.25);">
+        <div class="appointment-card" style="border-color: rgba(212,164,55,0.25);">
             <div class="row align-items-center">
                 <div class="col-md-7">
                     <div class="client-name">{{ apt.client_name }}</div>
@@ -774,8 +775,8 @@
                         <i class="fas fa-phone"></i>
                         {{ apt.client_phone }}
                     </div>
-                    <div style="background:rgba(232,137,14,0.08);
-                                border-left:3px solid rgba(232,137,14,0.4);
+                    <div style="background:rgba(212,164,55,0.08);
+                                border-left:3px solid rgba(212,164,55,0.4);
                                 padding:10px 14px; border-radius:4px;
                                 font-size:13px; color:var(--primary);
                                 margin-top:12px;">
@@ -785,7 +786,7 @@
                 </div>
                 <div class="col-md-5 mt-3 mt-md-0">
                     <div class="d-flex flex-column gap-2 align-items-md-end">
-                        <a href="https://wa.me/{{ apt.client_phone|cut:'+' }}?text=Hi%20{{ apt.client_name }}%2C%20just%20a%20reminder%20to%20complete%20your%20Rosette%20Wellness%20booking%20details%20so%20we%20can%20confirm%20your%20appointment.%20🌿"
+                        <a href="https://wa.me/{{ apt.client_phone|cut:'+' }}?text=Hi%20{{ apt.client_name }}%2C%20just%20a%20reminder%20to%20complete%20your%20Blessed%20Hands%20Wellness%20at%20Home%20booking%20details%20so%20we%20can%20confirm%20your%20appointment.%20🌿"
                            class="btn-whatsapp-rw" target="_blank" style="width:100%; text-align:center;">
                             <i class="fab fa-whatsapp me-1"></i> Remind Client
                         </a>
@@ -1032,7 +1033,7 @@
                         </div>
                     </div>
                     <div class="col-md-4 mt-3 mt-md-0 text-md-end">
-                        <a href="https://wa.me/{{ apt.client_phone|cut:'+' }}?text=Hi%20{{ apt.client_name }}%2C%20we%20noticed%20your%20Rosette%20Wellness%20request%20for%20{{ apt.get_service_display }}%20on%20{{ apt.appointment_date }}%20was%20not%20confirmed%20in%20time.%20We%20apologise%20for%20the%20delay!%20Please%20visit%20our%20booking%20page%20to%20choose%20a%20new%20time%3A%20{{ base_url }}/book/%20We%20look%20forward%20to%20welcoming%20you!%20🌿"
+                        <a href="https://wa.me/{{ apt.client_phone|cut:'+' }}?text=Hi%20{{ apt.client_name }}%2C%20we%20noticed%20your%20Blessed%20Hands%20Wellness%20at%20Home%20request%20for%20{{ apt.get_service_display }}%20on%20{{ apt.appointment_date }}%20was%20not%20confirmed%20in%20time.%20We%20apologise%20for%20the%20delay!%20Please%20visit%20our%20booking%20page%20to%20choose%20a%20new%20time%3A%20{{ base_url }}/book/%20We%20look%20forward%20to%20welcoming%20you!%20🌿"
                            class="btn-whatsapp-rw" target="_blank">
                             <i class="fab fa-whatsapp me-1"></i> Notify Client
                         </a>

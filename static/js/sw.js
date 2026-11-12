@@ -3,10 +3,10 @@ self.addEventListener('push', function(event) {
     try {
         data = event.data.json();
     } catch (e) {
-        data = { title: 'Rosette Wellness', body: 'You have a new notification.' };
+        data = { title: 'Blessed Hands Wellness at Home', body: 'You have a new notification.' };
     }
 
-    const title = data.title || 'Rosette Wellness';
+    const title = data.title || 'Blessed Hands Wellness at Home';
     const options = {
         body: data.body || '',
         icon: '/static/images/icon-192.png',

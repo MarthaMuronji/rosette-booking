@@ -1,6 +1,6 @@
 {% extends 'bookings/base.html' %}
 
-{% block title %}Complete Your Booking — Rosette Wellness{% endblock %}
+{% block title %}Complete Your Booking — Blessed Hands Wellness at Home{% endblock %}
 
 {% block extra_css %}
 <style>
@@ -256,14 +256,6 @@
                             <small>20 min — +100 AED</small>
                         </div>
                         {% endif %}
-                        <div class="zone-card flex-fill text-center py-3{% if errors.addon %} is-invalid{% endif %}"
-                             onclick="selectOption('addon', 'stretch_15', this)">
-                            <input type="radio" name="addon" value="stretch_15" class="me-3"
-                                   {% if prefill.addon == 'stretch_15' %}checked{% endif %}>
-                            <i class="fas fa-walking mb-2" style="color:var(--primary); font-size:20px; display:block;"></i>
-                            <strong>Assisted Stretching</strong><br>
-                            <small>15 min — +50 AED</small>
-                        </div>
                     </div>
                     {% if errors.addon %}
                     <div class="invalid-feedback d-block">
@@ -273,7 +265,7 @@
                 </div>
 
                 <!-- What's Included -->
-                <div class="form-section" style="background: rgba(232,137,14,0.04); border-color: rgba(232,137,14,0.2);">
+                <div class="form-section" style="background: rgba(212,164,55,0.04); border-color: rgba(212,164,55,0.2);">
                     <div class="form-section-title" style="border-bottom: none; margin-bottom: 16px; padding-bottom: 0;">
                         Every Mobile Appointment Includes
                     </div>
@@ -302,7 +294,7 @@
                         <i class="fas fa-shield-alt" style="color:#ef4444; font-size:18px; margin-top:2px; flex-shrink:0;"></i>
                         <p style="color: var(--foreground-muted); font-size:13px; line-height:1.7; margin:0;">
                             <strong style="color: var(--foreground);">Professional Notice:</strong>
-                            Rosette Wellness is a licensed therapeutic massage service. Any request for inappropriate or sexual services — whether during booking, via WhatsApp, or in person — will result in the appointment being immediately declined, without further communication.
+                            Blessed Hands Wellness at Home is a licensed therapeutic massage service. Any request for inappropriate or sexual services — whether during booking, via WhatsApp, or in person — will result in the appointment being immediately declined, without further communication.
                         </p>
                     </div>
                 </div>
@@ -451,8 +443,8 @@
                         {% endif %}
 
                        <!-- ADD THIS BELOW THE PAYMENT METHOD DIV -->
-        <div id="cardNotice" style="display:none; margin-top:12px; background:rgba(232,137,14,0.06);
-             border:1px solid rgba(232,137,14,0.2); border-radius:8px; padding:12px 16px;
+        <div id="cardNotice" style="display:none; margin-top:12px; background:rgba(212,164,55,0.06);
+             border:1px solid rgba(212,164,55,0.2); border-radius:8px; padding:12px 16px;
              font-size:13px; color:var(--foreground-muted);">
             <i class="fas fa-info-circle me-2" style="color:var(--primary);"></i>
             After confirming, you'll be redirected to our secure payment page to complete your card payment.
@@ -475,7 +467,7 @@
 
 {% if is_package %}
     {% if appointment.client_package %}
-    <div style="background:rgba(232,137,14,0.06); border:1px solid rgba(232,137,14,0.25); border-radius:10px; padding:18px 22px; margin-bottom:24px;">
+    <div style="background:rgba(212,164,55,0.06); border:1px solid rgba(212,164,55,0.25); border-radius:10px; padding:18px 22px; margin-bottom:24px;">
         <i class="fas fa-check-circle me-2" style="color:var(--primary);"></i>
         <strong style="color:var(--foreground);">Session covered by your package</strong>
         <div style="color:var(--foreground-muted); font-size:13px; margin-top:8px;">
@@ -497,7 +489,7 @@
         </div>
     </div>
     {% else %}
-    <div style="background:rgba(232,137,14,0.06); border:1px solid rgba(232,137,14,0.25); border-radius:10px; padding:18px 22px; margin-bottom:24px;">
+    <div style="background:rgba(212,164,55,0.06); border:1px solid rgba(212,164,55,0.25); border-radius:10px; padding:18px 22px; margin-bottom:24px;">
         <div style="margin-bottom:16px; padding-bottom:16px; border-bottom:1px solid var(--border);">
             <div style="display:flex; justify-content:space-between; font-size:14px; color:var(--foreground-muted); margin-bottom:8px;">
                 <span id="packageSummaryLabel">—</span>

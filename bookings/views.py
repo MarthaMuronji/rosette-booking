@@ -30,8 +30,8 @@ from django.views.decorators.csrf import csrf_exempt
 logger = logging.getLogger(__name__)
 
 PACKAGE_CONFIGS = {
-    'monthly_wellness': {'name': 'Rosette Wellness Membership', 'total_sessions': 5, 'validity_days': 45, 'base_price': 1500},
-    'vip_wellness': {'name': 'Rosette Signature Membership', 'total_sessions': 10, 'validity_days': 90, 'base_price': 2800},
+    'monthly_wellness': {'name': 'Blessed Hands Wellness Membership', 'total_sessions': 5, 'validity_days': 45, 'base_price': 1500},
+    'vip_wellness': {'name': 'Blessed Hands Signature Membership', 'total_sessions': 10, 'validity_days': 90, 'base_price': 2800},
 }
 
 
@@ -70,7 +70,7 @@ SERVICE_SUBTITLES = build_service_subtitles()
 SERVICE_SUBTITLES['body_renewal'] = '20 min exfoliation + 60 or 90 min Swedish'
 
 ZONE_FEES = {'zone1': 0, 'zone2': 25, 'zone3': 50, 'zone4': 75,}
-ADDON_PRICES = {'none': 0, 'foot_30': 140, 'extra_30': 120, 'scrub_20': 100, 'stretch_15': 50}
+ADDON_PRICES = {'none': 0, 'foot_30': 140, 'extra_30': 120, 'scrub_20': 100}
 SERVICE_EXTRA_MINUTES = {'body_renewal': 35}
 
 
@@ -137,7 +137,7 @@ def get_booked_slots(exclude_pk=None):
         approved_qs = approved_qs.exclude(pk=exclude_pk)
         pending_qs = pending_qs.exclude(pk=exclude_pk)
 
-    addon_durations = {'none': 0, 'foot_30': 30, 'extra_30': 30, 'scrub_20': 20, 'stretch_15': 15}
+    addon_durations = {'none': 0, 'foot_30': 30, 'extra_30': 30, 'scrub_20': 20}
     booked_slots = {}
     pending_slots = {}
 
@@ -381,7 +381,7 @@ def whatsapp_approve(request, pk):
     # ✅ FIXED: Client confirmation message (no approve/decline links)
     client_message = (
         f"🌿 *Hi {appointment.client_name}!*%0A%0A"
-        f"Your Rosette Wellness request has been approved!%0A%0A"
+        f"Your Blessed Hands Wellness at Home request has been approved!%0A%0A"
         f"• Service: {service_display}%0A"
         f"• Date: {appointment.appointment_date}%0A"
         f"• Time: {time_formatted}%0A%0A"
@@ -957,7 +957,7 @@ def masseuse_dashboard(request):
     else:
         block_hours_form = BlockHoursForm()
 
-    hours_addon_durations = {'none': 0, 'foot_30': 30, 'extra_30': 30, 'scrub_20': 20, 'stretch_15': 15}
+    hours_addon_durations = {'none': 0, 'foot_30': 30, 'extra_30': 30, 'scrub_20': 20}
     blocked_ranges = []
     for br in BlockedTimeRange.objects.filter(date__gte=today).order_by('date', 'start_time'):
         br_start = datetime.datetime.combine(br.date, br.start_time)
@@ -1101,7 +1101,7 @@ def approve_appointment(request, pk):
         
     else:
         raw_message = (
-            f"🌿 Hi {appointment.client_name}! Your Rosette Wellness request has been approved!\n\n"
+            f"🌿 Hi {appointment.client_name}! Your Blessed Hands Wellness at Home request has been approved!\n\n"
             f"Service: {service_display}\n"
             f"Date: {appointment.appointment_date}\n"
             f"Time: {time_formatted}\n\n"
@@ -1194,17 +1194,17 @@ def complete_appointment(request, pk):
             appointment.client_package.is_active = False
         appointment.client_package.save()
 
-    # NOTE: client's wording says "Rosette Wellness" (with an "a") —
-    # everywhere else in the app it's "Rosette Wellness". Confirm which is correct
+    # NOTE: client's wording says "Blessed Hands Wellness at Home" (owner: Rosetta) —
+    # everywhere else in the app it's "Blessed Hands Wellness at Home". Confirm which is correct
     # before this goes live, since it'll go out on every completed booking.
     raw_message = (
         "Booking Confirmed\n\n"
-        "Thank you for choosing Rosette Wellness at Home. Your appointment has been "
+        "Thank you for choosing Blessed Hands Wellness at Home. Your appointment has been "
         "successfully confirmed. 🤍\n\n"
         "We look forward to bringing a refined wellness experience to you in the "
         "comfort of your home.\n\n"
         "See you soon. 🌿\n"
-        "— Rosette Wellness at Home"
+        "— Blessed Hands Wellness at Home with Rosetta"
     )
 
     phone = appointment.client_phone.replace('+', '').replace(' ', '')
@@ -1344,7 +1344,7 @@ def therapist_cancel_appointment(request, pk):
             f"Hi {appointment.client_name}, your appointment on "
             f"{appointment.appointment_date.strftime('%d %b')} at "
             f"{appointment.appointment_time.strftime('%I:%M %p')} has been cancelled "
-            f"by Rosette Wellness. We hope you feel better soon and look forward to "
+            f"by Blessed Hands Wellness at Home. We hope you feel better soon and look forward to "
             f"welcoming you another time."
         )
         encoded_message = urllib.parse.quote(message)

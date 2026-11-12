@@ -1,6 +1,6 @@
 {% extends 'bookings/base.html' %}
 
-{% block title %}Reschedule — Rosette Wellness{% endblock %}
+{% block title %}Reschedule — Blessed Hands Wellness at Home{% endblock %}
 
 {% block extra_css %}
 <style>
@@ -56,7 +56,7 @@
 
     .time-slot:hover    { border-color: var(--primary); background-color: var(--primary-light); color: var(--primary); }
     .time-slot.selected { background-color: var(--primary); color: #000; border-color: var(--primary); font-weight: 600; }
-    .time-slot.pending  { background: rgba(232,137,14,0.08); color: var(--primary); cursor: not-allowed; border-color: var(--border-orange); pointer-events: none; opacity: 0.7; }
+    .time-slot.pending  { background: rgba(212,164,55,0.08); color: var(--primary); cursor: not-allowed; border-color: var(--border-orange); pointer-events: none; opacity: 0.7; }
     .time-slot.booked   { background: #111; color: rgba(255,255,255,0.2); cursor: not-allowed; border-color: var(--border); text-decoration: line-through; pointer-events: none; }
 
     /* Read-only slot — for available times display in blocked state */
@@ -76,8 +76,8 @@
     .legend-dot   { width: 14px; height: 14px; border-radius: 4px; display: inline-block; }
 
     .blocked-notice {
-        background: rgba(232,137,14,0.06);
-        border: 1px solid rgba(232,137,14,0.25);
+        background: rgba(212,164,55,0.06);
+        border: 1px solid rgba(212,164,55,0.25);
         border-radius: 12px;
         padding: 28px 32px;
         margin-bottom: 24px;
@@ -139,7 +139,7 @@
 <div class="reschedule-hero">
     <div class="container">
         <p style="color:var(--primary); font-size:12px; letter-spacing:3px; text-transform:uppercase; margin-bottom:12px;">
-            Rosette Wellness
+            Blessed Hands Wellness at Home
         </p>
         <h1 class="rw-section-title">Reschedule Appointment</h1>
         <div class="rw-divider mx-auto"></div>
@@ -238,7 +238,7 @@
                             <span>Available</span>
                         </div>
                         <div class="legend-item">
-                            <div class="legend-dot" style="background:rgba(232,137,14,0.15); border:1px solid rgba(232,137,14,0.4);"></div>
+                            <div class="legend-dot" style="background:rgba(212,164,55,0.15); border:1px solid rgba(212,164,55,0.4);"></div>
                             <span>Pending</span>
                         </div>
                         <div class="legend-item">
